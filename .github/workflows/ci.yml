@@ -37,10 +37,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install the Rust toolchain for Windows to build an UEFI binary
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: x86_64-pc-windows-gnu
+        run: rustup target add x86_64-pc-windows-gnu
 
       - name: Install the other dependencies
         run: sudo apt-get install gcc-mingw-w64 mtools
