@@ -21,5 +21,7 @@ pub extern "win64" fn efi_main(_: efi::Handle, st: efi::SystemTable) -> ! {
 
 #[panic_handler]
 fn panic(_: &PanicInfo) -> ! {
-    loop {}
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
