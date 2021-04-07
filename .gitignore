@@ -1,1 +1,6 @@
 tags
+build
+**/*.swp
+**/*.lock
+**/*.fd
+**/target
