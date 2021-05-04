@@ -9,7 +9,7 @@ BOOTX64_SRCS	+=	$(BOOTX64_SRC_DIR)/.cargo/config.toml
 BOOTX64_DLL	=	$(BOOTX64_SRC_DIR)/target/$(ARCH)-pc-windows-gnu/debug/bootx64.dll
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
-ISO_FILE	=	$(BUILD_DIR)/tokunux.iso
+ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
 .PHONY:	all clean
 
