@@ -16,4 +16,5 @@ panic = "abort"
 
 [dependencies]
 r-efi = "3.2.0"
+rlibc = "1.0.0"
 x86_64 = { version = "0.13.5", features = ["instructions", "external_asm"], default-features = false }

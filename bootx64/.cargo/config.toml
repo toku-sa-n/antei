@@ -2,4 +2,11 @@
 target = "x86_64-pc-windows-gnu"
 
 [target.x86_64-pc-windows-gnu]
-rustflags = ["-C", "link-args=-e efi_main", "-C", "code-model=large"]
+rustflags = [
+    "-C", "link-args=/nologo /nxcompat /nodefaultlib /entry:efi_main",
+    "-C", "code-model=large",
+    "-C", "prefer-dynamic=n",
+    "-C", "no-redzone=y",
+    "-C", "panic=abort",
+    "-C", "linker-flavor=lld-link"
+]

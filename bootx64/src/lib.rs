@@ -1,5 +1,7 @@
 #![no_std]
 
+extern crate rlibc;
+
 use core::panic::PanicInfo;
 use r_efi::efi;
 
