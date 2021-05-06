@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "bootx64"
+]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
