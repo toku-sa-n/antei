@@ -1,6 +1,7 @@
 #![no_std]
 
 mod global;
+mod io;
 
 use r_efi::efi;
 
