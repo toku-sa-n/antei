@@ -26,7 +26,7 @@ $(BOOTX64): $(BOOTX64_DLL)|$(BUILD_DIR)
 	objcopy --target=efi-app-$(ARCH) $^ $@
 
 $(BOOTX64_DLL): $(BOOTX64_SRCS)|$(BUILD_DIR)
-	cd $(BOOTX64_SRC_DIR) && cargo build
+	cargo build
 
 $(BUILD_DIR):
 	mkdir -p $@
