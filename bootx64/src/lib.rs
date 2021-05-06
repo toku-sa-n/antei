@@ -1,6 +1,7 @@
 #![no_std]
 
-extern crate rlibc;
+// For `memcpy`.
+extern crate rlibc as _;
 
 use core::panic::PanicInfo;
 use r_efi::efi;
@@ -22,7 +23,7 @@ pub extern "win64" fn efi_main(_: efi::Handle, st: efi::SystemTable) -> ! {
 }
 
 #[panic_handler]
-fn panic(_: &PanicInfo) -> ! {
+fn panic(_: &PanicInfo<'_>) -> ! {
     loop {
         x86_64::instructions::hlt();
     }

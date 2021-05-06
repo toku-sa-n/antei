@@ -18,6 +18,9 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
 
+    env:
+      RUSTFLAGS: -D warnings -D absolute_paths_not_starting_with_crate -D disjoint_capture_drop_reorder -D elided_lifetimes_in_paths -D explicit_outlives_requirements -D macro_use_extern_crate -D meta_variable_misuse -D missing_abi -D missing_copy_implementations -D missing_debug_implementations -D non_ascii_idents -D pointer_structural_match -D semicolon_in_expressions_from_macros -D single_use_lifetimes -D trivial_casts -D trivial_numeric_casts -D unaligned_references -D unreachable_pub -D unused_extern_crates -D unused_import_braces -D unused_lifetimes -D unused_qualifications
+
     steps:
       - uses: actions/checkout@v2
 
@@ -32,9 +35,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      RUSTFLAGS: -D warnings
-
     steps:
       - uses: actions/checkout@v2
 
@@ -42,7 +42,7 @@ jobs:
         run: rustup target add x86_64-pc-windows-gnu
 
       - name: Install the other dependencies
-        run: sudo apt-get install gcc-mingw-w64 mtools
+        run: sudo apt-get install gcc-mingw-w64 mtools lld
 
       - name: Build the OS
         run: make -j$(nproc)
