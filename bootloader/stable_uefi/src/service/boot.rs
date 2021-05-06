@@ -1,4 +1,3 @@
 use r_efi::efi;
 
-#[repr(transparent)]
-pub struct Boot(efi::BootServices);
+pub struct Boot<'a>(pub(crate) &'a efi::BootServices);
