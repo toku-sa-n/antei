@@ -8,5 +8,5 @@ rustflags = [
     "-C", "prefer-dynamic=n",
     "-C", "no-redzone=y",
     "-C", "panic=abort",
-    "-C", "linker=lld-link",
+    "-C", "linker-flavor=lld-link",
 ]
