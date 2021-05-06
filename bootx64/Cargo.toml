@@ -8,12 +8,6 @@ edition = "2018"
 name = "bootx64"
 crate_type = ["cdylib"]
 
-[profile.dev]
-panic = "abort"
-
-[profile.release]
-panic = "abort"
-
 [dependencies]
 r-efi = "3.2.0"
 rlibc = "1.0.0"

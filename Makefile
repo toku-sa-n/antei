@@ -6,7 +6,7 @@ BOOTX64_SRC_DIR	=	bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTX64_SRC_DIR) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_SRC_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_SRC_DIR)/.cargo/config.toml
-BOOTX64_DLL	=	$(BOOTX64_SRC_DIR)/target/$(ARCH)-pc-windows-gnu/debug/bootx64.dll
+BOOTX64_DLL	=	target/$(ARCH)-pc-windows-gnu/debug/bootx64.dll
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
