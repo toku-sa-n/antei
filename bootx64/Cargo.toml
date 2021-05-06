@@ -5,9 +5,8 @@ authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
-[lib]
+[[bin]]
 name = "bootx64"
-crate_type = ["cdylib"]
 
 [dependencies]
 r-efi = "3.2.0"

@@ -6,7 +6,7 @@ BOOTX64_SRC_DIR	=	bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTX64_SRC_DIR) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_SRC_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_SRC_DIR)/.cargo/config.toml
-BOOTX64_DLL	=	target/$(ARCH)-pc-windows-gnu/debug/bootx64.dll
+BOOTX64_EXE	=	target/$(ARCH)-pc-windows-gnu/debug/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
@@ -22,10 +22,10 @@ $(ISO_FILE): $(BOOTX64)|$(BUILD_DIR)
 	mmd -i $@ ::/efi/boot
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(BOOTX64): $(BOOTX64_DLL)|$(BUILD_DIR)
-	objcopy --target=efi-app-$(ARCH) $^ $@
+$(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
+	mv $^ $@
 
-$(BOOTX64_DLL): $(BOOTX64_SRCS)|$(BUILD_DIR)
+$(BOOTX64_EXE): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	cd $(BOOTX64_SRC_DIR) && cargo build
 
 $(BUILD_DIR):

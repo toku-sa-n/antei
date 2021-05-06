@@ -1,4 +1,5 @@
 #![no_std]
+#![no_main]
 
 // For `memcpy`.
 extern crate rlibc as _;
