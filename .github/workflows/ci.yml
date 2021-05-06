@@ -24,8 +24,10 @@ jobs:
       - name: Install Clippy
         run: rustup component add clippy
 
-      - name: Run clippy
-        run: checkers/run_clippy.sh
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: -- -D clippy::pedantic -D clippy::all
 
   build:
     runs-on: ubuntu-latest
