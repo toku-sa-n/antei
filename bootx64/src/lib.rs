@@ -1,6 +1,7 @@
 #![no_std]
 
-extern crate rlibc;
+// For `memcpy`.
+extern crate rlibc as _;
 
 use core::panic::PanicInfo;
 use r_efi::efi;
