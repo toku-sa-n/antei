@@ -46,5 +46,8 @@ jobs:
           sudo apt-get install gcc-mingw-w64 mtools lld
           sudo ln -s /usr/bin/{lld, lld-link}
 
+      - name: Check if `lld-link` is installed
+        run: which lld-link
+
       - name: Build the OS
         run: make -j$(nproc)
