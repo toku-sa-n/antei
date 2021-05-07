@@ -1,13 +1,16 @@
+use core::convert::TryFrom;
+use core::convert::TryInto;
 use num_derive::FromPrimitive;
+use num_traits::FromPrimitive;
 use r_efi::efi;
 
-pub type Result<T> = core::result::Result<T, efi::Status>;
+pub type Result<T> = core::result::Result<T, core::result::Result<NotSuccess, usize>>;
 
 pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<T> {
     if status == efi::Status::SUCCESS {
         Ok(value)
     } else {
-        Err(status)
+        Err(status.try_into())
     }
 }
 
@@ -17,6 +20,21 @@ const ERROR_MASK: usize = usize::MAX - (usize::MAX >> 1);
 pub enum NotSuccess {
     Error(Error),
     Warning(Warning),
+}
+impl TryFrom<efi::Status> for NotSuccess {
+    type Error = usize;
+
+    fn try_from(s: efi::Status) -> core::result::Result<Self, usize> {
+        let s = s.as_usize();
+
+        if let Some(e) = FromPrimitive::from_usize(s) {
+            Ok(Self::Error(e))
+        } else if let Some(w) = FromPrimitive::from_usize(s) {
+            Ok(Self::Warning(w))
+        } else {
+            Err(s)
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
