@@ -7,17 +7,17 @@ use r_efi::efi;
 pub struct SystemTable(efi::SystemTable);
 impl SystemTable {
     #[must_use]
-    pub fn boot_services(&self) -> service::Boot<'_> {
+    pub fn boot_services(&mut self) -> service::Boot<'_> {
         // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
         // argument is a valid pointer.
-        service::Boot(unsafe { &*self.0.boot_services })
+        service::Boot(unsafe { &mut *self.0.boot_services })
     }
 
     #[must_use]
-    pub fn con_out(&self) -> console::SimpleTextOutput<'_> {
+    pub fn con_out(&mut self) -> console::SimpleTextOutput<'_> {
         // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
         // argument is a valid pointer.
-        console::SimpleTextOutput(unsafe { &*self.0.con_out })
+        console::SimpleTextOutput(unsafe { &mut *self.0.con_out })
     }
 }
 impl fmt::Debug for SystemTable {
