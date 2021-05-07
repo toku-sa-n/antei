@@ -1,0 +1,11 @@
+[package]
+name = "stable_uefi"
+version = "0.1.0"
+authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+conquer-once = { version = "0.3.2", default-features = false }
+r-efi = "3.2.0"
+spinning_top = "0.2.3"
