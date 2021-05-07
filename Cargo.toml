@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "bootx64"
+    "bootloader/bootx64"
 ]
 
 [profile.dev]
