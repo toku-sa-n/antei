@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "bootloader/bootx64",
-    "bootloader/stable_uefi",
+    "bootloader/uefi_wrapper",
 ]
 
 [profile.dev]

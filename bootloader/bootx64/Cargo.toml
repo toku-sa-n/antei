@@ -10,5 +10,5 @@ name = "bootx64"
 
 [dependencies]
 rlibc = "1.0.0"
-stable_uefi = { path = "../stable_uefi" }
+uefi_wrapper = { path = "../uefi_wrapper" }
 x86_64 = { version = "0.13.5", features = ["instructions", "external_asm"], default-features = false }
