@@ -1,3 +1,4 @@
+use num_derive::FromPrimitive;
 use r_efi::efi;
 
 pub type Result<T> = core::result::Result<T, efi::Status>;
@@ -12,7 +13,7 @@ pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<
 
 const ERROR_MASK: usize = usize::MAX - (usize::MAX >> 1);
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
 #[repr(usize)]
 pub enum Error {
     LoadError = ERROR_MASK | 1,
@@ -50,7 +51,7 @@ pub enum Error {
     HttpError = ERROR_MASK | 35,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
 pub enum Warning {
     UnknownGlyph = 1,
     DeleteFailure = 2,
