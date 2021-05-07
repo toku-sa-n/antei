@@ -27,11 +27,10 @@ impl TryFrom<efi::Status> for NotSuccess {
     fn try_from(s: efi::Status) -> core::result::Result<Self, usize> {
         let s = s.as_usize();
 
-        if let Some(e) = FromPrimitive::from_usize(s) {
-            Ok(Self::Error(e))
-        } else {
-            FromPrimitive::from_usize(s).map_or(Err(s), |w| Ok(Self::Warning(w)))
-        }
+        FromPrimitive::from_usize(s).map_or_else(
+            || FromPrimitive::from_usize(s).map_or(Err(s), |w| Ok(Self::Warning(w))),
+            |e| Ok(Self::Error(e)),
+        )
     }
 }
 
