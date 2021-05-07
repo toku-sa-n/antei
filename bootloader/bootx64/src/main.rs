@@ -5,11 +5,10 @@
 extern crate rlibc as _;
 
 use core::panic::PanicInfo;
-use r_efi::efi;
 
 #[no_mangle]
-pub extern "win64" fn efi_main(_: efi::Handle, st: efi::SystemTable) -> ! {
-    let stdout = unsafe { &mut *(st.con_out) };
+pub extern "win64" fn efi_main(_: *mut u8, mut st: stable_uefi::SystemTable) -> ! {
+    let mut stdout = st.con_out();
     let string = "hello world".as_bytes();
     let mut buf = [0_u16; 32];
 
@@ -17,9 +16,9 @@ pub extern "win64" fn efi_main(_: efi::Handle, st: efi::SystemTable) -> ! {
         buf[i] = string[i].into();
     }
 
-    (stdout.reset)(stdout, false.into());
+    stdout.reset_without_extension();
     loop {
-        (stdout.output_string)(stdout, buf.as_mut_ptr());
+        stdout.output_string(&mut buf);
     }
 }
 
