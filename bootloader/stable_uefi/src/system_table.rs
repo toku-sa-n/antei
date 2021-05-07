@@ -1,3 +1,4 @@
+use crate::protocol::console;
 use crate::service;
 use core::fmt;
 use r_efi::efi;
@@ -10,6 +11,13 @@ impl SystemTable {
         // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
         // argument is a valid pointer.
         service::Boot(unsafe { &*self.0.boot_services })
+    }
+
+    #[must_use]
+    pub fn con_out(&self) -> console::SimpleTextOutput<'_> {
+        // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
+        // argument is a valid pointer.
+        console::SimpleTextOutput(unsafe { &*self.0.con_out })
     }
 }
 impl fmt::Debug for SystemTable {
