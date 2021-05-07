@@ -2,7 +2,7 @@ use core::fmt;
 use r_efi::protocols::simple_text_output;
 
 pub struct SimpleTextOutput<'a>(pub(crate) &'a mut simple_text_output::Protocol);
-impl<'a> SimpleTextOutput<'a> {
+impl SimpleTextOutput<'_> {
     pub fn reset_without_extension(&mut self) {
         (self.0.reset)(self.0, false.into());
     }
