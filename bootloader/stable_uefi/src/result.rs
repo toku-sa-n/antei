@@ -14,7 +14,7 @@ pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<
     }
 }
 
-const ERROR_MASK: usize = usize::MAX - (usize::MAX >> 1);
+const ERROR_BIT: usize = usize::MAX - (usize::MAX >> 1);
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum NotSuccess {
@@ -41,39 +41,39 @@ impl TryFrom<efi::Status> for NotSuccess {
 #[repr(usize)]
 #[allow(clippy::pub_enum_variant_names)]
 pub enum Error {
-    LoadError = ERROR_MASK | 1,
-    InvalidParameter = ERROR_MASK | 2,
-    Unsupported = ERROR_MASK | 3,
-    BadBufferSize = ERROR_MASK | 4,
-    BufferTooSmall = ERROR_MASK | 5,
-    NotReady = ERROR_MASK | 6,
-    DeviceError = ERROR_MASK | 7,
-    WriteProtected = ERROR_MASK | 8,
-    OutOfResources = ERROR_MASK | 9,
-    VolumeCorrupted = ERROR_MASK | 10,
-    VolumeFull = ERROR_MASK | 11,
-    NoMedia = ERROR_MASK | 12,
-    MediaChanged = ERROR_MASK | 13,
-    NotFound = ERROR_MASK | 14,
-    AccessDenied = ERROR_MASK | 15,
-    NoResponse = ERROR_MASK | 16,
-    NoMapping = ERROR_MASK | 17,
-    Timeout = ERROR_MASK | 18,
-    NotStarted = ERROR_MASK | 19,
-    AlreadyStarted = ERROR_MASK | 20,
-    Aborted = ERROR_MASK | 21,
-    IcmpError = ERROR_MASK | 22,
-    TftpError = ERROR_MASK | 23,
-    ProtocolError = ERROR_MASK | 24,
-    IncompatibleVersion = ERROR_MASK | 25,
-    SecurityViolation = ERROR_MASK | 26,
-    CrcError = ERROR_MASK | 27,
-    EndOfMedia = ERROR_MASK | 28,
-    EndOfFile = ERROR_MASK | 31,
-    InvalidLanguage = ERROR_MASK | 32,
-    CompromisedData = ERROR_MASK | 33,
-    IpAddressConflict = ERROR_MASK | 34,
-    HttpError = ERROR_MASK | 35,
+    LoadError = ERROR_BIT | 1,
+    InvalidParameter = ERROR_BIT | 2,
+    Unsupported = ERROR_BIT | 3,
+    BadBufferSize = ERROR_BIT | 4,
+    BufferTooSmall = ERROR_BIT | 5,
+    NotReady = ERROR_BIT | 6,
+    DeviceError = ERROR_BIT | 7,
+    WriteProtected = ERROR_BIT | 8,
+    OutOfResources = ERROR_BIT | 9,
+    VolumeCorrupted = ERROR_BIT | 10,
+    VolumeFull = ERROR_BIT | 11,
+    NoMedia = ERROR_BIT | 12,
+    MediaChanged = ERROR_BIT | 13,
+    NotFound = ERROR_BIT | 14,
+    AccessDenied = ERROR_BIT | 15,
+    NoResponse = ERROR_BIT | 16,
+    NoMapping = ERROR_BIT | 17,
+    Timeout = ERROR_BIT | 18,
+    NotStarted = ERROR_BIT | 19,
+    AlreadyStarted = ERROR_BIT | 20,
+    Aborted = ERROR_BIT | 21,
+    IcmpError = ERROR_BIT | 22,
+    TftpError = ERROR_BIT | 23,
+    ProtocolError = ERROR_BIT | 24,
+    IncompatibleVersion = ERROR_BIT | 25,
+    SecurityViolation = ERROR_BIT | 26,
+    CrcError = ERROR_BIT | 27,
+    EndOfMedia = ERROR_BIT | 28,
+    EndOfFile = ERROR_BIT | 31,
+    InvalidLanguage = ERROR_BIT | 32,
+    CompromisedData = ERROR_BIT | 33,
+    IpAddressConflict = ERROR_BIT | 34,
+    HttpError = ERROR_BIT | 35,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
