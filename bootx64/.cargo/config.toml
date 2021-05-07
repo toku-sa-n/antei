@@ -3,10 +3,10 @@ target = "x86_64-pc-windows-gnu"
 
 [target.x86_64-pc-windows-gnu]
 rustflags = [
-    "-C", "link-args=/nologo /nxcompat /nodefaultlib /entry:efi_main",
+    "-C", "link-args=/nologo /nxcompat /nodefaultlib /entry:efi_main /subsystem:efi_application",
     "-C", "code-model=large",
     "-C", "prefer-dynamic=n",
     "-C", "no-redzone=y",
     "-C", "panic=abort",
-    "-C", "linker-flavor=lld-link"
+    "-C", "linker=lld-link",
 ]

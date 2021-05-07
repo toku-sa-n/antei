@@ -42,7 +42,9 @@ jobs:
         run: rustup target add x86_64-pc-windows-gnu
 
       - name: Install the other dependencies
-        run: sudo apt-get install gcc-mingw-w64 mtools lld
+        run: |
+          sudo apt-get install gcc-mingw-w64 mtools lld
+          sudo ln -s /usr/bin/lld /usr/bin/lld-link --verbose
 
       - name: Build the OS
         run: make -j$(nproc)
