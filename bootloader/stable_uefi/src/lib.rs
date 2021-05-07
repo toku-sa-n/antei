@@ -1,8 +1,8 @@
 #![no_std]
 
-pub mod error;
 pub mod handle;
 pub mod protocol;
+pub mod result;
 pub mod service;
 pub mod system_table;
 
