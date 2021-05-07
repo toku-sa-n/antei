@@ -39,7 +39,7 @@ impl TryFrom<efi::Status> for NotSuccess {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
 #[repr(usize)]
-#[allow(clippy::pub_enum_variant_names)]
+#[allow(clippy::pub_enum_variant_names, clippy::enum_clike_unportable_variant)]
 pub enum Error {
     LoadError = ERROR_BIT | 1,
     InvalidParameter = ERROR_BIT | 2,
