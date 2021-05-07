@@ -2,8 +2,9 @@ ARCH	=	x86_64
 
 BUILD_DIR	=	build
 
-BOOTX64_SRC_DIR	=	bootloader/bootx64
-BOOTX64_SRCS	=	$(shell find $(BOOTX64_SRC_DIR) -name *.rs)
+BOOTLOADER_DIR	=	bootloader
+BOOTX64_SRC_DIR	=	$(BOOTLOADER_DIR)/bootx64
+BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_SRC_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_SRC_DIR)/.cargo/config.toml
 BOOTX64_EXE	=	target/$(ARCH)-pc-windows-gnu/debug/bootx64.exe
