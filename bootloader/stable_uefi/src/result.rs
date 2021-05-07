@@ -9,3 +9,14 @@ pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<
         Err(status)
     }
 }
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Warning {
+    UnknownGlyph = 1,
+    DeleteFailure = 2,
+    WriteFailure = 3,
+    BufferTooSmall = 4,
+    StaleData = 5,
+    FileSystem = 6,
+    ResetRequired = 7,
+}
