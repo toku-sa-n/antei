@@ -13,6 +13,12 @@ pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<
 
 const ERROR_MASK: usize = usize::MAX - (usize::MAX >> 1);
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum NotSuccess {
+    Error(Error),
+    Warning(Warning),
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
 #[repr(usize)]
 pub enum Error {
