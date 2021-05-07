@@ -17,9 +17,11 @@ pub extern "win64" fn efi_main(_: uefi::Handle, mut st: uefi::SystemTable) -> ! 
         buf[i] = string[i].into();
     }
 
-    stdout.reset_without_extension();
+    let s = stdout.reset_without_extension();
+    s.expect("Failed to reset the console.");
     loop {
-        stdout.output_string(&mut buf);
+        let s = stdout.output_string(&mut buf);
+        s.expect("Failed to print a string.");
     }
 }
 
