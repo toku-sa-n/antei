@@ -1,5 +1,7 @@
 #![no_std]
 
+mod io;
+
 use conquer_once::spin::Lazy;
 use spinning_top::Spinlock;
 
