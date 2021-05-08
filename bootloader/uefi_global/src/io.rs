@@ -18,7 +18,7 @@ macro_rules! print {
     };
 }
 
-pub fn _print(args: fmt::Arguments) {
+pub fn _print(args: fmt::Arguments<'_>) {
     let mut st = crate::system_table();
     let mut stdout = st.con_out();
 
