@@ -9,6 +9,9 @@ use r_efi::efi;
 
 pub struct Boot<'a>(&'a mut efi::BootServices, &'a mut SystemTable);
 impl<'a> Boot<'a> {
+    /// # Errors
+    ///
+    /// This method may return an `Err` value if the protocol is not found.
     pub fn locate_protocol_without_registration(
         &mut self,
         mut guid: efi::Guid,
