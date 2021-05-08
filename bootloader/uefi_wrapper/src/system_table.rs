@@ -4,6 +4,7 @@ use core::fmt;
 use r_efi::efi;
 
 #[repr(transparent)]
+#[allow(missing_copy_implementations)]
 pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
