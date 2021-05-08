@@ -26,3 +26,83 @@ impl fmt::Debug for SimpleTextOutput<'_> {
         f.debug_struct("SimpleTextOutput").finish()
     }
 }
+impl fmt::Write for SimpleTextOutput<'_> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        Writer::new(self, s).write()
+    }
+}
+
+struct Writer<'a, 'b> {
+    console: &'a mut SimpleTextOutput<'b>,
+    s: &'a str,
+    buf: [u16; Writer::BUF_LEN + 1],
+    index: usize,
+}
+impl<'a, 'b> Writer<'a, 'b> {
+    const BUF_LEN: usize = 128;
+
+    fn new(console: &'a mut SimpleTextOutput<'b>, s: &'a str) -> Self {
+        Self {
+            console,
+            s,
+            buf: [0; Writer::BUF_LEN + 1],
+            index: 0,
+        }
+    }
+
+    fn write(mut self) -> fmt::Result {
+        ucs2::encode_with(self.s, |c| {
+            self.push_char(c).map_err(|_| ucs2::Error::BufferOverflow)
+        })
+        .map_err(|_| fmt::Error)?;
+
+        self.flush().map_err(|_| fmt::Error)
+    }
+
+    fn push_char(&mut self, c: u16) -> Result<()> {
+        if is_newline(c) {
+            self.push_u16(b'\r'.into())?
+        }
+
+        self.push_u16(c)
+    }
+
+    fn push_u16(&mut self, c: u16) -> Result<()> {
+        self.buf[self.index] = c;
+
+        self.index += 1;
+
+        if self.is_buf_full() {
+            self.flush()
+        } else {
+            Ok(())
+        }
+    }
+
+    fn is_buf_full(&self) -> bool {
+        self.index == Self::BUF_LEN
+    }
+
+    fn flush(&mut self) -> Result<()> {
+        self.terminate_with_null();
+        self.print()?;
+        self.clear_buf();
+        Ok(())
+    }
+
+    fn terminate_with_null(&mut self) {
+        self.buf[self.index] = 0;
+    }
+
+    fn print(&mut self) -> Result<()> {
+        self.console.output_string(&mut self.buf)
+    }
+
+    fn clear_buf(&mut self) {
+        self.index = 0;
+    }
+}
+
+fn is_newline(c: u16) -> bool {
+    c == u16::from(b'\n')
+}
