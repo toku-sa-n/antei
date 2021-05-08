@@ -1,5 +1,5 @@
 [package]
-name = "uefi_wrapper"
+name = "uefi_global"
 version = "0.1.0"
 authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
 edition = "2018"
@@ -7,8 +7,6 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 conquer-once = { version = "0.3.2", default-features = false }
-num-derive = "0.3.3"
-num-traits = { version = "0.2.14", default-features = false }
-r-efi = "3.2.0"
+log = "0.4.14"
 spinning_top = "0.2.3"
-ucs2 = "0.3.2"
+uefi_wrapper = { path = "../uefi_wrapper" }

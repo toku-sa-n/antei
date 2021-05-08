@@ -2,6 +2,7 @@
 members = [
     "bootloader/bootx64",
     "bootloader/uefi_wrapper",
+    "bootloader/uefi_global",
 ]
 
 [profile.dev]
