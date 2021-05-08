@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 name = "bootx64"
 
 [dependencies]
+log = "0.4.14"
 rlibc = "1.0.0"
 uefi_global = { path = "../uefi_global" }
 uefi_wrapper = { path = "../uefi_wrapper" }

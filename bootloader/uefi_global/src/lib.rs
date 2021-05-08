@@ -23,6 +23,7 @@ unsafe impl Send for SystemTableWrapper {}
 pub fn init(h: uefi_wrapper::Handle, st: uefi_wrapper::SystemTable) {
     init_handle(h);
     init_system_table(st);
+    io::init();
 }
 
 pub(crate) fn system_table<'a>() -> MappedMutexGuard<'a, RawSpinlock, uefi_wrapper::SystemTable> {
