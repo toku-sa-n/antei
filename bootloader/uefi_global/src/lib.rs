@@ -1,9 +1,12 @@
 #![no_std]
 
-mod io;
+pub mod io;
 
 use conquer_once::spin::Lazy;
+use spinning_top::lock_api::MappedMutexGuard;
+use spinning_top::RawSpinlock;
 use spinning_top::Spinlock;
+use spinning_top::SpinlockGuard;
 
 static HANDLE_WRAPPER: Lazy<Spinlock<Option<HandleWrapper>>> = Lazy::new(|| Spinlock::new(None));
 static SYSTEM_TABLE_WRAPPER: Lazy<Spinlock<Option<SystemTableWrapper>>> =
@@ -20,6 +23,17 @@ unsafe impl Send for SystemTableWrapper {}
 pub fn init(h: uefi_wrapper::Handle, st: uefi_wrapper::SystemTable) {
     init_handle(h);
     init_system_table(st);
+}
+
+pub(crate) fn system_table<'a>() -> MappedMutexGuard<'a, RawSpinlock, uefi_wrapper::SystemTable> {
+    let st = SYSTEM_TABLE_WRAPPER.try_lock();
+    let st = st.expect("Failed to lock the global System Table.");
+
+    SpinlockGuard::map(st, |st| {
+        let st = st.as_mut();
+        let st = st.expect("The global System Table is not initialized.");
+        &mut st.0
+    })
 }
 
 fn init_handle(h: uefi_wrapper::Handle) {
