@@ -51,6 +51,7 @@ impl fmt::Debug for Boot<'_> {
     }
 }
 
+#[derive(Debug)]
 pub struct WithProtocol<'a, P: Protocol> {
     pub protocol: &'a mut P,
     pub bs: Boot<'a>,
