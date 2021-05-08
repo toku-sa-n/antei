@@ -41,20 +41,22 @@ fn init_handle(h: uefi_wrapper::Handle) {
     let gh = HANDLE_WRAPPER.try_lock();
     let mut gh = gh.expect("Failed to lock the global EFI Handler.");
 
-    if gh.is_some() {
-        panic!("The global handler is already initialized.");
-    } else {
-        *gh = Some(HandleWrapper(h));
-    }
+    assert!(
+        gh.is_none(),
+        "The global EFI Handler is already initialized."
+    );
+
+    *gh = Some(HandleWrapper(h));
 }
 
 fn init_system_table(st: uefi_wrapper::SystemTable) {
     let gst = SYSTEM_TABLE_WRAPPER.try_lock();
     let mut gst = gst.expect("Failed to lock the global System Table.");
 
-    if gst.is_some() {
-        panic!("The global System Table is already initialized.");
-    } else {
-        *gst = Some(SystemTableWrapper(st));
-    }
+    assert!(
+        gst.is_none(),
+        "The global System Table is already initialized."
+    );
+
+    *gst = Some(SystemTableWrapper(st));
 }
