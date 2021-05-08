@@ -23,7 +23,7 @@ impl<'a> Boot<'a> {
 
         result::from_closure_and_status(
             move || {
-                let protocol = unsafe { protocol.assume_init() } as *mut P;
+                let protocol = unsafe { protocol.assume_init() }.cast::<P>();
                 let protocol = unsafe { &mut *protocol };
                 WithProtocol::new(protocol, self)
             },
