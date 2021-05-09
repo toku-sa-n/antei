@@ -13,6 +13,10 @@ pub use r_efi::protocols::graphics_output::ModeInformation;
 #[allow(missing_copy_implementations)]
 pub struct GraphicsOutput(*mut graphics_output::Protocol);
 impl GraphicsOutput {
+    /// # Errors
+    ///
+    /// This method may return an `Err` value in some situations, for exampel `mode_number` is not
+    /// supported.
     pub fn set_mode(&mut self, mode_number: u32) -> Result<()> {
         let s = (self.get_mut().set_mode)(self.0, mode_number);
 
