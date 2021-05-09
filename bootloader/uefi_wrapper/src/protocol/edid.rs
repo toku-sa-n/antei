@@ -5,6 +5,7 @@ use r_efi::efi::Guid;
 #[derive(Debug)]
 pub struct Discovered([u8; 128]);
 impl Discovered {
+    #[must_use]
     pub fn resolution(&self) -> (u32, u32) {
         (self.resolution_x(), self.resolution_y())
     }
