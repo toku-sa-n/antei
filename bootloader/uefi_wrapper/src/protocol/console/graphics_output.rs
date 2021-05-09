@@ -30,6 +30,12 @@ impl GraphicsOutput {
 
         result::from_closure_and_status(|| unsafe { *info }, s)
     }
+
+    pub fn set_mode(&mut self, mode_number: u32) -> Result<()> {
+        let s = unsafe { ((*self.0).set_mode)(self.0, mode_number) };
+
+        result::from_value_and_status((), s)
+    }
 }
 impl fmt::Debug for GraphicsOutput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
