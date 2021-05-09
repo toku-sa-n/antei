@@ -1,9 +1,10 @@
 use crate::result;
 use crate::result::Result;
+use crate::system_table::SystemTable;
 use core::fmt;
 use r_efi::protocols::simple_text_output;
 
-pub struct SimpleTextOutput<'a>(pub(crate) &'a mut simple_text_output::Protocol);
+pub struct SimpleTextOutput<'a>(&'a mut simple_text_output::Protocol, &'a mut SystemTable);
 impl SimpleTextOutput<'_> {
     /// # Errors
     ///
@@ -19,6 +20,17 @@ impl SimpleTextOutput<'_> {
     pub fn output_string(&mut self, buf: &mut [u16]) -> Result<()> {
         let s = (self.0.output_string)(self.0, buf.as_mut_ptr());
         result::from_value_and_status((), s)
+    }
+}
+impl<'a> From<&'a mut SystemTable> for SimpleTextOutput<'a> {
+    fn from(s: &'a mut SystemTable) -> Self {
+        let s_ptr = s.get_ptr();
+
+        // SAFETY: `SystemTable` is created only from the argument of `efi_main`, so the mutable
+        // reference to `SimpleTextOutput` is created only once. Also, we must trust the
+        // pointer is valid.
+        let sto = unsafe { &mut *(*s_ptr).con_out };
+        Self(sto, s)
     }
 }
 impl fmt::Debug for SimpleTextOutput<'_> {

@@ -14,9 +14,7 @@ impl SystemTable {
 
     #[must_use]
     pub fn con_out(&mut self) -> console::SimpleTextOutput<'_> {
-        // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
-        // argument is a valid pointer.
-        console::SimpleTextOutput(unsafe { &mut *(*self.0).con_out })
+        self.into()
     }
 
     pub(crate) fn get_ptr(&self) -> *mut efi::SystemTable {
