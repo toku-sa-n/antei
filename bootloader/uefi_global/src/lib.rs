@@ -8,19 +8,23 @@ use spinning_top::RawSpinlock;
 use spinning_top::Spinlock;
 use spinning_top::SpinlockGuard;
 
-static HANDLE_WRAPPER: Lazy<Spinlock<Option<HandleWrapper>>> = Lazy::new(|| Spinlock::new(None));
-static SYSTEM_TABLE_WRAPPER: Lazy<Spinlock<Option<SystemTableWrapper>>> =
+static HANDLE_WRAPPER: Lazy<Spinlock<Option<Handle>>> = Lazy::new(|| Spinlock::new(None));
+static SYSTEM_TABLE_WRAPPER: Lazy<Spinlock<Option<SystemTable>>> =
     Lazy::new(|| Spinlock::new(None));
 
-struct HandleWrapper(uefi_wrapper::Handle);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct Handle(uefi_wrapper::Handle);
 // SAFETY: UEFI applications have only one thread.
-unsafe impl Send for HandleWrapper {}
+unsafe impl Send for Handle {}
 
-struct SystemTableWrapper(uefi_wrapper::SystemTable);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct SystemTable(uefi_wrapper::SystemTable);
 // SAFETY: UEFI applications have only one thread
-unsafe impl Send for SystemTableWrapper {}
+unsafe impl Send for SystemTable {}
 
-pub fn init(h: uefi_wrapper::Handle, st: uefi_wrapper::SystemTable) {
+pub fn init(h: Handle, st: SystemTable) {
     init_handle(h);
     init_system_table(st);
     io::init();
@@ -37,7 +41,7 @@ pub(crate) fn system_table<'a>() -> MappedMutexGuard<'a, RawSpinlock, uefi_wrapp
     })
 }
 
-fn init_handle(h: uefi_wrapper::Handle) {
+fn init_handle(h: Handle) {
     let gh = HANDLE_WRAPPER.try_lock();
     let mut gh = gh.expect("Failed to lock the global EFI Handler.");
 
@@ -46,10 +50,10 @@ fn init_handle(h: uefi_wrapper::Handle) {
         "The global EFI Handler is already initialized."
     );
 
-    *gh = Some(HandleWrapper(h));
+    *gh = Some(h);
 }
 
-fn init_system_table(st: uefi_wrapper::SystemTable) {
+fn init_system_table(st: SystemTable) {
     let gst = SYSTEM_TABLE_WRAPPER.try_lock();
     let mut gst = gst.expect("Failed to lock the global System Table.");
 
@@ -58,5 +62,5 @@ fn init_system_table(st: uefi_wrapper::SystemTable) {
         "The global System Table is already initialized."
     );
 
-    *gst = Some(SystemTableWrapper(st));
+    *gst = Some(st);
 }

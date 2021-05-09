@@ -6,7 +6,7 @@ extern crate rlibc as _;
 
 use core::panic::PanicInfo;
 use log::info;
-use uefi_wrapper as uefi;
+use uefi_global as uefi;
 
 #[no_mangle]
 pub extern "win64" fn efi_main(h: uefi::Handle, st: uefi::SystemTable) -> ! {
