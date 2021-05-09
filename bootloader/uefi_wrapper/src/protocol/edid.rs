@@ -1,27 +1,47 @@
 use crate::protocol::Protocol;
+use core::convert::TryInto;
+use core::slice;
 use r_efi::efi::Guid;
 
-#[repr(transparent)]
-#[derive(Copy, Clone, Debug)]
-pub struct Discovered([u8; 128]);
+#[repr(C)]
+#[derive(Debug)]
+pub struct Discovered {
+    size: u32,
+    ptr: *const u8,
+}
 impl Discovered {
     #[must_use]
-    pub fn preferred_resolution(&self) -> (u32, u32) {
-        (self.preferred_resolution_x(), self.preferred_resolution_y())
+    pub fn preferred_resolution(&self) -> Option<(u32, u32)> {
+        Some((
+            self.preferred_resolution_x()?,
+            self.preferred_resolution_y()?,
+        ))
     }
 
-    fn preferred_resolution_x(&self) -> u32 {
-        let upper = (u32::from(self.0[58]) & 0xf0) << 4;
-        let lower: u32 = self.0[56].into();
+    fn preferred_resolution_x(&self) -> Option<u32> {
+        let info = self.info()?;
 
-        upper | lower
+        let upper = (u32::from(info[58]) & 0xf0) << 4;
+        let lower: u32 = info[56].into();
+
+        Some(upper | lower)
     }
 
-    fn preferred_resolution_y(&self) -> u32 {
-        let upper = (u32::from(self.0[61]) & 0xf0) << 4;
-        let lower: u32 = self.0[59].into();
+    fn preferred_resolution_y(&self) -> Option<u32> {
+        let info = self.info()?;
 
-        upper | lower
+        let upper = (u32::from(info[61]) & 0xf0) << 4;
+        let lower: u32 = info[59].into();
+
+        Some(upper | lower)
+    }
+
+    fn info(&self) -> Option<&[u8]> {
+        if self.ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { slice::from_raw_parts(self.ptr, self.size.try_into().unwrap()) })
+        }
     }
 }
 unsafe impl Protocol for Discovered {
