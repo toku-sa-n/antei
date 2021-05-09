@@ -13,11 +13,13 @@ static SYSTEM_TABLE_WRAPPER: Lazy<Spinlock<Option<SystemTable>>> =
     Lazy::new(|| Spinlock::new(None));
 
 #[repr(transparent)]
+#[derive(Debug)]
 pub struct Handle(uefi_wrapper::Handle);
 // SAFETY: UEFI applications have only one thread.
 unsafe impl Send for Handle {}
 
 #[repr(transparent)]
+#[derive(Debug)]
 pub struct SystemTable(uefi_wrapper::SystemTable);
 // SAFETY: UEFI applications have only one thread
 unsafe impl Send for SystemTable {}
