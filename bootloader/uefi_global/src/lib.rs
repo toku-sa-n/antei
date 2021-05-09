@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod edid;
 pub mod gop;
 pub mod io;
 
