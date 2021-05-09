@@ -1,7 +1,7 @@
+use crate::protocol::Protocol;
 use crate::result;
 use crate::result::Result;
 use crate::system_table::SystemTable;
-use core::ffi::c_void;
 use core::fmt;
 use core::mem::MaybeUninit;
 use core::ptr;
@@ -9,17 +9,26 @@ use r_efi::efi;
 
 pub struct Boot<'a>(&'a mut efi::BootServices, &'a mut SystemTable);
 impl<'a> Boot<'a> {
+    /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
+    /// because it may create multiple mutable references to the same object), this method
+    /// generates [`WithProtocol`].
+    ///
     /// # Errors
     ///
     /// This method may return an `Err` value if the protocol is not found.
-    pub fn locate_protocol_without_registration(
-        &mut self,
-        mut guid: efi::Guid,
-    ) -> Result<*mut c_void> {
+    pub fn locate_protocol_without_registration<P: Protocol>(self) -> Result<WithProtocol<'a, P>> {
         let mut protocol = MaybeUninit::uninit();
-        let s = (self.0.locate_protocol)(&mut guid, ptr::null_mut(), protocol.as_mut_ptr());
+        let mut g = P::GUID;
+        let s = (self.0.locate_protocol)(&mut g, ptr::null_mut(), protocol.as_mut_ptr());
 
-        result::from_value_and_status(unsafe { protocol.assume_init() }, s)
+        result::from_closure_and_status(
+            move || {
+                let protocol = unsafe { protocol.assume_init() } as *mut P;
+                let protocol = unsafe { &mut *protocol };
+                WithProtocol::new(protocol, self)
+            },
+            s,
+        )
     }
 }
 impl<'a> From<&'a mut SystemTable> for Boot<'a> {
@@ -39,5 +48,15 @@ impl<'a> From<&'a mut SystemTable> for Boot<'a> {
 impl fmt::Debug for Boot<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Boot").finish()
+    }
+}
+
+pub struct WithProtocol<'a, P: Protocol> {
+    pub protocol: &'a mut P,
+    pub bs: Boot<'a>,
+}
+impl<'a, P: Protocol> WithProtocol<'a, P> {
+    fn new(protocol: &'a mut P, bs: Boot<'a>) -> Self {
+        Self { protocol, bs }
     }
 }
