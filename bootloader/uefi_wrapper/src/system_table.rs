@@ -8,10 +8,8 @@ use r_efi::efi;
 pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
-    pub fn boot_services(&mut self) -> service::Boot<'_> {
-        // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
-        // argument is a valid pointer.
-        service::Boot::new(unsafe { &mut *(*self.0).boot_services })
+    pub fn boot_services<'a>(self) -> service::Boot<'a> {
+        service::Boot::from(self)
     }
 
     #[must_use]
@@ -19,6 +17,10 @@ impl SystemTable {
         // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
         // argument is a valid pointer.
         console::SimpleTextOutput(unsafe { &mut *(*self.0).con_out })
+    }
+
+    pub(crate) fn get_ptr(&self) -> *mut efi::SystemTable {
+        self.0
     }
 }
 impl fmt::Debug for SystemTable {
