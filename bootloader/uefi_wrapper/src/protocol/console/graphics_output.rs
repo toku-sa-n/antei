@@ -16,9 +16,8 @@ impl GraphicsOutput {
         let mut size = MaybeUninit::uninit();
         let mut info = MaybeUninit::uninit();
 
-        let s = unsafe {
-            ((*self.0).query_mode)(self.0, mode_number, size.as_mut_ptr(), info.as_mut_ptr())
-        };
+        let s =
+            (self.get_mut().query_mode)(self.0, mode_number, size.as_mut_ptr(), info.as_mut_ptr());
 
         let size = unsafe { size.assume_init() };
         let info = unsafe { info.assume_init() };
@@ -33,9 +32,14 @@ impl GraphicsOutput {
     }
 
     pub fn set_mode(&mut self, mode_number: u32) -> Result<()> {
-        let s = unsafe { ((*self.0).set_mode)(self.0, mode_number) };
+        let s = (self.get_mut().set_mode)(self.0, mode_number);
 
         result::from_value_and_status((), s)
+    }
+
+    fn get_mut(&mut self) -> &mut graphics_output::Protocol {
+        // SAFETY: This type is created only through `Boot::locate_protocol_without_regstration`.
+        unsafe { &mut *self.0 }
     }
 }
 impl fmt::Debug for GraphicsOutput {
