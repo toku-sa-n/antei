@@ -6,7 +6,8 @@ use core::mem;
 use core::mem::MaybeUninit;
 use r_efi::efi;
 use r_efi::efi::protocols::graphics_output;
-use r_efi::efi::protocols::graphics_output::ModeInformation;
+
+pub use r_efi::protocols::graphics_output::ModeInformation;
 
 #[repr(transparent)]
 pub struct GraphicsOutput(*mut graphics_output::Protocol);
