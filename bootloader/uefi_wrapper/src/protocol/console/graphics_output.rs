@@ -10,6 +10,7 @@ use r_efi::efi::protocols::graphics_output;
 pub use r_efi::protocols::graphics_output::ModeInformation;
 
 #[repr(transparent)]
+#[allow(missing_copy_implementations)]
 pub struct GraphicsOutput(*mut graphics_output::Protocol);
 impl GraphicsOutput {
     pub fn set_mode(&mut self, mode_number: u32) -> Result<()> {
