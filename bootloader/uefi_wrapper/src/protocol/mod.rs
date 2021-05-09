@@ -2,6 +2,7 @@ use core::fmt;
 use r_efi::efi;
 
 pub mod console;
+pub mod edid;
 
 /// # Safety
 ///
