@@ -25,7 +25,7 @@ impl Discovered {
 }
 unsafe impl Protocol for Discovered {
     const GUID: Guid = Guid::from_fields(
-        0x1c0c34f6,
+        0x1c0c_34f6,
         0xd380,
         0x41fa,
         0xa0,
