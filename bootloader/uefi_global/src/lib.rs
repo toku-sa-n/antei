@@ -42,6 +42,10 @@ pub(crate) fn system_table<'a>() -> MappedMutexGuard<'a, RawSpinlock, uefi_wrapp
     })
 }
 
+pub(crate) fn boot_services<'a>() -> uefi_wrapper::service::Boot<'a> {
+    system_table().boot_services()
+}
+
 fn init_handle(h: Handle) {
     let gh = HANDLE_WRAPPER.try_lock();
     let mut gh = gh.expect("Failed to lock the global EFI Handler.");
