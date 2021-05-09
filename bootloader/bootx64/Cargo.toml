@@ -12,5 +12,4 @@ name = "bootx64"
 log = "0.4.14"
 rlibc = "1.0.0"
 uefi_global = { path = "../uefi_global" }
-uefi_wrapper = { path = "../uefi_wrapper" }
 x86_64 = { version = "0.13.5", features = ["instructions", "external_asm"], default-features = false }
