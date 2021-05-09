@@ -2,7 +2,7 @@ use crate::protocol::Protocol;
 use r_efi::efi::Guid;
 
 #[repr(transparent)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Discovered([u8; 128]);
 impl Discovered {
     #[must_use]
