@@ -6,18 +6,18 @@ use r_efi::efi::Guid;
 pub struct Discovered([u8; 128]);
 impl Discovered {
     #[must_use]
-    pub fn resolution(&self) -> (u32, u32) {
-        (self.resolution_x(), self.resolution_y())
+    pub fn preferred_resolution(&self) -> (u32, u32) {
+        (self.preferred_resolution_x(), self.preferred_resolution_y())
     }
 
-    fn resolution_x(&self) -> u32 {
+    fn preferred_resolution_x(&self) -> u32 {
         let upper = (u32::from(self.0[58]) & 0xf0) << 4;
         let lower: u32 = self.0[56].into();
 
         upper | lower
     }
 
-    fn resolution_y(&self) -> u32 {
+    fn preferred_resolution_y(&self) -> u32 {
         let upper = (u32::from(self.0[61]) & 0xf0) << 4;
         let lower: u32 = self.0[59].into();
 
