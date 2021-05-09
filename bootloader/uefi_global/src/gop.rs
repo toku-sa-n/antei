@@ -9,3 +9,11 @@ pub fn query_mode(mode_number: u32) -> Result<ModeInformation> {
 
     gop.protocol.query_mode(mode_number)
 }
+
+pub fn set_mode(mode_number: u32) -> Result<()> {
+    let mut st = crate::system_table();
+    let bs = st.boot_services();
+    let gop = bs.locate_protocol_without_registration::<GraphicsOutput>()?;
+
+    gop.protocol.set_mode(mode_number)
+}
