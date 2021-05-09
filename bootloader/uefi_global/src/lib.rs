@@ -1,7 +1,6 @@
 #![no_std]
 
 pub mod io;
-pub mod service;
 
 use conquer_once::spin::Lazy;
 use spinning_top::lock_api::MappedMutexGuard;
