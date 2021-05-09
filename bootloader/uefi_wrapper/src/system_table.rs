@@ -8,8 +8,8 @@ use r_efi::efi;
 pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
-    pub fn boot_services<'a>(self) -> service::Boot<'a> {
-        service::Boot::from(self)
+    pub fn boot_services(&mut self) -> service::Boot<'_> {
+        self.into()
     }
 
     #[must_use]
