@@ -23,6 +23,14 @@ impl GraphicsOutput {
         result::from_value_and_status((), s)
     }
 
+    /// # Errors
+    ///
+    /// This method may return an `Err` value in some situations, for example `mode_number` is not
+    /// supported.
+    ///
+    /// # Panics
+    ///
+    /// This method panics if the size of returned information is not usual one.
     pub fn query_mode(&mut self, mode_number: u32) -> Result<ModeInformation> {
         let mut size = MaybeUninit::uninit();
         let mut info = MaybeUninit::uninit();
