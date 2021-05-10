@@ -1,6 +1,7 @@
 use uefi_wrapper::protocol::console::graphics_output::GraphicsOutput;
-use uefi_wrapper::protocol::console::graphics_output::ModeInformation;
 use uefi_wrapper::result::Result;
+
+pub use uefi_wrapper::protocol::console::graphics_output::ModeInformation;
 
 /// # Errors
 ///
