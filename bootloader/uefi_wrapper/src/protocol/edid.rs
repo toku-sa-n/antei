@@ -5,6 +5,7 @@ use r_efi::efi::Guid;
 
 #[repr(C)]
 #[derive(Debug)]
+#[allow(missing_copy_implementations)]
 pub struct Discovered {
     size: u32,
     ptr: *const u8,
