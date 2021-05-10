@@ -5,23 +5,23 @@ use uefi_wrapper::result::Result;
 /// # Errors
 ///
 /// This function may return an `Err` value in some situations, for example GOP is not supported.
-pub fn query_mode(mode_number: u32) -> Result<ModeInformation> {
+pub fn query_mode(mode_number: ModeNumber) -> Result<ModeInformation> {
     let mut st = crate::system_table();
     let bs = st.boot_services();
     let gop = bs.locate_protocol_without_registration::<GraphicsOutput>()?;
 
-    gop.protocol.query_mode(mode_number)
+    gop.protocol.query_mode(mode_number.into())
 }
 
 /// # Errors
 ///
 /// This function may return an `Err` value in some situations, for example GOP is not supported.
-pub fn set_mode(mode_number: u32) -> Result<()> {
+pub fn set_mode(mode_number: ModeNumber) -> Result<()> {
     let mut st = crate::system_table();
     let bs = st.boot_services();
     let gop = bs.locate_protocol_without_registration::<GraphicsOutput>()?;
 
-    gop.protocol.set_mode(mode_number)
+    gop.protocol.set_mode(mode_number.into())
 }
 
 /// # Errors
@@ -33,4 +33,21 @@ pub fn max_mode() -> Result<u32> {
     let gop = bs.locate_protocol_without_registration::<GraphicsOutput>()?;
 
     Ok(gop.protocol.max_mode())
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct ModeNumber(u32);
+impl ModeNumber {
+    pub fn new(n: u32) -> Option<Self> {
+        if n < max_mode().ok()? {
+            Some(Self(n))
+        } else {
+            None
+        }
+    }
+}
+impl From<ModeNumber> for u32 {
+    fn from(m: ModeNumber) -> Self {
+        m.0
+    }
 }
