@@ -50,6 +50,14 @@ impl GraphicsOutput {
         result::from_closure_and_status(|| unsafe { *info }, s)
     }
 
+    pub fn max_mode(&self) -> u32 {
+        unsafe { (*self.get().mode).max_mode }
+    }
+
+    fn get(&self) -> &graphics_output::Protocol {
+        unsafe { &*self.0 }
+    }
+
     fn get_mut(&mut self) -> &mut graphics_output::Protocol {
         // SAFETY: This type is created only through `Boot::locate_protocol_without_regstration`.
         unsafe { &mut *self.0 }

@@ -23,3 +23,14 @@ pub fn set_mode(mode_number: u32) -> Result<()> {
 
     gop.protocol.set_mode(mode_number)
 }
+
+/// # Errors
+///
+/// This function may return an `Err` value in some situations, for example GOP is not supported.
+pub fn max_mode() -> Result<u32> {
+    let mut st = crate::system_table();
+    let bs = st.boot_services();
+    let gop = bs.locate_protocol_without_registration::<GraphicsOutput>()?;
+
+    Ok(gop.protocol.max_mode())
+}
