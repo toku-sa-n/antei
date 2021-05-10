@@ -1,5 +1,6 @@
 tags
 build
+**/*.temp
 **/*.swp
 **/*.lock
 **/*.fd
