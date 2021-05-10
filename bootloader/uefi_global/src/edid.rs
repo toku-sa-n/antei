@@ -1,4 +1,4 @@
-use uefi_wrapper::protocol::edid;
+use uefi_wrapper::protocol::console::edid;
 use uefi_wrapper::result::Result;
 
 pub fn preferred_resolution() -> Result<Option<(u32, u32)>> {
