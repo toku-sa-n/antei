@@ -15,7 +15,7 @@ pub struct GraphicsOutput(*mut graphics_output::Protocol);
 impl GraphicsOutput {
     /// # Errors
     ///
-    /// This method may return an `Err` value in some situations, for exampel `mode_number` is not
+    /// This method may return an `Err` value in some situations, for example `mode_number` is not
     /// supported.
     pub fn set_mode(&mut self, mode_number: u32) -> Result<()> {
         let s = (self.get_mut().set_mode)(self.0, mode_number);
@@ -30,7 +30,7 @@ impl GraphicsOutput {
     ///
     /// # Panics
     ///
-    /// This method panics if the size of returned information is not usual one.
+    /// This method panics if the size of returned information is not the usual one.
     pub fn query_mode(&mut self, mode_number: u32) -> Result<ModeInformation> {
         let mut size = MaybeUninit::uninit();
         let mut info = MaybeUninit::uninit();
