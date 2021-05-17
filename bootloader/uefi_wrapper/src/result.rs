@@ -6,11 +6,11 @@ use r_efi::efi;
 
 pub type Result<T> = core::result::Result<T, core::result::Result<NotSuccess, usize>>;
 
-pub(crate) fn from_value_and_status<T>(value: T, status: efi::Status) -> Result<T> {
-    from_closure_and_status(|| value, status)
+pub(crate) fn from_value_and_status<T>(status: efi::Status, value: T) -> Result<T> {
+    from_closure_and_status(status, || value)
 }
 
-pub(crate) fn from_closure_and_status<T>(f: impl FnOnce() -> T, status: efi::Status) -> Result<T> {
+pub(crate) fn from_closure_and_status<T>(status: efi::Status, f: impl FnOnce() -> T) -> Result<T> {
     if status == efi::Status::SUCCESS {
         Ok(f())
     } else {

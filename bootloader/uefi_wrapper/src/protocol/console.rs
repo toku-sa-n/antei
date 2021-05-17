@@ -11,7 +11,7 @@ impl SimpleTextOutput<'_> {
     /// This method may return an error if the output device is not functioning.
     pub fn reset_without_extension(&mut self) -> Result<()> {
         let s = (self.0.reset)(self.0, false.into());
-        result::from_value_and_status((), s)
+        result::from_value_and_status(s, ())
     }
 
     /// # Errors
@@ -19,7 +19,7 @@ impl SimpleTextOutput<'_> {
     /// This method may return an error if the output device is not functioning.
     pub fn output_string(&mut self, buf: &mut [u16]) -> Result<()> {
         let s = (self.0.output_string)(self.0, buf.as_mut_ptr());
-        result::from_value_and_status((), s)
+        result::from_value_and_status(s, ())
     }
 }
 impl<'a> From<&'a mut SystemTable> for SimpleTextOutput<'a> {
