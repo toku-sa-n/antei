@@ -3,6 +3,8 @@
 pub mod io;
 
 use conquer_once::spin::Lazy;
+use core::panic::PanicInfo;
+use log::error;
 use spinning_top::lock_api::MappedMutexGuard;
 use spinning_top::RawSpinlock;
 use spinning_top::Spinlock;
@@ -63,4 +65,13 @@ fn init_system_table(st: SystemTable) {
     );
 
     *gst = Some(st);
+}
+
+#[panic_handler]
+fn panic(i: &PanicInfo<'_>) -> ! {
+    error!("{}", i);
+
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
