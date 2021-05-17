@@ -7,11 +7,10 @@ extern crate rlibc as _;
 use core::panic::PanicInfo;
 use log::error;
 use log::info;
-use uefi_global as uefi;
 
 #[no_mangle]
-pub extern "win64" fn efi_main(h: uefi::Handle, st: uefi::SystemTable) -> ! {
-    uefi_global::init(h, st);
+pub extern "win64" fn efi_main(h: bootx64::Handle, st: bootx64::SystemTable) -> ! {
+    bootx64::init(h, st);
 
     loop {
         info!("hello world");
