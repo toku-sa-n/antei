@@ -5,6 +5,7 @@
 extern crate rlibc as _;
 
 use core::panic::PanicInfo;
+use log::error;
 use log::info;
 use uefi_global as uefi;
 
@@ -18,7 +19,9 @@ pub extern "win64" fn efi_main(h: uefi::Handle, st: uefi::SystemTable) -> ! {
 }
 
 #[panic_handler]
-fn panic(_: &PanicInfo<'_>) -> ! {
+fn panic(i: &PanicInfo<'_>) -> ! {
+    error!("{}", i);
+
     loop {
         x86_64::instructions::hlt();
     }
