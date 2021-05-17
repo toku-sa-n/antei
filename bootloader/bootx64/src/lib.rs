@@ -1,5 +1,6 @@
 #![no_std]
 
+pub mod gop;
 pub mod io;
 
 use conquer_once::spin::Lazy;
