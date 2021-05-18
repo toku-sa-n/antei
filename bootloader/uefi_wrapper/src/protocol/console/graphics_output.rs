@@ -21,6 +21,12 @@ impl GraphicsOutput {
             unsafe { *info }
         })
     }
+
+    pub fn set_mode(&mut self, mode: u32) -> crate::Result<()> {
+        let r = (self.0.set_mode)(&mut self.0, mode);
+
+        result::from_value_and_status(r, ())
+    }
 }
 unsafe impl crate::Protocol for GraphicsOutput {
     const GUID: efi::Guid = graphics_output::PROTOCOL_GUID;
