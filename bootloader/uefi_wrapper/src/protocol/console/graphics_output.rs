@@ -3,6 +3,7 @@ use core::fmt;
 use core::mem;
 use r_efi::efi::protocols::graphics_output;
 
+#[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);
 impl GraphicsOutput {
     pub fn query_mode(&mut self, mode: u32) -> crate::Result<graphics_output::ModeInformation> {
