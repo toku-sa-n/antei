@@ -11,7 +11,7 @@ use log::info;
 pub extern "win64" fn efi_main(h: bootx64::Handle, st: bootx64::SystemTable) -> ! {
     bootx64::init(h, st);
 
-    info!("Preferred resolution: {:?}", gop::preferred_resolution());
+    info!("GOP info: {:X?}", gop::set_preferred_resolution());
 
     loop {
         x86_64::instructions::hlt();
