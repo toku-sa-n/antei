@@ -4,6 +4,8 @@ use core::mem;
 use r_efi::efi;
 use r_efi::efi::protocols::graphics_output;
 
+pub use r_efi::efi::protocols::graphics_output::ModeInformation;
+
 #[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);
 impl GraphicsOutput {
