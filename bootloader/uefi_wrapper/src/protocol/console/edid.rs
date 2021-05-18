@@ -2,7 +2,7 @@ use core::{convert::TryInto, slice};
 use r_efi::efi;
 
 #[repr(C)]
-#[derive(Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Discovered {
     size: u32,
     ptr: *const u8,
