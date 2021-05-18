@@ -1,6 +1,7 @@
 use crate::result;
 use core::fmt;
 use core::mem;
+use r_efi::efi;
 use r_efi::efi::protocols::graphics_output;
 
 #[repr(transparent)]
@@ -18,6 +19,9 @@ impl GraphicsOutput {
             unsafe { *info }
         })
     }
+}
+unsafe impl crate::Protocol for GraphicsOutput {
+    const GUID: efi::Guid = graphics_output::PROTOCOL_GUID;
 }
 impl fmt::Debug for GraphicsOutput {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
