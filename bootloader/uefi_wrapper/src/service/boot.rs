@@ -21,3 +21,13 @@ impl fmt::Debug for Boot<'_> {
         f.debug_struct("Boot").finish()
     }
 }
+
+pub struct WithProtocol<'a, P: crate::Protocol> {
+    pub protocol: &'a mut P,
+    pub bs: Boot<'a>,
+}
+impl<'a, P: crate::Protocol> WithProtocol<'a, P> {
+    fn new(protocol: &'a mut P, bs: Boot<'a>) -> Self {
+        Self { protocol, bs }
+    }
+}
