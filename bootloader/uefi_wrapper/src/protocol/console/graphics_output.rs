@@ -9,7 +9,7 @@ pub use r_efi::efi::protocols::graphics_output::ModeInformation;
 #[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);
 impl GraphicsOutput {
-    pub fn query_mode(&mut self, mode: u32) -> crate::Result<graphics_output::ModeInformation> {
+    pub fn query_mode(&mut self, mode: u32) -> crate::Result<ModeInformation> {
         let mut size = mem::MaybeUninit::uninit();
         let mut info = mem::MaybeUninit::uninit();
 
