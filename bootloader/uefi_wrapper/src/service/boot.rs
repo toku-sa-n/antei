@@ -43,6 +43,11 @@ impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
         Self(bs, s)
     }
 }
+impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {
+    fn from(w: WithProtocol<'a, P>) -> Self {
+        w.bs
+    }
+}
 impl fmt::Debug for Boot<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Boot").finish()
