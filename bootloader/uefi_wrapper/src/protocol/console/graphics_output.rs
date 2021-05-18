@@ -9,6 +9,9 @@ pub use r_efi::efi::protocols::graphics_output::ModeInformation;
 #[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);
 impl GraphicsOutput {
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn query_mode(&mut self, mode: u32) -> crate::Result<ModeInformation> {
         let mut size = mem::MaybeUninit::uninit();
         let mut info = mem::MaybeUninit::uninit();
@@ -22,12 +25,16 @@ impl GraphicsOutput {
         })
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn set_mode(&mut self, mode: u32) -> crate::Result<()> {
         let r = (self.0.set_mode)(&mut self.0, mode);
 
         result::from_value_and_status(r, ())
     }
 
+    #[must_use]
     pub fn max_mode(&self) -> u32 {
         // SAFETY: `locate_protocol` creates only one instance of `GraphicsOutput`. No other
         // pointers point to the `Mode` struct.

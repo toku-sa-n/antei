@@ -9,6 +9,10 @@ impl<'a> Boot<'a> {
     /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
     /// as it may create multiple mutable references to the same object), this method generates
     /// [`WithProtocol`].
+    ///
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn locate_protocol_without_registration<P: crate::Protocol>(
         self,
     ) -> crate::Result<WithProtocol<'a, P>> {
@@ -54,6 +58,7 @@ impl fmt::Debug for Boot<'_> {
     }
 }
 
+#[derive(Debug)]
 pub struct WithProtocol<'a, P: crate::Protocol> {
     pub protocol: &'a mut P,
     pub bs: Boot<'a>,
