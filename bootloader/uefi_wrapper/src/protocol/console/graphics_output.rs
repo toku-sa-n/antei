@@ -27,6 +27,12 @@ impl GraphicsOutput {
 
         result::from_value_and_status(r, ())
     }
+
+    pub fn max_mode(&self) -> u32 {
+        // SAFETY: `locate_protocol` creates only one instance of `GraphicsOutput`. No other
+        // pointers point to the `Mode` struct.
+        unsafe { (*self.0.mode).max_mode }
+    }
 }
 unsafe impl crate::Protocol for GraphicsOutput {
     const GUID: efi::Guid = graphics_output::PROTOCOL_GUID;
