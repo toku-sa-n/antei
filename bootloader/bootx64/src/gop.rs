@@ -2,6 +2,9 @@ use uefi_wrapper::protocol::console;
 use uefi_wrapper::protocol::console::edid;
 use uefi_wrapper::protocol::console::graphics_output;
 
+/// # Panics
+///
+/// This method panics if there is no proper GOP mode.
 #[must_use]
 pub fn set_preferred_resolution() -> graphics_output::ModeInformation {
     let resolution = resolution_to_use();
@@ -27,7 +30,7 @@ pub fn set_preferred_resolution() -> graphics_output::ModeInformation {
         }
     }
 
-    panic!()
+    panic!("No proper GOP mode found.");
 }
 
 fn resolution_to_use() -> (u32, u32) {
