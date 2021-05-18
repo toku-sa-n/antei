@@ -2,6 +2,7 @@ use uefi_wrapper::protocol::console;
 use uefi_wrapper::protocol::console::edid;
 use uefi_wrapper::protocol::console::graphics_output;
 
+#[must_use]
 pub fn set_preferred_resolution() -> graphics_output::ModeInformation {
     let resolution = resolution_to_use();
 
