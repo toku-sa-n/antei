@@ -8,6 +8,7 @@ pub struct Discovered {
     ptr: *const u8,
 }
 impl Discovered {
+    #[must_use]
     pub fn preferred_resolution(&self) -> Option<(u32, u32)> {
         Some((self.preferred_width()?, self.preferred_height()?))
     }
