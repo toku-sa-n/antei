@@ -8,11 +8,8 @@ pub struct Discovered {
     ptr: *const u8,
 }
 impl Discovered {
-    pub fn preferred_resolution(&self) -> Option<vek::Vec2<u32>> {
-        Some(vek::Vec2 {
-            x: self.preferred_width()?,
-            y: self.preferred_height()?,
-        })
+    pub fn preferred_resolution(&self) -> Option<(u32, u32)> {
+        Some((self.preferred_width()?, self.preferred_height()?))
     }
 
     fn preferred_width(&self) -> Option<u32> {
