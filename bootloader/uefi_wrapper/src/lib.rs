@@ -7,5 +7,6 @@ pub mod service;
 pub mod system_table;
 
 pub use handle::Handle;
+pub use protocol::Protocol;
 pub use result::Result;
 pub use system_table::SystemTable;
