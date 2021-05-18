@@ -12,3 +12,4 @@ num-traits = { version = "0.2.14", default-features = false }
 r-efi = "3.2.0"
 spinning_top = "0.2.3"
 ucs2 = "0.3.2"
+vek = "0.15.1"

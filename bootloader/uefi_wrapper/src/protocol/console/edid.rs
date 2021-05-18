@@ -1,10 +1,46 @@
+use core::{convert::TryInto, slice};
 use r_efi::efi;
 
 #[repr(C)]
 #[derive(Debug)]
 pub struct Discovered {
     size: u32,
-    info: *const u8,
+    ptr: *const u8,
+}
+impl Discovered {
+    pub fn preferred_resolution(&self) -> Option<vek::Vec2<u32>> {
+        Some(vek::Vec2 {
+            x: self.preferred_width()?,
+            y: self.preferred_height()?,
+        })
+    }
+
+    fn preferred_width(&self) -> Option<u32> {
+        let info = self.info()?;
+
+        let upper = (u32::from(info[58]) & 0xf0) << 4;
+        let lower: u32 = info[56].into();
+
+        Some(upper | lower)
+    }
+
+    fn preferred_height(&self) -> Option<u32> {
+        let info = self.info()?;
+
+        let upper = (u32::from(info[61]) & 0xf0) << 4;
+        let lower: u32 = info[59].into();
+
+        Some(upper | lower)
+    }
+
+    fn info(&self) -> Option<&[u8]> {
+        if self.ptr.is_null() {
+            None
+        } else {
+            let sz: usize = self.size.try_into().unwrap();
+            unsafe { Some(slice::from_raw_parts(self.ptr, sz)) }
+        }
+    }
 }
 unsafe impl crate::Protocol for Discovered {
     const GUID: efi::Guid = efi::Guid::from_fields(
