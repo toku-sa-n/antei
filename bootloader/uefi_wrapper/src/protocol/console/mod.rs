@@ -1,3 +1,4 @@
+pub mod edid;
 pub mod graphics_output;
 pub mod simple_text_output;
 
