@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+extern crate kernel as _;
+
 #[no_mangle]
 fn main() {
     unsafe {
