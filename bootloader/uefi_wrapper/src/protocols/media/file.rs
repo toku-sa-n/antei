@@ -28,12 +28,14 @@ impl<'a> File<'a> {
         let mut name = name_to_u16_array(name);
         let mut new_handler = mem::MaybeUninit::uninit();
 
+        const ATTRIBUTES_ARE_IGNORED: u64 = 0;
+
         let r = (self.protocol.open)(
             self.protocol,
             new_handler.as_mut_ptr(),
             name.as_mut_ptr(),
             file::READ_ONLY,
-            0,
+            ATTRIBUTES_ARE_IGNORED,
         );
 
         result::from_status_and_closure(r, move || {
