@@ -6,8 +6,7 @@ pub mod io;
 use conquer_once::spin::Lazy;
 use core::panic::PanicInfo;
 use log::error;
-use spinning_top::lock_api::MappedMutexGuard;
-use spinning_top::RawSpinlock;
+use spinning_top::MappedSpinlockGuard;
 use spinning_top::Spinlock;
 use spinning_top::SpinlockGuard;
 
@@ -33,7 +32,7 @@ pub fn init(h: Handle, st: SystemTable) {
     io::init();
 }
 
-pub(crate) fn system_table<'a>() -> MappedMutexGuard<'a, RawSpinlock, uefi_wrapper::SystemTable> {
+pub(crate) fn system_table<'a>() -> MappedSpinlockGuard<'a, uefi_wrapper::SystemTable> {
     let st = SYSTEM_TABLE_WRAPPER.try_lock();
     let st = st.expect("Failed to lock the global System Table.");
 
