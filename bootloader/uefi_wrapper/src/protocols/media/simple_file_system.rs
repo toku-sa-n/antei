@@ -13,7 +13,7 @@ impl SimpleFileSystem {
 
         let r = (self.0.open_volume)(&mut self.0, root.as_mut_ptr());
 
-        result::from_closure_and_status(r, move || {
+        result::from_status_and_closure(r, move || {
             // SAFETY: `open_volume` initializes `root`.
             let root = unsafe { root.assume_init() };
 
