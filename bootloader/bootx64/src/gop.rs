@@ -1,6 +1,6 @@
-use uefi_wrapper::protocol::console;
-use uefi_wrapper::protocol::console::edid;
-use uefi_wrapper::protocol::console::graphics_output;
+use uefi_wrapper::protocols::console;
+use uefi_wrapper::protocols::console::edid;
+use uefi_wrapper::protocols::console::graphics_output;
 
 /// # Panics
 ///
