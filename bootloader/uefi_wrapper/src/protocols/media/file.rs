@@ -1,4 +1,8 @@
 use r_efi::efi::protocols::file;
 
-#[repr(transparent)]
-pub struct File(file::Protocol);
+pub struct File<'a>(&'a mut file::Protocol);
+impl<'a> From<&'a mut file::Protocol> for File<'a> {
+    fn from(f: &'a mut file::Protocol) -> Self {
+        Self(f)
+    }
+}

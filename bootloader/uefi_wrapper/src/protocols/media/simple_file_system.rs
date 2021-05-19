@@ -1,8 +1,28 @@
+use super::file::File;
+use crate::result;
+use core::mem;
 use r_efi::efi;
 use r_efi::efi::protocols::simple_file_system;
 
 #[repr(transparent)]
 pub struct SimpleFileSystem(simple_file_system::Protocol);
+impl SimpleFileSystem {
+    pub fn open_volume<'a>(mut self) -> crate::Result<File<'a>> {
+        let mut root = mem::MaybeUninit::uninit();
+
+        let r = (self.0.open_volume)(&mut self.0, root.as_mut_ptr());
+
+        result::from_closure_and_status(r, || {
+            // SAFETY: `open_volume` initializes `root`.
+            let root = unsafe { root.assume_init() };
+
+            // SAFETY: There is only one instance of `SimpleFileSystem`, which is created by
+            // `locate_protocol`. Therefore there is the only one mutable reference to the file
+            // handler.
+            File::from(unsafe { &mut *root })
+        })
+    }
+}
 unsafe impl crate::Protocol for SimpleFileSystem {
     const GUID: efi::Guid = simple_file_system::PROTOCOL_GUID;
 }
