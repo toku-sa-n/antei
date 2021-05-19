@@ -8,7 +8,7 @@ use r_efi::efi::Status;
 const FAT_MAX_NAME: usize = 255;
 
 pub struct File<'a> {
-    protocol: &'a mut file::Protocol,
+    handler: &'a mut file::Protocol,
     fs: &'a mut SimpleFileSystem,
 }
 impl<'a> File<'a> {
@@ -20,8 +20,8 @@ impl<'a> File<'a> {
         }
     }
 
-    pub(crate) fn new(protocol: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
-        Self { protocol, fs }
+    pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
+        Self { handler, fs }
     }
 
     fn open_read_only_unchecked(&'a mut self, name: &'static str) -> crate::Result<File<'a>> {
@@ -30,8 +30,8 @@ impl<'a> File<'a> {
 
         const ATTRIBUTES_ARE_IGNORED: u64 = 0;
 
-        let r = (self.protocol.open)(
-            self.protocol,
+        let r = (self.handler.open)(
+            self.handler,
             new_handler.as_mut_ptr(),
             name.as_mut_ptr(),
             file::READ_ONLY,
@@ -47,7 +47,7 @@ impl<'a> File<'a> {
             let new_handler = unsafe { &mut *new_handler };
 
             Self {
-                protocol: new_handler,
+                handler: new_handler,
                 fs: self.fs,
             }
         })
