@@ -13,14 +13,14 @@ impl SimpleFileSystem {
 
         let r = (self.0.open_volume)(&mut self.0, root.as_mut_ptr());
 
-        result::from_closure_and_status(r, || {
+        result::from_closure_and_status(r, move || {
             // SAFETY: `open_volume` initializes `root`.
             let root = unsafe { root.assume_init() };
 
             // SAFETY: There is only one instance of `SimpleFileSystem`, which is created by
             // `locate_protocol`. Therefore there is the only one mutable reference to the file
             // handler.
-            File::from(unsafe { &mut *root })
+            File::new(unsafe { &mut *root }, self)
         })
     }
 }
