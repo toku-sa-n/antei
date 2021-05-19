@@ -1,5 +1,6 @@
 use super::file::File;
 use crate::result;
+use core::fmt;
 use core::mem;
 use r_efi::efi;
 use r_efi::efi::protocols::simple_file_system;
@@ -25,4 +26,9 @@ impl SimpleFileSystem {
 }
 unsafe impl crate::Protocol for SimpleFileSystem {
     const GUID: efi::Guid = simple_file_system::PROTOCOL_GUID;
+}
+impl fmt::Debug for SimpleFileSystem {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("SimpleFileSystem").finish()
+    }
 }
