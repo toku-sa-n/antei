@@ -1,0 +1,9 @@
+[build]
+rustflags = [
+    "-C", "code-model=kernel",
+    "-C", "link-args=-T kernel/kernel.ld",
+    "-C", "relocation-model=static",
+    "-C", "no-redzone=y",
+    "-C", "default-linker-libraries=n",
+    "-C", "soft-float=y",
+]
