@@ -68,8 +68,23 @@ fn init_system_table(st: SystemTable) {
     *gst = Some(st);
 }
 
+/// # Safety
+///
+/// The guard must be discarded using `core::mem::forget`.
+unsafe fn unlock_system_table() {
+    if SYSTEM_TABLE_WRAPPER.is_locked() {
+        // The number of the existing threads is one, so the current thread logically owns a
+        // `MutexGuard` of `SYSTEM_TABLE_WRAPPER`. Also, it is locked.
+        SYSTEM_TABLE_WRAPPER.force_unlock();
+    }
+}
+
 #[panic_handler]
 fn panic(i: &PanicInfo<'_>) -> ! {
+    // SAFETY: The existing lock is forgotten. There is no way to access the lock from the panic
+    // handler.
+    unsafe { unlock_system_table() }
+
     error!("{}", i);
 
     loop {
