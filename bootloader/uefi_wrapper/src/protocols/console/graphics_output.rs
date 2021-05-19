@@ -18,7 +18,7 @@ impl GraphicsOutput {
 
         let r = (self.0.query_mode)(&mut self.0, mode, size.as_mut_ptr(), info.as_mut_ptr());
 
-        result::from_closure_and_status(r, || {
+        result::from_status_and_closure(r, || {
             let info = unsafe { info.assume_init() };
 
             unsafe { *info }
@@ -31,7 +31,7 @@ impl GraphicsOutput {
     pub fn set_mode(&mut self, mode: u32) -> crate::Result<()> {
         let r = (self.0.set_mode)(&mut self.0, mode);
 
-        result::from_value_and_status(r, ())
+        result::from_status_and_value(r, ())
     }
 
     #[must_use]

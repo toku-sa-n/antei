@@ -20,7 +20,7 @@ impl<'a> Boot<'a> {
         let mut g = P::GUID;
         let r = (self.0.locate_protocol)(&mut g, ptr::null_mut(), protocol.as_mut_ptr());
 
-        result::from_closure_and_status(r, || {
+        result::from_status_and_closure(r, || {
             // SAFETY: `locate_protocol` initializes `protocol`.
             let protocol = unsafe { protocol.assume_init() }.cast::<P>();
 
