@@ -1,4 +1,4 @@
-use crate::protocol::console;
+use crate::protocols::console;
 use crate::service;
 use core::fmt;
 use r_efi::efi;
