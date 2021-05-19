@@ -7,7 +7,7 @@ use r_efi::efi::protocols::simple_file_system;
 #[repr(transparent)]
 pub struct SimpleFileSystem(simple_file_system::Protocol);
 impl SimpleFileSystem {
-    pub fn open_volume<'a>(mut self) -> crate::Result<File<'a>> {
+    pub fn open_volume(&mut self) -> crate::Result<File<'_>> {
         let mut root = mem::MaybeUninit::uninit();
 
         let r = (self.0.open_volume)(&mut self.0, root.as_mut_ptr());
