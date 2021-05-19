@@ -11,7 +11,7 @@ fn main() {
 }
 
 #[panic_handler]
-fn panic(_: &panic::PanicInfo) -> ! {
+fn panic(_: &panic::PanicInfo<'_>) -> ! {
     loop {}
 }
 
