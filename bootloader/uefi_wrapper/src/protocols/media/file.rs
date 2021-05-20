@@ -26,6 +26,16 @@ impl<'a> File<'a> {
         result::from_status_and_value(r, ())
     }
 
+    pub fn get_position(&mut self) -> crate::Result<u64> {
+        let mut position = mem::MaybeUninit::uninit();
+        let r = (self.handler.get_position)(self.handler, position.as_mut_ptr());
+
+        result::from_status_and_closure(r, || {
+            // SAFETY: `get_position` initializes `position`.
+            unsafe { position.assume_init() }
+        })
+    }
+
     pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
         Self { handler, fs }
     }
