@@ -32,6 +32,17 @@ impl<'a> Boot<'a> {
             WithProtocol::new(protocol, self)
         })
     }
+
+    pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
+        const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::ConventionalMemory;
+        let mut buf = mem::MaybeUninit::uninit();
+        let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
+
+        result::from_status_and_closure(r, || {
+            // SAFETY: `allocate_pool` initializes `buf`.
+            unsafe { buf.assume_init() }.cast()
+        })
+    }
 }
 impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
     fn from(s: &'a mut crate::SystemTable) -> Self {
