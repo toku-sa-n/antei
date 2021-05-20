@@ -1,4 +1,5 @@
 use crate::result;
+use core::ffi;
 use core::fmt;
 use core::mem;
 use core::ptr;
@@ -42,6 +43,11 @@ impl<'a> Boot<'a> {
             // SAFETY: `allocate_pool` initializes `buf`.
             unsafe { buf.assume_init() }.cast()
         })
+    }
+
+    pub fn free_pool(&mut self, buf: *mut ffi::c_void) -> crate::Result<()> {
+        let r = (self.0.free_pool)(buf);
+        result::from_status_and_value(r, ())
     }
 }
 impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
