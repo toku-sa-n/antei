@@ -34,6 +34,9 @@ impl<'a> Boot<'a> {
         })
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
         const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::ConventionalMemory;
         let mut buf = mem::MaybeUninit::uninit();
@@ -45,6 +48,9 @@ impl<'a> Boot<'a> {
         })
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn free_pool(&mut self, buf: *mut ffi::c_void) -> crate::Result<()> {
         let r = (self.0.free_pool)(buf);
         result::from_status_and_value(r, ())
