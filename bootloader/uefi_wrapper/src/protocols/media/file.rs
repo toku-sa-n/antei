@@ -20,6 +20,12 @@ impl<'a> File<'a> {
         }
     }
 
+    pub fn set_position(&mut self, position: u64) -> crate::Result<()> {
+        let r = (self.handler.set_position)(self.handler, position);
+
+        result::from_status_and_value(r, ())
+    }
+
     pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
         Self { handler, fs }
     }
