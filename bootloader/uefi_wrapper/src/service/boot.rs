@@ -1,4 +1,5 @@
 use crate::result;
+use core::ffi;
 use core::fmt;
 use core::mem;
 use core::ptr;
@@ -31,6 +32,28 @@ impl<'a> Boot<'a> {
             let protocol = unsafe { &mut *protocol };
             WithProtocol::new(protocol, self)
         })
+    }
+
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
+    pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
+        const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::ConventionalMemory;
+        let mut buf = mem::MaybeUninit::uninit();
+        let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
+
+        result::from_status_and_closure(r, || {
+            // SAFETY: `allocate_pool` initializes `buf`.
+            unsafe { buf.assume_init() }.cast()
+        })
+    }
+
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
+    pub fn free_pool(&mut self, buf: *mut ffi::c_void) -> crate::Result<()> {
+        let r = (self.0.free_pool)(buf);
+        result::from_status_and_value(r, ())
     }
 }
 impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
