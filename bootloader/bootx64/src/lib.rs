@@ -1,5 +1,6 @@
 #![no_std]
 
+mod alloc;
 pub mod fs;
 pub mod gop;
 pub mod io;
