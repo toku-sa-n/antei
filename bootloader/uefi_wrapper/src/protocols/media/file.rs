@@ -19,10 +19,6 @@ impl<'a> File<'a> {
         }
     }
 
-    pub fn close(self) {
-        (self.handler.close)(self.handler);
-    }
-
     pub fn set_position(&mut self, position: u64) -> crate::Result<()> {
         let r = (self.handler.set_position)(self.handler, position);
 
@@ -77,6 +73,11 @@ impl<'a> File<'a> {
                 fs: self.fs,
             }
         })
+    }
+}
+impl Drop for File<'_> {
+    fn drop(&mut self) {
+        (self.handler.close)(self.handler);
     }
 }
 
