@@ -1,5 +1,4 @@
 use crate::result;
-use core::ffi;
 use core::fmt;
 use core::mem;
 use core::ptr;
@@ -51,8 +50,8 @@ impl<'a> Boot<'a> {
     /// # Errors
     ///
     /// Refer to the UEFI specification.
-    pub fn free_pool(&mut self, buf: *mut ffi::c_void) -> crate::Result<()> {
-        let r = (self.0.free_pool)(buf);
+    pub fn free_pool(&mut self, buf: *mut u8) -> crate::Result<()> {
+        let r = (self.0.free_pool)(buf.cast());
         result::from_status_and_value(r, ())
     }
 }
