@@ -35,6 +35,13 @@ impl<'a> File<'a> {
         })
     }
 
+    pub fn read(&mut self, buf: &mut [u8]) -> crate::Result<()> {
+        let mut buf_len = buf.len();
+        let r = (self.handler.read)(self.handler, &mut buf_len, buf.as_mut_ptr().cast());
+
+        result::from_status_and_value(r, ())
+    }
+
     pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
         Self { handler, fs }
     }
