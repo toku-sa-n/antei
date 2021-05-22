@@ -1,6 +1,5 @@
 use super::simple_file_system::SimpleFileSystem;
 use crate::result;
-use core::convert::TryInto;
 use core::mem;
 use r_efi::efi::protocols::file;
 use r_efi::efi::Status;
@@ -14,7 +13,7 @@ pub struct File<'a> {
 impl<'a> File<'a> {
     pub fn open_read_only(&'a mut self, name: &'static str) -> crate::Result<File<'a>> {
         if name_too_long(name) {
-            Err(Status::INVALID_PARAMETER.try_into())
+            Err(Status::INVALID_PARAMETER.into())
         } else {
             self.open_read_only_unchecked(name)
         }
