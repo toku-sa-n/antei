@@ -4,6 +4,7 @@ pub mod handle;
 pub mod protocols;
 pub mod result;
 pub mod service;
+pub mod status;
 pub mod system_table;
 
 pub use handle::Handle;
