@@ -11,7 +11,7 @@ pub struct File<'a> {
     _fs: &'a mut SimpleFileSystem,
 }
 impl<'a> File<'a> {
-    pub fn open_read_only(&'a mut self, name: &str) -> crate::Result<()> {
+    pub fn open_read_only(&mut self, name: &str) -> crate::Result<()> {
         if name_too_long(name) {
             Err(Status::INVALID_PARAMETER.into())
         } else {
@@ -50,7 +50,7 @@ impl<'a> File<'a> {
         Self { handler, _fs: fs }
     }
 
-    fn open_read_only_unchecked(&'a mut self, name: &str) -> crate::Result<()> {
+    fn open_read_only_unchecked(&mut self, name: &str) -> crate::Result<()> {
         let mut name = name_to_u16_array(name);
         let mut new_handler = mem::MaybeUninit::uninit();
 
