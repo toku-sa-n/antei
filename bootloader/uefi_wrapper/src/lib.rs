@@ -8,6 +8,7 @@ pub mod service;
 pub mod status;
 pub mod system_table;
 
+pub use error::Error;
 pub use handle::Handle;
 pub use protocols::Protocol;
 pub use result::Result;
