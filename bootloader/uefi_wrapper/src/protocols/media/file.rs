@@ -35,11 +35,15 @@ impl<'a> File<'a> {
         })
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> crate::Result<()> {
+    pub fn read(&mut self, buf: &mut [u8]) -> crate::Result<(), Option<usize>> {
         let mut buf_len = buf.len();
         let r = (self.handler.read)(self.handler, &mut buf_len, buf.as_mut_ptr().cast());
 
-        result::from_status_and_value(r, ())
+        match r {
+            Status::SUCCESS => Ok(()),
+            Status::BUFFER_TOO_SMALL => Err(crate::Error::new(r.into(), Some(buf_len))),
+            _ => Err(crate::Error::new(r.into(), None)),
+        }
     }
 
     pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
