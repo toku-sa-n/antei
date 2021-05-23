@@ -8,10 +8,10 @@ const FAT_MAX_NAME: usize = 255;
 
 pub struct File<'a> {
     handler: &'a mut file::Protocol,
-    fs: &'a mut SimpleFileSystem,
+    _fs: &'a mut SimpleFileSystem,
 }
 impl<'a> File<'a> {
-    pub fn open_read_only(&'a mut self, name: &str) -> crate::Result<File<'a>> {
+    pub fn open_read_only(&'a mut self, name: &str) -> crate::Result<()> {
         if name_too_long(name) {
             Err(Status::INVALID_PARAMETER.into())
         } else {
@@ -47,10 +47,10 @@ impl<'a> File<'a> {
     }
 
     pub(crate) fn new(handler: &'a mut file::Protocol, fs: &'a mut SimpleFileSystem) -> Self {
-        Self { handler, fs }
+        Self { handler, _fs: fs }
     }
 
-    fn open_read_only_unchecked(&'a mut self, name: &str) -> crate::Result<File<'a>> {
+    fn open_read_only_unchecked(&'a mut self, name: &str) -> crate::Result<()> {
         let mut name = name_to_u16_array(name);
         let mut new_handler = mem::MaybeUninit::uninit();
 
@@ -72,10 +72,9 @@ impl<'a> File<'a> {
             // is no mutable references which point to `*new_handler`.
             let new_handler = unsafe { &mut *new_handler };
 
-            Self {
-                handler: new_handler,
-                fs: self.fs,
-            }
+            (self.handler.close)(self.handler);
+
+            self.handler = new_handler;
         })
     }
 }
