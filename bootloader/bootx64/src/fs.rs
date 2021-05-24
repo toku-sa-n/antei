@@ -2,6 +2,7 @@ use core::convert::TryInto;
 use core::slice;
 use uefi_wrapper::protocols::media;
 
+#[must_use]
 pub fn locate(path: &str) -> &[u8] {
     let mut st = crate::system_table();
     let bs = st.boot_services();
