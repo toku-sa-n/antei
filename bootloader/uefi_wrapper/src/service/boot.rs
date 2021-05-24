@@ -37,7 +37,7 @@ impl<'a> Boot<'a> {
     ///
     /// Refer to the UEFI specification.
     pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
-        const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::ConventionalMemory;
+        const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::LoaderData;
         let mut buf = mem::MaybeUninit::uninit();
         let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
 
