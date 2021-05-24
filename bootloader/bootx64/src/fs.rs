@@ -26,7 +26,7 @@ pub fn locate(path: &str) -> &[u8] {
 }
 
 #[allow(clippy::missing_panics_doc)]
-fn allocate<'a, 'b>(f: &'a mut media::File<'_>, bs: &'a mut service::Boot) -> &'b mut [u8] {
+fn allocate<'a, 'b>(f: &'a mut media::File<'_>, bs: &'a mut service::Boot<'_>) -> &'b mut [u8] {
     let sz = filesize(f);
     let sz: usize = sz.try_into().unwrap();
 
