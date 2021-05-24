@@ -8,6 +8,9 @@ use r_efi::efi::protocols::simple_file_system;
 #[repr(transparent)]
 pub struct SimpleFileSystem(simple_file_system::Protocol);
 impl SimpleFileSystem {
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn open_volume(&mut self) -> crate::Result<File<'_>> {
         let mut root = mem::MaybeUninit::uninit();
 
