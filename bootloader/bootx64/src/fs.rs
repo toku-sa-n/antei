@@ -32,6 +32,7 @@ pub fn locate(path: &str) -> &[u8] {
 
 fn filesize(f: &mut media::File<'_>) -> u64 {
     const END_OF_FILE: u64 = !0;
+
     let r = f.set_position(END_OF_FILE);
     r.expect("Failed to set a file position.");
 
