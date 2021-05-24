@@ -14,6 +14,10 @@ impl<T> Error<T> {
     pub fn value(&self) -> &T {
         &self.value
     }
+
+    pub(crate) fn new(status: status::NotSuccess, value: T) -> Self {
+        Self { status, value }
+    }
 }
 impl From<efi::Status> for Error<()> {
     fn from(s: efi::Status) -> Self {
