@@ -15,15 +15,8 @@ pub fn locate(path: &str) -> &[u8] {
     let r = fp.open_read_only(path);
     r.expect("Failed to open the file.");
 
-    let r = fp.set_position(!0);
-    r.expect("Failed to set position.");
-
-    let size = fp.get_position();
-    let size = size.expect("Failed to get position.");
+    let size = filesize(&mut fp);
     let size: usize = size.try_into().unwrap();
-
-    let r = fp.set_position(0);
-    r.expect("Failed to set position.");
 
     let buf = fs.bs.allocate_pool(size);
     let buf = buf.expect("Failed to allocate memory.");
@@ -34,4 +27,18 @@ pub fn locate(path: &str) -> &[u8] {
     r.expect("Failed to read from the file.");
 
     buf
+}
+
+pub fn filesize(f: &mut media::File) -> u64 {
+    const END_OF_FILE: u64 = !0;
+    let r = f.set_position(END_OF_FILE);
+    r.expect("Failed to set a file position.");
+
+    let sz = f.get_position();
+    let sz = sz.expect("Failed to get the filesize.");
+
+    let r = f.set_position(0);
+    r.expect("Failed to set a file position.");
+
+    sz
 }
