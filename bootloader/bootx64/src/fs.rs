@@ -38,16 +38,17 @@ fn allocate<'a, 'b>(f: &'a mut media::File<'_>, bs: &'a mut service::Boot<'_>) -
 }
 
 fn filesize(f: &mut media::File<'_>) -> u64 {
+    try_filesize(f).expect("Failed to get the filesize.")
+}
+
+fn try_filesize(f: &mut media::File<'_>) -> uefi_wrapper::Result<u64> {
     const END_OF_FILE: u64 = !0;
 
-    let r = f.set_position(END_OF_FILE);
-    r.expect("Failed to set a file position.");
+    f.set_position(END_OF_FILE)?;
 
-    let sz = f.get_position();
-    let sz = sz.expect("Failed to get the filesize.");
+    let sz = f.get_position()?;
 
-    let r = f.set_position(0);
-    r.expect("Failed to set a file position.");
+    f.set_position(0)?;
 
-    sz
+    Ok(sz)
 }
