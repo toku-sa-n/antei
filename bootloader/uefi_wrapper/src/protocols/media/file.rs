@@ -51,10 +51,10 @@ impl<'a> File<'a> {
     }
 
     fn open_read_only_unchecked(&mut self, name: &str) -> crate::Result<()> {
+        const ATTRIBUTES_ARE_IGNORED: u64 = 0;
+
         let mut name = name_to_u16_array(name);
         let mut new_handler = mem::MaybeUninit::uninit();
-
-        const ATTRIBUTES_ARE_IGNORED: u64 = 0;
 
         let r = (self.handler.open)(
             self.handler,
