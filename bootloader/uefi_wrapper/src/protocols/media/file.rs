@@ -12,6 +12,9 @@ pub struct File<'a> {
     _fs: &'a mut SimpleFileSystem,
 }
 impl<'a> File<'a> {
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn open_read_only(&mut self, name: &str) -> crate::Result<()> {
         if name_too_long(name) {
             Err(Status::INVALID_PARAMETER.into())
@@ -20,12 +23,18 @@ impl<'a> File<'a> {
         }
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn set_position(&mut self, position: u64) -> crate::Result<()> {
         let r = (self.handler.set_position)(self.handler, position);
 
         result::from_status_and_value(r, ())
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn get_position(&mut self) -> crate::Result<u64> {
         let mut position = mem::MaybeUninit::uninit();
         let r = (self.handler.get_position)(self.handler, position.as_mut_ptr());
@@ -36,6 +45,9 @@ impl<'a> File<'a> {
         })
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn read(&mut self, buf: &mut [u8]) -> crate::Result<(), Option<usize>> {
         let mut buf_len = buf.len();
         let r = (self.handler.read)(self.handler, &mut buf_len, buf.as_mut_ptr().cast());
