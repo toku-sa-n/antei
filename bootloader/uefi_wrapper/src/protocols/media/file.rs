@@ -1,5 +1,6 @@
 use super::simple_file_system::SimpleFileSystem;
 use crate::result;
+use core::fmt;
 use core::mem;
 use r_efi::efi::protocols::file;
 use r_efi::efi::Status;
@@ -81,6 +82,11 @@ impl<'a> File<'a> {
 impl Drop for File<'_> {
     fn drop(&mut self) {
         (self.handler.close)(self.handler);
+    }
+}
+impl fmt::Debug for File<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("File")
     }
 }
 
