@@ -5,24 +5,25 @@ use uefi_wrapper::service;
 
 #[must_use]
 pub fn locate(path: &str) -> &[u8] {
+    let r = try_locate(path);
+    r.expect("Failed to locate a file.")
+}
+
+fn try_locate(path: &str) -> uefi_wrapper::Result<&[u8]> {
     let mut st = crate::system_table();
     let bs = st.boot_services();
 
-    let fs = bs.locate_protocol_without_registration::<media::SimpleFileSystem>();
-    let mut fs = fs.expect("Failed to locate the Simple File System protoco.");
+    let mut fs = bs.locate_protocol_without_registration::<media::SimpleFileSystem>()?;
 
-    let fp = fs.protocol.open_volume();
-    let mut fp = fp.expect("Failed to open the root directory.");
+    let mut fp = fs.protocol.open_volume()?;
 
-    let r = fp.open_read_only(path);
-    r.expect("Failed to open the file.");
+    fp.open_read_only(path)?;
 
     let buf = allocate(&mut fp, &mut fs.bs);
 
-    let r = fp.read(buf);
-    r.expect("Failed to read from the file.");
+    fp.read(buf).expect("Failed to read from a file.");
 
-    buf
+    Ok(buf)
 }
 
 #[allow(clippy::missing_panics_doc)]
