@@ -1,4 +1,5 @@
 use crate::result;
+use core::ffi;
 use core::fmt;
 use core::mem;
 use core::ptr;
@@ -16,9 +17,11 @@ impl<'a> Boot<'a> {
     pub fn locate_protocol_without_registration<P: crate::Protocol>(
         self,
     ) -> crate::Result<WithProtocol<'a, P>> {
+        const WITHOUT_REGISTRATION: *mut ffi::c_void = ptr::null_mut();
+
         let mut protocol = mem::MaybeUninit::uninit();
         let mut g = P::GUID;
-        let r = (self.0.locate_protocol)(&mut g, ptr::null_mut(), protocol.as_mut_ptr());
+        let r = (self.0.locate_protocol)(&mut g, WITHOUT_REGISTRATION, protocol.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
             // SAFETY: `locate_protocol` initializes `protocol`.
