@@ -32,12 +32,16 @@ impl Discovered {
     }
 
     fn info(&self) -> Option<&[u8]> {
-        if self.ptr.is_null() {
-            None
-        } else {
+        if self.info_exists() {
             let sz: usize = self.size.try_into().unwrap();
             unsafe { Some(slice::from_raw_parts(self.ptr, sz)) }
+        } else {
+            None
         }
+    }
+
+    fn info_exists(&self) -> bool {
+        !self.ptr.is_null()
     }
 }
 unsafe impl crate::Protocol for Discovered {
