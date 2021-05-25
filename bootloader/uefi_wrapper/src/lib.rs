@@ -3,6 +3,7 @@
 pub mod error;
 pub mod handle;
 pub mod protocols;
+pub(crate) mod ptr;
 pub mod result;
 pub mod service;
 pub mod status;
