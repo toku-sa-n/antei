@@ -42,7 +42,7 @@ pub unsafe fn as_mut<'a, T>(p: *mut T) -> &'a mut T {
 ///
 /// - [`Error::Null`] - `p` is null.
 /// - [`Error::NotAligned`] - `p` is not aligned correctly.
-pub unsafe fn try_as_mut<'a, T>(p: *mut T) -> Result<&'a mut T, crate::Error> {
+pub unsafe fn try_as_mut<'a, T>(p: *mut T) -> Result<&'a mut T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
@@ -89,7 +89,7 @@ pub unsafe fn as_ref<'a, T>(p: *const T) -> &'a T {
 ///
 /// - [`Error::Null`] - `p` is null.
 /// - [`Error::NotAligned`] - `p` is not aligned correctly.
-pub unsafe fn try_as_ref<'a, T>(p: *const T) -> Result<&'a T, crate::Error> {
+pub unsafe fn try_as_ref<'a, T>(p: *const T) -> Result<&'a T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
