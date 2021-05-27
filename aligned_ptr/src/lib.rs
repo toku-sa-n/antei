@@ -1,3 +1,5 @@
+//! A library to ensure that a pointer is aligned and not null when it dereferences.
+
 pub mod error;
 
 use core::mem;
