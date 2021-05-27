@@ -61,6 +61,55 @@ impl<'a> Boot<'a> {
         result::from_status_and_value(r, ())
     }
 
+    pub fn get_memory_map<'b>(
+        &self,
+        buf: &'b mut [u8],
+    ) -> crate::Result<
+        (
+            MapKey,
+            impl ExactSizeIterator<Item = efi::MemoryDescriptor> + 'b,
+        ),
+        Option<usize>,
+    > {
+        assert_eq!(
+            buf.as_ptr() as usize % mem::align_of::<efi::MemoryDescriptor>(),
+            0,
+            "The buffer must align as the Memory Descriptor requires."
+        );
+
+        let mut memory_map_size = buf.len();
+        let mut map_key = mem::MaybeUninit::uninit();
+        let mut descriptor_size = mem::MaybeUninit::uninit();
+        let mut descriptor_version = mem::MaybeUninit::uninit();
+
+        let s = (self.0.get_memory_map)(
+            &mut memory_map_size,
+            buf.as_mut_ptr().cast(),
+            map_key.as_mut_ptr(),
+            descriptor_size.as_mut_ptr(),
+            descriptor_version.as_mut_ptr(),
+        );
+
+        match s {
+            efi::Status::SUCCESS => {
+                // SAFETY: `get_memory_map` initializes `map_key`.
+                let map_key = MapKey(unsafe { map_key.assume_init() });
+
+                // SAFETY: `get_memory_map` initializes `descriptor_size`.
+                let descriptor_size = unsafe { descriptor_size.assume_init() };
+
+                // SAFETY: `buf.as_ptr()` points to the first memory descriptor.
+                Ok((map_key, unsafe {
+                    MemoryMapIter::new(buf, memory_map_size, descriptor_size)
+                }))
+            }
+            efi::Status::BUFFER_TOO_SMALL => {
+                Err(crate::Error::new(s.into(), Some(memory_map_size)))
+            }
+            _ => Err(crate::Error::new(s.into(), None)),
+        }
+    }
+
     /// # Errors
     ///
     /// Refer to the UEFI specification.
@@ -113,3 +162,56 @@ impl<'a, P: crate::Protocol> WithProtocol<'a, P> {
         Self { protocol, bs }
     }
 }
+
+struct MemoryMapIter<'a> {
+    buf: &'a [u8],
+    descriptor_size: usize,
+    i: usize,
+    len: usize,
+}
+impl<'a> MemoryMapIter<'a> {
+    /// # Safety
+    ///
+    /// `buf.as_ptr()` must point to a memory descriptor.
+    unsafe fn new(buf: &'a [u8], memory_map_size: usize, descriptor_size: usize) -> Self {
+        assert_eq!(
+            memory_map_size % descriptor_size,
+            0,
+            "Wrong memory map or descriptor size."
+        );
+
+        Self {
+            buf,
+            descriptor_size,
+            i: 0,
+            len: memory_map_size / descriptor_size,
+        }
+    }
+}
+impl<'a> Iterator for MemoryMapIter<'a> {
+    type Item = efi::MemoryDescriptor;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i < self.len {
+            let p = self.buf.as_ptr() as usize + self.descriptor_size * self.i;
+            let p = p as *const _;
+
+            // SAFETY: `p` points to a memory descriptor.
+            let d = unsafe { aligned_ptr::read(p) };
+
+            self.i += 1;
+
+            Some(d)
+        } else {
+            None
+        }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.len, Some(self.len))
+    }
+}
+impl<'a> ExactSizeIterator for MemoryMapIter<'a> {}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MapKey(usize);
