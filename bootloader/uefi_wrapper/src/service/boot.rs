@@ -188,7 +188,7 @@ impl<'a> MemoryMapIter<'a> {
         }
     }
 }
-impl<'a> Iterator for MemoryMapIter<'a> {
+impl Iterator for MemoryMapIter<'_> {
     type Item = efi::MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -211,7 +211,7 @@ impl<'a> Iterator for MemoryMapIter<'a> {
         (self.len, Some(self.len))
     }
 }
-impl<'a> ExactSizeIterator for MemoryMapIter<'a> {}
+impl ExactSizeIterator for MemoryMapIter<'_> {}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MapKey(usize);
