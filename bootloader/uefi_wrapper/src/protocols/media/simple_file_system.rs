@@ -23,7 +23,7 @@ impl SimpleFileSystem {
             // SAFETY: There is only one instance of `SimpleFileSystem`, which is created by
             // `locate_protocol`. Therefore there is the only one mutable reference to the file
             // handler.
-            File::new(unsafe { &mut *root }, self)
+            File::new(unsafe { aligned_ptr::as_mut(root) }, self)
         })
     }
 }

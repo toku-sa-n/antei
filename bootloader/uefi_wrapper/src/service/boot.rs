@@ -31,7 +31,7 @@ impl<'a> Boot<'a> {
             //
             // There is no mutable references to the protocol as there is no way to create it
             // without this method.
-            let protocol = unsafe { &mut *protocol };
+            let protocol = unsafe { aligned_ptr::as_mut(protocol) };
             WithProtocol::new(protocol, self)
         })
     }
@@ -67,7 +67,8 @@ impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
         //
         // There exists only one `SystemTable`, so do `Boot`. This is why the mutable reference is
         // only one it exists.
-        let bs = unsafe { &mut *(*s_ptr).boot_services };
+        let st = unsafe { aligned_ptr::as_mut(s_ptr) };
+        let bs = unsafe { aligned_ptr::as_mut(st.boot_services) };
 
         Self(bs, s)
     }
