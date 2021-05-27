@@ -61,6 +61,9 @@ impl<'a> Boot<'a> {
         result::from_status_and_value(r, ())
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn get_memory_map_size(&self) -> crate::Result<usize> {
         const SIZE: usize = 1;
 
