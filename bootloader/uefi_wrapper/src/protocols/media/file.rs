@@ -54,8 +54,10 @@ impl<'a> File<'a> {
 
         match r {
             Status::SUCCESS => Ok(()),
-            Status::BUFFER_TOO_SMALL => Err(crate::Error::new(r.into(), Some(buf_len))),
-            _ => Err(crate::Error::new(r.into(), None)),
+            Status::BUFFER_TOO_SMALL => {
+                Err(crate::Error::from_status_and_value(r.into(), Some(buf_len)))
+            }
+            _ => Err(crate::Error::from_status_and_value(r.into(), None)),
         }
     }
 
