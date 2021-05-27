@@ -5,7 +5,7 @@ pub mod error;
 use core::mem;
 pub use error::Error;
 
-/// Converts a pointer to a reference.
+/// Converts a pointer to a immutable reference.
 ///
 /// # Safety
 ///
@@ -24,7 +24,7 @@ pub unsafe fn as_ref<'a, T>(p: *const T) -> &'a T {
     try_as_ref(p).expect("Pointer is either null or not aligned.")
 }
 
-/// Converts a pointer to a reference.
+/// Converts a pointer to a immutable reference.
 ///
 /// # Safety
 ///
