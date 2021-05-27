@@ -21,7 +21,7 @@ impl GraphicsOutput {
         result::from_status_and_closure(r, || {
             let info = unsafe { info.assume_init() };
 
-            unsafe { *info }
+            unsafe { aligned_ptr::get(info) }
         })
     }
 
@@ -38,7 +38,7 @@ impl GraphicsOutput {
     pub fn max_mode(&self) -> u32 {
         // SAFETY: `locate_protocol` creates only one instance of `GraphicsOutput`. No other
         // pointers point to the `Mode` struct.
-        unsafe { (*self.0.mode).max_mode }
+        unsafe { aligned_ptr::get(self.0.mode).max_mode }
     }
 }
 unsafe impl crate::Protocol for GraphicsOutput {
