@@ -36,6 +36,9 @@ impl SystemTable {
         console::SimpleTextOutput::new(con_out, self)
     }
 
+    /// # Errors
+    ///
+    /// Refer to the UEFI specification.
     pub fn exit_boot_services(
         self,
         image_handle: crate::Handle,
