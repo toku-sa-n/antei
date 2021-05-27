@@ -7,6 +7,8 @@ pub mod error;
 use core::mem;
 pub use error::Error;
 
+const ERR_MSG: &str = "Pointer is either null or not aligned.";
+
 /// Gets a value the pointer `p` points by dereferencing it.
 ///
 /// # Safety
@@ -23,7 +25,7 @@ pub use error::Error;
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn get<T: Copy>(p: *const T) -> T {
-    try_get(p).expect("Pointer is either null or not aligned.")
+    try_get(p).expect(ERR_MSG)
 }
 
 /// Gets a value the pointer `p` points by dereferencing it.
@@ -70,7 +72,7 @@ pub unsafe fn try_get<T: Copy>(p: *const T) -> Result<T, Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn as_mut<'a, T>(p: *mut T) -> &'a mut T {
-    try_as_mut(p).expect("Pointer is either null or not aligned.")
+    try_as_mut(p).expect(ERR_MSG)
 }
 
 /// Converts a pointer to a mutable reference.
@@ -117,7 +119,7 @@ pub unsafe fn try_as_mut<'a, T>(p: *mut T) -> Result<&'a mut T, Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn as_ref<'a, T>(p: *const T) -> &'a T {
-    try_as_ref(p).expect("Pointer is either null or not aligned.")
+    try_as_ref(p).expect(ERR_MSG)
 }
 
 /// Converts a pointer to an immutable reference.
