@@ -90,24 +90,26 @@ impl<'a> Boot<'a> {
             descriptor_version.as_mut_ptr(),
         );
 
-        match s {
-            efi::Status::SUCCESS => {
-                // SAFETY: `get_memory_map` initializes `map_key`.
-                let map_key = MapKey(unsafe { map_key.assume_init() });
+        if s == efi::Status::SUCCESS {
+            // SAFETY: `get_memory_map` initializes `map_key`.
+            let map_key = MapKey(unsafe { map_key.assume_init() });
 
-                // SAFETY: `get_memory_map` initializes `descriptor_size`.
-                let descriptor_size = unsafe { descriptor_size.assume_init() };
+            // SAFETY: `get_memory_map` initializes `descriptor_size`.
+            let descriptor_size = unsafe { descriptor_size.assume_init() };
 
-                // SAFETY: `buf.as_ptr()` points to the first memory descriptor.
-                Ok((map_key, unsafe {
-                    MemoryMapIter::new(buf, memory_map_size, descriptor_size)
-                }))
-            }
-            efi::Status::BUFFER_TOO_SMALL => Err(crate::Error::from_status_and_value(
+            // SAFETY: `buf.as_ptr()` points to the first memory descriptor.
+            Ok((map_key, unsafe {
+                MemoryMapIter::new(buf, memory_map_size, descriptor_size)
+            }))
+        } else {
+            Err(crate::Error::from_status_and_value(
                 s.into(),
-                Some(memory_map_size),
-            )),
-            _ => Err(crate::Error::from_status_and_value(s.into(), None)),
+                if s == efi::Status::BUFFER_TOO_SMALL {
+                    Some(memory_map_size)
+                } else {
+                    None
+                },
+            ))
         }
     }
 
