@@ -15,7 +15,7 @@ impl<T> Error<T> {
         &self.value
     }
 
-    pub(crate) fn new(status: status::NotSuccess, value: T) -> Self {
+    pub(crate) fn from_status_and_value(status: status::NotSuccess, value: T) -> Self {
         Self { status, value }
     }
 }
