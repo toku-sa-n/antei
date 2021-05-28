@@ -5,6 +5,8 @@ use core::fmt;
 use core::mem;
 use r_efi::efi;
 
+pub use r_efi::efi::MemoryDescriptor;
+
 pub struct Boot<'a> {
     bs: &'a mut efi::BootServices,
     _st: &'a mut crate::SystemTable,
