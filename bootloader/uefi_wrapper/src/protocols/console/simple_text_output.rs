@@ -27,8 +27,7 @@ impl<'a> From<&'a mut SystemTable> for SimpleTextOutput<'a> {
         let s_ptr = s.get_ptr();
 
         // SAFETY: `SystemTable` is created only from the argument of `efi_main`, so the mutable
-        // reference to `SimpleTextOutput` is created only once. Also, we must trust the
-        // pointer is valid.
+        // reference to `SimpleTextOutput` is created only once.
         let st = unsafe { aligned_ptr::as_mut(s_ptr) };
         let sto = unsafe { aligned_ptr::as_mut(st.con_out) };
         Self(sto, s)
