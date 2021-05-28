@@ -60,20 +60,9 @@ impl<'a> Boot<'a> {
         let r = (self.bs.free_pool)(buf.cast());
         result::from_status_and_value(r, ())
     }
-}
-impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
-    fn from(s: &'a mut crate::SystemTable) -> Self {
-        let s_ptr = s.get_ptr();
 
-        // SAFETY: `SystemTable` is created only from the argument of `efi_main`. We must trust the
-        // argument is a valid pointer.
-        //
-        // There exists only one `SystemTable`, so do `Boot`. This is why the mutable reference is
-        // only one it exists.
-        let st = unsafe { aligned_ptr::as_mut(s_ptr) };
-        let bs = unsafe { aligned_ptr::as_mut(st.boot_services) };
-
-        Self { bs, _st: s }
+    pub fn new(bs: &'a mut efi::BootServices, _st: &'a mut crate::SystemTable) -> Self {
+        Self { bs, _st }
     }
 }
 impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {
