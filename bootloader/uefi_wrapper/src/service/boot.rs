@@ -71,12 +71,6 @@ impl<'a> Boot<'a> {
         buf: &'b mut [u8],
     ) -> crate::Result<(MapKey, impl ExactSizeIterator<Item = MemoryDescriptor> + 'b), Option<usize>>
     {
-        assert_eq!(
-            buf.as_ptr() as usize % mem::align_of::<MemoryDescriptor>(),
-            0,
-            "The buffer must align as the Memory Descriptor requires."
-        );
-
         let mut memory_map_size = buf.len();
         let mut map_key = mem::MaybeUninit::uninit();
         let mut descriptor_size = mem::MaybeUninit::uninit();
@@ -177,12 +171,6 @@ impl<'a> MemoryMapIter<'a> {
     ///
     /// `buf.as_ptr()` must point to a memory descriptor.
     unsafe fn new(buf: &'a [u8], memory_map_size: usize, descriptor_size: usize) -> Self {
-        assert_eq!(
-            memory_map_size % descriptor_size,
-            0,
-            "Wrong memory map or descriptor size."
-        );
-
         Self {
             buf,
             descriptor_size,
@@ -197,10 +185,9 @@ impl Iterator for MemoryMapIter<'_> {
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.len {
             let p = self.buf.as_ptr() as usize + self.descriptor_size * self.i;
-            let p = p as *const _;
+            let p = p as *const MemoryDescriptor;
 
-            // SAFETY: `p` points to a memory descriptor.
-            let d = unsafe { aligned_ptr::read(p) };
+            let d = unsafe { p.read_unaligned() };
 
             self.i += 1;
 
