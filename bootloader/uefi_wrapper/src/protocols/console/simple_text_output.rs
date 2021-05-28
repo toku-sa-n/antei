@@ -25,8 +25,8 @@ impl<'a> SimpleTextOutput<'a> {
         result::from_status_and_value(s, ())
     }
 
-    pub fn new(sto: &'a mut simple_text_output::Protocol, _st: &'a mut SystemTable) -> Self {
-        Self { sto, _st }
+    pub fn new(sto: &'a mut simple_text_output::Protocol, st: &'a mut SystemTable) -> Self {
+        Self { sto, _st: st }
     }
 }
 impl fmt::Debug for SimpleTextOutput<'_> {

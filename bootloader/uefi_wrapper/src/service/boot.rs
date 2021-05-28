@@ -61,8 +61,8 @@ impl<'a> Boot<'a> {
         result::from_status_and_value(r, ())
     }
 
-    pub fn new(bs: &'a mut efi::BootServices, _st: &'a mut crate::SystemTable) -> Self {
-        Self { bs, _st }
+    pub fn new(bs: &'a mut efi::BootServices, st: &'a mut crate::SystemTable) -> Self {
+        Self { bs, _st: st }
     }
 }
 impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {
