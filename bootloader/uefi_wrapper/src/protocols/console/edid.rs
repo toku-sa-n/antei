@@ -33,14 +33,19 @@ impl Discovered {
 
     fn get_info(&self) -> Option<&[u8]> {
         if self.info_exists() {
-            let sz: usize = self.size.try_into().unwrap();
-
-            // SAFETY: `self.ptr` is valid for `sz` bytes as it is not null. These memory are not
-            // modified.
-            unsafe { Some(slice::from_raw_parts(self.ptr, sz)) }
+            // SAFETY: The EDID Discovered information exists.
+            Some(unsafe { self.get_info_unchecked() })
         } else {
             None
         }
+    }
+
+    unsafe fn get_info_unchecked(&self) -> &[u8] {
+        let sz: usize = self.size.try_into().unwrap();
+
+        // SAFETY: `self.ptr` is valid for `sz` bytes as it is not null. These memory are not
+        // modified.
+        slice::from_raw_parts(self.ptr, sz)
     }
 
     fn info_exists(&self) -> bool {
