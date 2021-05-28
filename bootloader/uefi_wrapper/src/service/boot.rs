@@ -61,6 +61,30 @@ impl<'a> Boot<'a> {
         result::from_status_and_value(r, ())
     }
 
+    pub fn get_memory_map_size(&self) -> crate::Result<usize> {
+        const SIZE: usize = 1;
+
+        let mut sz = SIZE;
+        let mut buf: mem::MaybeUninit<efi::MemoryDescriptor> = mem::MaybeUninit::uninit();
+        let mut map_key = mem::MaybeUninit::uninit();
+        let mut descriptor_size = mem::MaybeUninit::uninit();
+        let mut descriptor_version = mem::MaybeUninit::uninit();
+
+        let r = (self.bs.get_memory_map)(
+            &mut sz,
+            buf.as_mut_ptr(),
+            map_key.as_mut_ptr(),
+            descriptor_size.as_mut_ptr(),
+            descriptor_version.as_mut_ptr(),
+        );
+
+        match r {
+            efi::Status::BUFFER_TOO_SMALL => Ok(sz),
+            efi::Status::SUCCESS => unreachable!(),
+            _ => Err(r.into()),
+        }
+    }
+
     pub fn new(bs: &'a mut efi::BootServices, st: &'a mut crate::SystemTable) -> Self {
         Self { bs, _st: st }
     }
