@@ -50,6 +50,47 @@ pub unsafe fn try_read<T>(p: *const T) -> Result<T, Error> {
     }
 }
 
+/// Writes a value the pointer `p` points with [`core::ptr::write`].
+///
+/// # Safety
+///
+/// The pointer `p` must follow these rules:
+///
+/// - It must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
+/// - It must point to the initialized instance of T.
+///
+/// # Panics
+///
+/// This method panics if `p` is either null or not aligned correctly.
+pub unsafe fn write<T>(p: *mut T, v: T) {
+    try_write(p, v).expect(ERR_MSG)
+}
+
+/// Writes a value the pointer `p` points with [`core::ptr::write`].
+///
+/// # Safety
+///
+/// The pointer `p` must follow these rules:
+///
+/// - It must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
+/// - It must point to the initialized instance of T.
+///
+/// # Errors
+///
+/// This method may return an error:
+///
+/// - [`Error::Null`] - `p` is null.
+/// - [`Error::NotAligned`] - `p` is not aligned correctly.
+pub unsafe fn try_write<T>(p: *mut T, v: T) -> Result<(), Error> {
+    if p.is_null() {
+        Err(Error::Null)
+    } else if is_aligned(p) {
+        p.write(v);
+        Ok(())
+    } else {
+        Err(Error::NotAligned)
+    }
+}
 /// Gets a value the pointer `p` points by dereferencing it.
 ///
 /// # Safety
