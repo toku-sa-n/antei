@@ -14,7 +14,7 @@ impl Discovered {
     }
 
     fn preferred_width(&self) -> Option<u32> {
-        let info = self.info()?;
+        let info = self.get_info()?;
 
         let upper = (u32::from(info[58]) & 0xf0) << 4;
         let lower: u32 = info[56].into();
@@ -23,7 +23,7 @@ impl Discovered {
     }
 
     fn preferred_height(&self) -> Option<u32> {
-        let info = self.info()?;
+        let info = self.get_info()?;
 
         let upper = (u32::from(info[61]) & 0xf0) << 4;
         let lower: u32 = info[59].into();
@@ -31,16 +31,21 @@ impl Discovered {
         Some(upper | lower)
     }
 
-    fn info(&self) -> Option<&[u8]> {
+    fn get_info(&self) -> Option<&[u8]> {
         if self.info_exists() {
-            let sz: usize = self.size.try_into().unwrap();
-
-            // SAFETY: `self.ptr` is valid for `sz` bytes as it is not null. These memory are not
-            // modified.
-            unsafe { Some(slice::from_raw_parts(self.ptr, sz)) }
+            // SAFETY: The EDID Discovered information exists.
+            Some(unsafe { self.get_info_unchecked() })
         } else {
             None
         }
+    }
+
+    unsafe fn get_info_unchecked(&self) -> &[u8] {
+        let sz: usize = self.size.try_into().unwrap();
+
+        // SAFETY: `self.ptr` is valid for `sz` bytes as it is not null. These memory are not
+        // modified.
+        slice::from_raw_parts(self.ptr, sz)
     }
 
     fn info_exists(&self) -> bool {
