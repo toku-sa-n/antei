@@ -4,13 +4,16 @@ use crate::system_table::SystemTable;
 use core::fmt;
 use r_efi::protocols::simple_text_output;
 
-pub struct SimpleTextOutput<'a>(&'a mut simple_text_output::Protocol, &'a mut SystemTable);
+pub struct SimpleTextOutput<'a> {
+    sto: &'a mut simple_text_output::Protocol,
+    _st: &'a mut SystemTable,
+}
 impl SimpleTextOutput<'_> {
     /// # Errors
     ///
     /// This method may return an error if the output device is not functioning.
     pub fn reset_without_extension(&mut self) -> Result<()> {
-        let s = (self.0.reset)(self.0, false.into());
+        let s = (self.sto.reset)(self.sto, false.into());
         result::from_status_and_value(s, ())
     }
 
@@ -18,7 +21,7 @@ impl SimpleTextOutput<'_> {
     ///
     /// This method may return an error if the output device is not functioning.
     pub fn output_string(&mut self, buf: &mut [u16]) -> Result<()> {
-        let s = (self.0.output_string)(self.0, buf.as_mut_ptr());
+        let s = (self.sto.output_string)(self.sto, buf.as_mut_ptr());
         result::from_status_and_value(s, ())
     }
 }
@@ -30,7 +33,8 @@ impl<'a> From<&'a mut SystemTable> for SimpleTextOutput<'a> {
         // reference to `SimpleTextOutput` is created only once.
         let st = unsafe { aligned_ptr::as_mut(s_ptr) };
         let sto = unsafe { aligned_ptr::as_mut(st.con_out) };
-        Self(sto, s)
+
+        Self { sto, _st: s }
     }
 }
 impl fmt::Debug for SimpleTextOutput<'_> {
