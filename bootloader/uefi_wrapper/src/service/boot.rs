@@ -5,7 +5,10 @@ use core::mem;
 use core::ptr;
 use r_efi::efi;
 
-pub struct Boot<'a>(&'a mut efi::BootServices, &'a mut crate::SystemTable);
+pub struct Boot<'a> {
+    bs: &'a mut efi::BootServices,
+    _st: &'a mut crate::SystemTable,
+}
 impl<'a> Boot<'a> {
     /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
     /// as it may create multiple mutable references to the same object), this method generates
@@ -21,7 +24,7 @@ impl<'a> Boot<'a> {
 
         let mut protocol = mem::MaybeUninit::uninit();
         let mut g = P::GUID;
-        let r = (self.0.locate_protocol)(&mut g, WITHOUT_REGISTRATION, protocol.as_mut_ptr());
+        let r = (self.bs.locate_protocol)(&mut g, WITHOUT_REGISTRATION, protocol.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
             // SAFETY: `locate_protocol` initializes `protocol`.
@@ -42,7 +45,7 @@ impl<'a> Boot<'a> {
     pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
         const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::LoaderData;
         let mut buf = mem::MaybeUninit::uninit();
-        let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
+        let r = (self.bs.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
             // SAFETY: `allocate_pool` initializes `buf`.
@@ -54,7 +57,7 @@ impl<'a> Boot<'a> {
     ///
     /// Refer to the UEFI specification.
     pub fn free_pool(&mut self, buf: *mut u8) -> crate::Result<()> {
-        let r = (self.0.free_pool)(buf.cast());
+        let r = (self.bs.free_pool)(buf.cast());
         result::from_status_and_value(r, ())
     }
 }
@@ -70,7 +73,7 @@ impl<'a> From<&'a mut crate::SystemTable> for Boot<'a> {
         let st = unsafe { aligned_ptr::as_mut(s_ptr) };
         let bs = unsafe { aligned_ptr::as_mut(st.boot_services) };
 
-        Self(bs, s)
+        Self { bs, _st: s }
     }
 }
 impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {
