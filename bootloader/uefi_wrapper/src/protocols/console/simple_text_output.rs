@@ -8,7 +8,7 @@ pub struct SimpleTextOutput<'a> {
     sto: &'a mut simple_text_output::Protocol,
     _st: &'a mut SystemTable,
 }
-impl SimpleTextOutput<'_> {
+impl<'a> SimpleTextOutput<'a> {
     /// # Errors
     ///
     /// This method may return an error if the output device is not functioning.
@@ -24,17 +24,9 @@ impl SimpleTextOutput<'_> {
         let s = (self.sto.output_string)(self.sto, buf.as_mut_ptr());
         result::from_status_and_value(s, ())
     }
-}
-impl<'a> From<&'a mut SystemTable> for SimpleTextOutput<'a> {
-    fn from(s: &'a mut SystemTable) -> Self {
-        let s_ptr = s.get_ptr();
 
-        // SAFETY: `SystemTable` is created only from the argument of `efi_main`, so the mutable
-        // reference to `SimpleTextOutput` is created only once.
-        let st = unsafe { aligned_ptr::as_mut(s_ptr) };
-        let sto = unsafe { aligned_ptr::as_mut(st.con_out) };
-
-        Self { sto, _st: s }
+    pub fn new(sto: &'a mut simple_text_output::Protocol, st: &'a mut SystemTable) -> Self {
+        Self { sto, _st: st }
     }
 }
 impl fmt::Debug for SimpleTextOutput<'_> {

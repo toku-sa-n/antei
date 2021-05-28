@@ -9,16 +9,37 @@ pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
     pub fn boot_services(&mut self) -> service::Boot<'_> {
-        self.into()
+        let st = self.as_mut();
+
+        // SAFETY: `st.boot_services` points to the instance of `efi::BootServices`.
+        //
+        // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method
+        // takes a mutable reference and this type does not implement `Copy`, only one mutable
+        // reference to `efi::BootServices` is created.
+        let bs = unsafe { aligned_ptr::as_mut(st.boot_services) };
+
+        service::Boot::new(bs, self)
     }
 
     #[must_use]
     pub fn con_out(&mut self) -> console::SimpleTextOutput<'_> {
-        self.into()
+        let st = self.as_mut();
+
+        // SAFETY: `st.con_out` points to the instance of `efi::SimpleTextOutput`. A value of
+        // `SystemTable` is created only through the argument of `efi_main`. Since this method
+        // takes a mutable reference and this type does not implement `Copy`, only one mutable
+        // reference to `efi::simple_text_output::Protocol` is created.
+        let con_out = unsafe { aligned_ptr::as_mut(st.con_out) };
+
+        console::SimpleTextOutput::new(con_out, self)
     }
 
-    pub(crate) fn get_ptr(&self) -> *mut efi::SystemTable {
-        self.0
+    fn as_mut(&mut self) -> &mut efi::SystemTable {
+        // SAFETY: `self.0` points to the instance of `efi::SystemTable`.
+        //
+        // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method takes a mutable
+        // reference of an instance and this type does not implement `Copy`, only one mutable reference to `efi::SystemTable` is created.
+        unsafe { aligned_ptr::as_mut(self.0) }
     }
 }
 impl fmt::Debug for SystemTable {
