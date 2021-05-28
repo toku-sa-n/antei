@@ -19,8 +19,10 @@ impl GraphicsOutput {
         let r = (self.0.query_mode)(&mut self.0, mode, size.as_mut_ptr(), info.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
+            // SAFETY: `query_mode` initializes `info` on success.
             let info = unsafe { info.assume_init() };
 
+            // SAFETY: The value that `info` points to is an instance of `ModeInformation`.
             unsafe { aligned_ptr::get(info) }
         })
     }
