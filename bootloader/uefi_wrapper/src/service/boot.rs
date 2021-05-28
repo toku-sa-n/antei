@@ -69,15 +69,10 @@ impl<'a> Boot<'a> {
     pub fn get_memory_map<'b>(
         &self,
         buf: &'b mut [u8],
-    ) -> crate::Result<
-        (
-            MapKey,
-            impl ExactSizeIterator<Item = efi::MemoryDescriptor> + 'b,
-        ),
-        Option<usize>,
-    > {
+    ) -> crate::Result<(MapKey, impl ExactSizeIterator<Item = MemoryDescriptor> + 'b), Option<usize>>
+    {
         assert_eq!(
-            buf.as_ptr() as usize % mem::align_of::<efi::MemoryDescriptor>(),
+            buf.as_ptr() as usize % mem::align_of::<MemoryDescriptor>(),
             0,
             "The buffer must align as the Memory Descriptor requires."
         );
@@ -125,7 +120,7 @@ impl<'a> Boot<'a> {
         const SIZE: usize = 1;
 
         let mut sz = SIZE;
-        let mut buf: mem::MaybeUninit<efi::MemoryDescriptor> = mem::MaybeUninit::uninit();
+        let mut buf: mem::MaybeUninit<MemoryDescriptor> = mem::MaybeUninit::uninit();
         let mut map_key = mem::MaybeUninit::uninit();
         let mut descriptor_size = mem::MaybeUninit::uninit();
         let mut descriptor_version = mem::MaybeUninit::uninit();
@@ -197,7 +192,7 @@ impl<'a> MemoryMapIter<'a> {
     }
 }
 impl Iterator for MemoryMapIter<'_> {
-    type Item = efi::MemoryDescriptor;
+    type Item = MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.len {
