@@ -14,7 +14,7 @@ impl Discovered {
     }
 
     fn preferred_width(&self) -> Option<u32> {
-        let info = self.info()?;
+        let info = self.get_info()?;
 
         let upper = (u32::from(info[58]) & 0xf0) << 4;
         let lower: u32 = info[56].into();
@@ -23,7 +23,7 @@ impl Discovered {
     }
 
     fn preferred_height(&self) -> Option<u32> {
-        let info = self.info()?;
+        let info = self.get_info()?;
 
         let upper = (u32::from(info[61]) & 0xf0) << 4;
         let lower: u32 = info[59].into();
@@ -31,7 +31,7 @@ impl Discovered {
         Some(upper | lower)
     }
 
-    fn info(&self) -> Option<&[u8]> {
+    fn get_info(&self) -> Option<&[u8]> {
         if self.info_exists() {
             let sz: usize = self.size.try_into().unwrap();
 
