@@ -40,6 +40,9 @@ fn try_allocate<'a, 'b>(
 
     let buf = bs.allocate_pool(sz)?;
 
+    // SAFETY: `sz` bytes from the address `buf` are allocated by `allocate_pool` and it is a
+    // single allocated object. These bytes are readable and writable. The memory is only acessible
+    // from `buf`. The length must not be larger than `isize::MAX`.
     Ok(unsafe { slice::from_raw_parts_mut(buf, sz) })
 }
 
