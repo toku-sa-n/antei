@@ -54,10 +54,7 @@ pub unsafe fn try_read<T>(p: *const T) -> Result<T, Error> {
 ///
 /// # Safety
 ///
-/// The pointer `p` must follow these rules:
-///
-/// - It must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
-/// - It must point to the initialized instance of T.
+/// The pointer `p` must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
 ///
 /// # Panics
 ///
@@ -70,10 +67,7 @@ pub unsafe fn write<T>(p: *mut T, v: T) {
 ///
 /// # Safety
 ///
-/// The pointer `p` must follow these rules:
-///
-/// - It must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
-/// - It must point to the initialized instance of T.
+/// The pointer `p`  must be dereferencable as defined in [Rust's documentation](https://doc.rust-lang.org/std/ptr/index.html#safety).
 ///
 /// # Errors
 ///
