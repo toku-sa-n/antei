@@ -4,16 +4,14 @@ pub mod fs;
 pub mod gop;
 pub mod io;
 
-use conquer_once::spin::Lazy;
 use core::panic::PanicInfo;
 use log::error;
 use spinning_top::MappedSpinlockGuard;
 use spinning_top::Spinlock;
 use spinning_top::SpinlockGuard;
 
-static HANDLE_WRAPPER: Lazy<Spinlock<Option<Handle>>> = Lazy::new(|| Spinlock::new(None));
-static SYSTEM_TABLE_WRAPPER: Lazy<Spinlock<Option<SystemTable>>> =
-    Lazy::new(|| Spinlock::new(None));
+static HANDLE_WRAPPER: Spinlock<Option<Handle>> = spinning_top::const_spinlock(None);
+static SYSTEM_TABLE_WRAPPER: Spinlock<Option<SystemTable>> = spinning_top::const_spinlock(None);
 
 #[repr(transparent)]
 #[derive(Debug)]
