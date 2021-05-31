@@ -6,10 +6,11 @@ use uefi_wrapper::protocols::console::graphics_output;
 ///
 /// This method panics if there is no proper GOP mode.
 #[must_use]
-pub fn set_preferred_resolution() -> graphics_output::ModeInformation {
-    let resolution = resolution_to_use();
+pub fn set_preferred_resolution(
+    st: &mut uefi_wrapper::SystemTable,
+) -> graphics_output::ModeInformation {
+    let resolution = resolution_to_use(st);
 
-    let mut st = crate::system_table();
     let bs = st.boot_services();
     let gop = bs.locate_protocol_without_registration::<console::GraphicsOutput>();
     let gop = gop.expect("The graphics output protocol is not implemented.");
@@ -33,14 +34,13 @@ pub fn set_preferred_resolution() -> graphics_output::ModeInformation {
     panic!("No proper GOP mode found.");
 }
 
-fn resolution_to_use() -> (u32, u32) {
+fn resolution_to_use(st: &mut uefi_wrapper::SystemTable) -> (u32, u32) {
     const DEFAULT_RESOLUTION: (u32, u32) = (800, 600);
 
-    preferred_resolution().unwrap_or(DEFAULT_RESOLUTION)
+    preferred_resolution(st).unwrap_or(DEFAULT_RESOLUTION)
 }
 
-fn preferred_resolution() -> Option<(u32, u32)> {
-    let mut st = crate::system_table();
+fn preferred_resolution(st: &mut uefi_wrapper::SystemTable) -> Option<(u32, u32)> {
     let bs = st.boot_services();
     let d = bs
         .locate_protocol_without_registration::<edid::Discovered>()

@@ -4,13 +4,15 @@ use uefi_wrapper::protocols::media;
 use uefi_wrapper::service;
 
 #[must_use]
-pub fn locate(path: &str) -> &[u8] {
-    let r = try_locate(path);
+pub fn locate<'a, 'b, 'c>(st: &'a mut uefi_wrapper::SystemTable, path: &'b str) -> &'c [u8] {
+    let r = try_locate(st, path);
     r.expect("Failed to locate a file.")
 }
 
-fn try_locate(path: &str) -> uefi_wrapper::Result<&[u8]> {
-    let mut st = crate::system_table();
+fn try_locate<'a, 'b, 'c>(
+    st: &'a mut uefi_wrapper::SystemTable,
+    path: &'b str,
+) -> uefi_wrapper::Result<&'c [u8]> {
     let bs = st.boot_services();
 
     let mut fs = bs.locate_protocol_without_registration::<media::SimpleFileSystem>()?;

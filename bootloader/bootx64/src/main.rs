@@ -9,11 +9,9 @@ use bootx64::gop;
 use log::info;
 
 #[no_mangle]
-pub extern "win64" fn efi_main(h: bootx64::Handle, st: bootx64::SystemTable) -> ! {
-    bootx64::init(h, st);
-
-    info!("GOP info: {:?}", gop::set_preferred_resolution());
-    let bytes = fs::locate("kernel");
+pub extern "win64" fn efi_main(_: uefi_wrapper::Handle, mut st: uefi_wrapper::SystemTable) -> ! {
+    info!("GOP info: {:?}", gop::set_preferred_resolution(&mut st));
+    let bytes = fs::locate(&mut st, "kernel");
     info!("{:X?}", &bytes[0..8]);
 
     loop {
