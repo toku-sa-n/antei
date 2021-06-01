@@ -19,4 +19,13 @@ impl SystemTable {
     pub fn con_out(&mut self) -> console::SimpleTextOutput<'_> {
         self.0.con_out()
     }
+
+    pub fn expect_some<T>(&mut self, option: Option<T>, msg: &str) -> T {
+        match option {
+            Some(val) => val,
+            None => {
+                uefi_panic!(self, "{}", msg);
+            }
+        }
+    }
 }
