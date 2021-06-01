@@ -36,7 +36,7 @@ impl SystemTable {
         }
     }
 
-    pub fn exit_boot_services(
+    fn exit_boot_services(
         self,
         image_handler: uefi_wrapper::Handle,
         map_key: boot::MapKey,
