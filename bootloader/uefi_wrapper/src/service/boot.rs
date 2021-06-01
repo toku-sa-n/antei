@@ -1,8 +1,8 @@
 use crate::result;
+use aligned::ptr;
 use core::ffi;
 use core::fmt;
 use core::mem;
-use core::ptr;
 use r_efi::efi;
 
 pub struct Boot<'a> {
@@ -20,7 +20,7 @@ impl<'a> Boot<'a> {
     pub fn locate_protocol_without_registration<P: crate::Protocol>(
         self,
     ) -> crate::Result<WithProtocol<'a, P>> {
-        const WITHOUT_REGISTRATION: *mut ffi::c_void = ptr::null_mut();
+        const WITHOUT_REGISTRATION: *mut ffi::c_void = core::ptr::null_mut();
 
         let mut protocol = mem::MaybeUninit::uninit();
         let mut g = P::GUID;
@@ -34,7 +34,7 @@ impl<'a> Boot<'a> {
             //
             // There is no mutable references to the protocol as there is no way to create it
             // without this method.
-            let protocol = unsafe { aligned::as_mut(protocol) };
+            let protocol = unsafe { ptr::as_mut(protocol) };
             WithProtocol::new(protocol, self)
         })
     }

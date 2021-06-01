@@ -1,5 +1,6 @@
 use super::simple_file_system::SimpleFileSystem;
 use crate::result;
+use aligned::ptr;
 use core::fmt;
 use core::mem;
 use r_efi::efi::protocols::file;
@@ -85,7 +86,7 @@ impl<'a> File<'a> {
 
             // SAFETY: Only one instance of `File` exists per `SimpleFileSystem`. Therefore there
             // is no mutable references which point to `*new_handler`.
-            let new_handler = unsafe { aligned::as_mut(new_handler) };
+            let new_handler = unsafe { ptr::as_mut(new_handler) };
 
             (self.handler.close)(self.handler);
 
