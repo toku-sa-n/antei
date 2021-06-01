@@ -1,7 +1,6 @@
 use crate::is_aligned;
 use crate::Error;
-
-const ERR_MSG: &str = "Pointer is either null or not aligned.";
+use crate::ERR_MSG;
 
 /// Reads a value the pointer `p` points with [`core::ptr::read`].
 ///

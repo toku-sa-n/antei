@@ -1,5 +1,6 @@
 use crate::is_aligned;
 use crate::Error;
+use crate::ERR_MSG;
 
 /// # Safety
 ///
@@ -7,7 +8,7 @@ use crate::Error;
 /// alignment requirements.
 pub unsafe fn from_raw_parts_mut<'a, T>(data: *mut T, len: usize) -> &'a mut [T] {
     let r = try_from_raw_parts_mut(data, len);
-    r.expect("Pointer is either null or not aligned.")
+    r.expect(ERR_MSG)
 }
 
 /// # Safety
