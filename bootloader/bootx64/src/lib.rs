@@ -22,11 +22,10 @@ impl SystemTable {
     }
 
     pub fn expect_some<T>(&mut self, option: Option<T>, msg: &str) -> T {
-        match option {
-            Some(val) => val,
-            None => {
-                uefi_panic!(self, "{}", msg);
-            }
+        if let Some(val) = option {
+            val
+        } else {
+            uefi_panic!(self, "{}", msg);
         }
     }
 
