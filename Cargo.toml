@@ -2,7 +2,7 @@
 members = [
     "bootloader/bootx64",
     "bootloader/uefi_wrapper",
-    "lib/aligned_ptr",
+    "lib/aligned",
     "kernel",
 ]
 

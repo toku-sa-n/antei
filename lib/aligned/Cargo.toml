@@ -1,5 +1,5 @@
 [package]
-name = "aligned_ptr"
+name = "aligned"
 version = "0.1.0"
 authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
 edition = "2018"

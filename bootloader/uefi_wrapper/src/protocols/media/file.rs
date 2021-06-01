@@ -85,7 +85,7 @@ impl<'a> File<'a> {
 
             // SAFETY: Only one instance of `File` exists per `SimpleFileSystem`. Therefore there
             // is no mutable references which point to `*new_handler`.
-            let new_handler = unsafe { aligned_ptr::as_mut(new_handler) };
+            let new_handler = unsafe { aligned::as_mut(new_handler) };
 
             (self.handler.close)(self.handler);
 

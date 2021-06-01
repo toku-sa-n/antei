@@ -16,7 +16,7 @@ impl SystemTable {
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method
         // takes a mutable reference and this type does not implement `Copy`, only one mutable
         // reference to `efi::BootServices` is created.
-        let bs = unsafe { aligned_ptr::as_mut(st.boot_services) };
+        let bs = unsafe { aligned::as_mut(st.boot_services) };
 
         service::Boot::new(bs, self)
     }
@@ -29,7 +29,7 @@ impl SystemTable {
         // `SystemTable` is created only through the argument of `efi_main`. Since this method
         // takes a mutable reference and this type does not implement `Copy`, only one mutable
         // reference to `efi::simple_text_output::Protocol` is created.
-        let con_out = unsafe { aligned_ptr::as_mut(st.con_out) };
+        let con_out = unsafe { aligned::as_mut(st.con_out) };
 
         console::SimpleTextOutput::new(con_out, self)
     }
@@ -39,7 +39,7 @@ impl SystemTable {
         //
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method takes a mutable
         // reference of an instance and this type does not implement `Copy`, only one mutable reference to `efi::SystemTable` is created.
-        unsafe { aligned_ptr::as_mut(self.0) }
+        unsafe { aligned::as_mut(self.0) }
     }
 }
 impl fmt::Debug for SystemTable {

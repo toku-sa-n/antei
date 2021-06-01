@@ -34,7 +34,7 @@ impl<'a> Boot<'a> {
             //
             // There is no mutable references to the protocol as there is no way to create it
             // without this method.
-            let protocol = unsafe { aligned_ptr::as_mut(protocol) };
+            let protocol = unsafe { aligned::as_mut(protocol) };
             WithProtocol::new(protocol, self)
         })
     }
