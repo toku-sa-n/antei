@@ -21,6 +21,5 @@ macro_rules! uefi_println {
 pub fn _print(st: &mut crate::SystemTable, args: fmt::Arguments<'_>) {
     let mut con_out = st.con_out();
 
-    let r = con_out.write_fmt(args);
-    r.expect("Failed to print a string on the console.");
+    let _ = con_out.write_fmt(args);
 }

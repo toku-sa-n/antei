@@ -9,7 +9,7 @@ use uefi_wrapper::{protocols::console, service::boot::WithProtocol};
 #[must_use]
 pub fn set_preferred_resolution(st: &mut crate::SystemTable) -> graphics_output::ModeInformation {
     let s = try_set_preferred_resolution(st);
-    s.expect("Failed to set the preferred screen resolution.")
+    st.expect_ok(s, "Failed to set the preferred screen resolution.")
 }
 
 fn try_set_preferred_resolution(
