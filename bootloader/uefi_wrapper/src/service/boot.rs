@@ -82,7 +82,7 @@ impl<'a> Boot<'a> {
         let mut descriptor_size = mem::MaybeUninit::uninit();
         let mut descriptor_version = mem::MaybeUninit::uninit();
 
-        let s = (self.0.get_memory_map)(
+        let s = (self.bs.get_memory_map)(
             &mut memory_map_size,
             buf.as_mut_ptr().cast(),
             map_key.as_mut_ptr(),
@@ -103,10 +103,11 @@ impl<'a> Boot<'a> {
                     MemoryMapIter::new(buf, memory_map_size, descriptor_size)
                 }))
             }
-            efi::Status::BUFFER_TOO_SMALL => {
-                Err(crate::Error::new(s.into(), Some(memory_map_size)))
-            }
-            _ => Err(crate::Error::new(s.into(), None)),
+            efi::Status::BUFFER_TOO_SMALL => Err(crate::Error::from_status_and_value(
+                s.into(),
+                Some(memory_map_size),
+            )),
+            _ => Err(crate::Error::from_status_and_value(s.into(), None)),
         }
     }
 
@@ -215,3 +216,8 @@ impl ExactSizeIterator for MemoryMapIter<'_> {}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MapKey(usize);
+impl From<MapKey> for usize {
+    fn from(k: MapKey) -> Self {
+        k.0
+    }
+}

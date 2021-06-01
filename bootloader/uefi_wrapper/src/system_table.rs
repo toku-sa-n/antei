@@ -1,5 +1,6 @@
 use crate::protocols::console;
 use crate::service;
+use crate::service::boot;
 use aligned::ptr;
 use core::fmt;
 use r_efi::efi;
@@ -33,6 +34,26 @@ impl SystemTable {
         let con_out = unsafe { ptr::as_mut(st.con_out) };
 
         console::SimpleTextOutput::new(con_out, self)
+    }
+
+    pub fn exit_boot_services(
+        self,
+        image_handle: crate::Handle,
+        map_key: boot::MapKey,
+    ) -> crate::Result<(), (Self, crate::Handle)> {
+        let st = unsafe { ptr::as_mut(self.0) };
+        let bs = unsafe { ptr::as_mut(st.boot_services) };
+
+        let s = (bs.exit_boot_services)(image_handle.get_ptr(), map_key.into());
+
+        if s == efi::Status::SUCCESS {
+            Ok(())
+        } else {
+            Err(crate::Error::from_status_and_value(
+                s.into(),
+                (self, image_handle),
+            ))
+        }
     }
 
     fn as_mut(&mut self) -> &mut efi::SystemTable {
