@@ -8,6 +8,13 @@ use uefi_wrapper::protocols::console::graphics_output;
 /// This method panics if there is no proper GOP mode.
 #[must_use]
 pub fn set_preferred_resolution(st: &mut crate::SystemTable) -> graphics_output::ModeInformation {
+    let s = try_set_preferred_resolution(st);
+    s.expect("Failed to set the preferred screen resolution.")
+}
+
+fn try_set_preferred_resolution(
+    st: &mut crate::SystemTable,
+) -> uefi_wrapper::Result<graphics_output::ModeInformation> {
     let resolution = resolution_to_use(st);
 
     let bs = st.boot_services();
@@ -25,7 +32,7 @@ pub fn set_preferred_resolution(st: &mut crate::SystemTable) -> graphics_output:
                 let r = gop.protocol.set_mode(i);
                 r.expect("`GraphicsOutput::set_mode` failed.");
 
-                return mode_info;
+                return Ok(mode_info);
             }
         }
     }
