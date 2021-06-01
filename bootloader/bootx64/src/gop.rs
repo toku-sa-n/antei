@@ -39,7 +39,7 @@ fn try_set_preferred_resolution(
 
 fn try_get_gop(
     st: &mut crate::SystemTable,
-) -> uefi_wrapper::Result<WithProtocol<console::GraphicsOutput>> {
+) -> uefi_wrapper::Result<WithProtocol<'_, console::GraphicsOutput>> {
     let bs = st.boot_services();
 
     bs.locate_protocol_without_registration::<console::GraphicsOutput>()
