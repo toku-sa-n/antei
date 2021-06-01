@@ -2,6 +2,7 @@
 
 pub mod fs;
 pub mod gop;
+pub mod io;
 
 use core::panic::PanicInfo;
 
