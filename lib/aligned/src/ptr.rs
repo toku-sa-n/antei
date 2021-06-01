@@ -224,3 +224,27 @@ pub unsafe fn try_as_ref<'a, T>(p: *const T) -> Result<&'a T, Error> {
         Err(Error::NotAligned)
     }
 }
+
+/// Casts a mutable pointer to another type of pointer.
+///
+/// # Panics
+///
+/// This method panics if the pointer after the cast is not aligned correctly.
+pub fn cast_mut<T, U>(p: *mut T) -> *mut U {
+    try_cast_mut(p).expect("The pointer is not aligned correctly.")
+}
+
+/// Casts a mutable pointer to another type of pointer.
+///
+/// # Errors
+///
+/// This method may return an [`Error::NotAligned`] error if the pointer after the cast is not
+/// aligned correctly.
+pub fn try_cast_mut<T, U>(p: *mut T) -> Result<*mut U, Error> {
+    let after = p.cast::<U>();
+    if is_aligned(after) {
+        Ok(after)
+    } else {
+        Err(Error::NotAligned)
+    }
+}

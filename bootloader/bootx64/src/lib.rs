@@ -62,7 +62,7 @@ fn try_exit_boot_services<'a>(
 
     let raw_mmap_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
     let mmap_array_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
-    let mmap_array_ptr = mmap_array_ptr.cast::<boot::MemoryDescriptor>();
+    let mmap_array_ptr = ptr::cast_mut::<_, boot::MemoryDescriptor>(mmap_array_ptr);
 
     // SAFETY: `alloc_size_for_mmap` bytes from `raw_mmap_ptr` are allocated by `allocate_pool`.
     // These memory are readable, writable, and byte-aligned.
