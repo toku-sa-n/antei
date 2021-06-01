@@ -4,17 +4,16 @@
 // For `memcpy`.
 extern crate rlibc as _;
 
-use bootx64::fs;
 use bootx64::gop;
-use log::info;
+use bootx64::{fs, uefi_println};
 
 #[no_mangle]
-pub extern "win64" fn efi_main(h: bootx64::Handle, st: bootx64::SystemTable) -> ! {
-    bootx64::init(h, st);
+pub extern "win64" fn efi_main(_: uefi_wrapper::Handle, mut st: uefi_wrapper::SystemTable) -> ! {
+    let resolution = gop::set_preferred_resolution(&mut st);
+    uefi_println!(&mut st, "GOP info: {:?}", resolution,);
 
-    info!("GOP info: {:?}", gop::set_preferred_resolution());
-    let bytes = fs::locate("kernel");
-    info!("{:X?}", &bytes[0..8]);
+    let bytes = fs::locate(&mut st, "kernel");
+    uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
 
     loop {
         x86_64::instructions::hlt();
