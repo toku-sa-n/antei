@@ -4,6 +4,7 @@
 
 pub mod error;
 pub mod ptr;
+pub mod slice;
 
 pub use error::Error;
 
