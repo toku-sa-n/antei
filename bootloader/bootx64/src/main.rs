@@ -5,6 +5,7 @@
 extern crate rlibc as _;
 
 use bootx64::gop;
+use bootx64::mem;
 use bootx64::{fs, uefi_println};
 
 #[no_mangle]
@@ -14,6 +15,8 @@ pub extern "win64" fn efi_main(_: uefi_wrapper::Handle, mut st: bootx64::SystemT
 
     let bytes = fs::locate(&mut st, "kernel");
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
+
+    uefi_println!(&mut st, "Memory map size: {}", mem::get_memory_map_size());
 
     loop {
         x86_64::instructions::hlt();
