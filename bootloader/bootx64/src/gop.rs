@@ -1,3 +1,4 @@
+use crate::uefi_panic;
 use uefi_wrapper::protocols::console;
 use uefi_wrapper::protocols::console::edid;
 use uefi_wrapper::protocols::console::graphics_output;
@@ -31,7 +32,7 @@ pub fn set_preferred_resolution(
         }
     }
 
-    panic!("No proper GOP mode found.");
+    uefi_panic!(st, "No proper GOP mode found.");
 }
 
 fn resolution_to_use(st: &mut uefi_wrapper::SystemTable) -> (u32, u32) {
