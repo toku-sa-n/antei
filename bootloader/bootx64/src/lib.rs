@@ -23,17 +23,6 @@ impl SystemTable {
 
     /// # Panics
     ///
-    /// This method panics if `option` is [`None`].
-    pub fn expect_some<T>(&mut self, option: Option<T>, msg: &str) -> T {
-        if let Some(val) = option {
-            val
-        } else {
-            uefi_panic!(self, "{}", msg);
-        }
-    }
-
-    /// # Panics
-    ///
     /// This method panics if `result` is [`Err`].
     pub fn expect_ok<T, E: fmt::Debug>(&mut self, result: Result<T, E>, msg: &str) -> T {
         match result {
