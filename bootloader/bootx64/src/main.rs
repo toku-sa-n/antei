@@ -8,7 +8,7 @@ use bootx64::gop;
 use bootx64::{fs, uefi_println};
 
 #[no_mangle]
-pub extern "win64" fn efi_main(_: uefi_wrapper::Handle, mut st: uefi_wrapper::SystemTable) -> ! {
+pub extern "win64" fn efi_main(_: bootx64::Handle, mut st: bootx64::SystemTable) -> ! {
     let resolution = gop::set_preferred_resolution(&mut st);
     uefi_println!(&mut st, "GOP info: {:?}", resolution,);
 

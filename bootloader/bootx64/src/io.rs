@@ -18,7 +18,7 @@ macro_rules! uefi_println {
 }
 
 #[doc(hidden)]
-pub fn _print(st: &mut uefi_wrapper::SystemTable, args: fmt::Arguments<'_>) {
+pub fn _print(st: &mut crate::SystemTable, args: fmt::Arguments<'_>) {
     let mut con_out = st.con_out();
 
     let r = con_out.write_fmt(args);
