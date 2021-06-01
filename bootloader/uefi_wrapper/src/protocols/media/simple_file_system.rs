@@ -1,5 +1,6 @@
 use super::file::File;
 use crate::result;
+use aligned::ptr;
 use core::fmt;
 use core::mem;
 use r_efi::efi;
@@ -23,7 +24,7 @@ impl SimpleFileSystem {
             // SAFETY: There is only one instance of `SimpleFileSystem`, which is created by
             // `locate_protocol`. Therefore there is the only one mutable reference to the file
             // handler.
-            File::new(unsafe { aligned_ptr::as_mut(root) }, self)
+            File::new(unsafe { ptr::as_mut(root) }, self)
         })
     }
 }

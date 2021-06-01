@@ -1,4 +1,5 @@
 use crate::result;
+use aligned::ptr;
 use core::fmt;
 use core::mem;
 use r_efi::efi;
@@ -23,7 +24,7 @@ impl GraphicsOutput {
             let info = unsafe { info.assume_init() };
 
             // SAFETY: The value that `info` points to is an instance of `ModeInformation`.
-            unsafe { aligned_ptr::get(info) }
+            unsafe { ptr::get(info) }
         })
     }
 
@@ -40,7 +41,7 @@ impl GraphicsOutput {
     pub fn max_mode(&self) -> u32 {
         // SAFETY: `locate_protocol` creates only one instance of `GraphicsOutput`. No other
         // pointers point to the `Mode` struct.
-        unsafe { aligned_ptr::get(self.0.mode).max_mode }
+        unsafe { ptr::get(self.0.mode).max_mode }
     }
 }
 unsafe impl crate::Protocol for GraphicsOutput {

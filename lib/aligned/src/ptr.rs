@@ -1,11 +1,5 @@
-//! A library to ensure that a pointer is aligned and not null when it dereferences.
-
-#![no_std]
-
-pub mod error;
-
-use core::mem;
-pub use error::Error;
+use crate::is_aligned;
+use crate::Error;
 
 const ERR_MSG: &str = "Pointer is either null or not aligned.";
 
@@ -148,8 +142,4 @@ pub unsafe fn try_as_ref<'a, T>(p: *const T) -> Result<&'a T, Error> {
     } else {
         Err(Error::NotAligned)
     }
-}
-
-fn is_aligned<T>(p: *const T) -> bool {
-    p as usize % mem::align_of::<T>() == 0
 }
