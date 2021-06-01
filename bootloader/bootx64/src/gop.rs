@@ -17,17 +17,17 @@ fn try_set_preferred_resolution(
 ) -> uefi_wrapper::Result<graphics_output::ModeInformation> {
     let resolution = resolution_to_use(st);
 
-    let gop = try_get_gop(st)?;
+    let gop = try_get_gop(st)?.protocol;
 
-    for i in 0..gop.protocol.max_mode() {
-        let mode_info = gop.protocol.query_mode(i);
+    for i in 0..gop.max_mode() {
+        let mode_info = gop.query_mode(i);
         if let Ok(mode_info) = mode_info {
             if (
                 mode_info.horizontal_resolution,
                 mode_info.vertical_resolution,
             ) == resolution
             {
-                gop.protocol.set_mode(i)?;
+                gop.set_mode(i)?;
 
                 return Ok(mode_info);
             }
