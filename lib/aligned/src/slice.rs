@@ -15,6 +15,13 @@ pub unsafe fn from_raw_parts_mut<'a, T>(data: *mut T, len: usize) -> &'a mut [T]
 ///
 /// The caller must follow the rules of calling [`core::slice::from_raw_parts_mut`] except the
 /// alignment requirements.
+///
+/// # Errors
+///
+/// This method may return an error:
+///
+/// - [`Error::Null`] - `p` is null.
+/// - [`Error::NotAligned`] - `p` is not aligned correctly.
 pub unsafe fn try_from_raw_parts_mut<'a, T>(
     data: *mut T,
     len: usize,
