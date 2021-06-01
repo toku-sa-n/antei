@@ -9,6 +9,7 @@ use uefi_wrapper::protocols::console;
 use uefi_wrapper::service;
 
 #[repr(transparent)]
+#[derive(Debug)]
 pub struct SystemTable(uefi_wrapper::SystemTable);
 impl SystemTable {
     pub fn boot_services(&mut self) -> service::Boot<'_> {
