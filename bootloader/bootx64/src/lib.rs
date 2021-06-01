@@ -3,6 +3,7 @@
 pub mod fs;
 pub mod gop;
 pub mod io;
+mod mem;
 pub mod panic;
 
 use core::fmt;
