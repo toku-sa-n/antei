@@ -15,6 +15,13 @@ impl<T> Error<T> {
         &self.value
     }
 
+    pub fn map_value<U>(self, f: impl FnOnce(T) -> U) -> Error<U> {
+        Error {
+            status: self.status,
+            value: f(self.value),
+        }
+    }
+
     pub(crate) fn from_status_and_value(status: status::NotSuccess, value: T) -> Self {
         Self { status, value }
     }
