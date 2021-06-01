@@ -18,8 +18,7 @@ fn try_set_preferred_resolution(
     let resolution = resolution_to_use(st);
 
     let bs = st.boot_services();
-    let gop = bs.locate_protocol_without_registration::<console::GraphicsOutput>();
-    let gop = gop.expect("The graphics output protocol is not implemented.");
+    let gop = bs.locate_protocol_without_registration::<console::GraphicsOutput>()?;
 
     for i in 0..gop.protocol.max_mode() {
         let mode_info = gop.protocol.query_mode(i);
@@ -29,8 +28,7 @@ fn try_set_preferred_resolution(
                 mode_info.vertical_resolution,
             ) == resolution
             {
-                let r = gop.protocol.set_mode(i);
-                r.expect("`GraphicsOutput::set_mode` failed.");
+                gop.protocol.set_mode(i)?;
 
                 return Ok(mode_info);
             }
