@@ -20,7 +20,7 @@ fn try_locate<'a>(st: &mut crate::SystemTable, path: &str) -> uefi_wrapper::Resu
 
     let buf = allocate(&mut fp, &mut fs.bs);
 
-    fp.read(buf).expect("Failed to read from a file.");
+    fp.read(buf).map_err(|e| e.map_value(|_| ()))?;
 
     Ok(buf)
 }
