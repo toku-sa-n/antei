@@ -44,7 +44,9 @@ impl SystemTable {
         image_handle: crate::Handle,
         map_key: boot::MapKey,
     ) -> crate::Result<(), (Self, crate::Handle)> {
+        // SAFETY: `Self` is created only through the argument of `efi_main`.
         let st = unsafe { ptr::as_mut(self.0) };
+        // SAFETY: Same as the above comment.
         let bs = unsafe { ptr::as_mut(st.boot_services) };
 
         let s = (bs.exit_boot_services)(image_handle.get_ptr(), map_key.into());
