@@ -9,8 +9,8 @@ macro_rules! uefi_print{
 
 #[macro_export]
 macro_rules! uefi_println {
-    (_:expr) => {
-        $crate::uefi_print!("\n");
+    ($st:expr) => {
+        $crate::uefi_print!($st,"\n");
     };
     ($st:expr,$($arg:tt)*)=>{
         $crate::uefi_print!($st,"{}\n",format_args!($($arg)*));
