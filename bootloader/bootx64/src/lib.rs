@@ -8,7 +8,7 @@ pub mod panic;
 
 use aligned::ptr;
 use aligned::slice;
-use core::fmt::{self, Write};
+use core::fmt;
 use uefi_wrapper::service;
 use uefi_wrapper::{protocols::console, service::boot};
 
@@ -48,7 +48,7 @@ impl SystemTable {
 }
 
 pub fn exit_boot_services(h: uefi_wrapper::Handle, st: SystemTable) {
-    try_exit_boot_services(h, st);
+    try_exit_boot_services(h, st).expect("Failed to exit boot services.");
 }
 
 fn try_exit_boot_services<'a>(
@@ -89,12 +89,8 @@ fn try_exit_boot_services<'a>(
     // `mmap_array_ptr` must not be used from this line.
     let descriptors = unsafe { slice::from_raw_parts_mut(mmap_array_ptr, mmap_len) };
 
-    st.exit_boot_services(h, key).map_err(|e| {
-        e.map_value(|(mut st, _)| {
-            let mut s = st.con_out();
-            s.write_str("Failed.");
-        })
-    })?;
+    st.exit_boot_services(h, key)
+        .map_err(|e| e.map_value(|_| ()))?;
 
     Ok(descriptors)
 }
