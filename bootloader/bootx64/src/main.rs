@@ -16,7 +16,8 @@ pub extern "win64" fn efi_main(_: uefi_wrapper::Handle, mut st: bootx64::SystemT
     let bytes = fs::locate(&mut st, "kernel");
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
 
-    uefi_println!(&mut st, "Memory map size: {}", mem::get_memory_map_size());
+    let mem_map_size = mem::get_memory_map_size(&mut st);
+    uefi_println!(&mut st, "Memory map size: {}", mem_map_size);
 
     loop {
         x86_64::instructions::hlt();
