@@ -18,16 +18,10 @@ fn try_exit_boot_services<'a>(
 
     let alloc_size_for_mmap = alloc_size_for_mmap(&mut bs)?;
 
-    let raw_mmap_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
+    let mut raw_mmap_buf = try_alloc_for_raw_mmap(&mut bs)?;
 
     let descriptor_array_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
     let descriptor_array_ptr = ptr::cast_mut::<_, boot::MemoryDescriptor>(descriptor_array_ptr);
-
-    // SAFETY: `alloc_size_for_mmap` bytes from `raw_mmap_ptr` are allocated by `allocate_pool`.
-    // These memory are readable, writable, and byte-aligned.
-    //
-    // `raw_mmap_ptr` must not be used from this line.
-    let mut raw_mmap_buf = unsafe { slice::from_raw_parts_mut(raw_mmap_ptr, alloc_size_for_mmap) };
 
     let (key, descriptor_iter) = bs
         .get_memory_map(&mut raw_mmap_buf)
@@ -43,6 +37,17 @@ fn try_exit_boot_services<'a>(
     let descriptors = unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) };
 
     Ok(descriptors)
+}
+
+fn try_alloc_for_raw_mmap<'a, 'b, 'c>(
+    bs: &'a mut service::Boot<'b>,
+) -> uefi_wrapper::Result<&'c mut [u8]> {
+    let size = alloc_size_for_mmap(bs)?;
+    let ptr = bs.allocate_pool(size)?;
+
+    // SAFETY: `size` bytes from `ptr` are allocated by `allocate_pool`.
+    // These memory are readable, writable, and byte-aligned.
+    Ok(unsafe { slice::from_raw_parts_mut(ptr, size) })
 }
 
 fn alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<usize> {
