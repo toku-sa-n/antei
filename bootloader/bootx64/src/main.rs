@@ -19,7 +19,7 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     let mem_map_size = mem::get_memory_map_size(&mut st);
     uefi_println!(&mut st, "Memory map size: {}", mem_map_size);
 
-    bootx64::exit_boot_services(h, st);
+    let _ = bootx64::exit_boot_services(h, st);
 
     loop {
         x86_64::instructions::hlt();
