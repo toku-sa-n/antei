@@ -17,16 +17,11 @@ fn try_exit_boot_services_and_return_mmap<'a>(
 ) -> uefi_wrapper::Result<&'a mut [boot::MemoryDescriptor]> {
     let mut bs = st.boot_services();
 
-    let mut raw_mmap_buf = try_alloc_for_raw_mmap(&mut bs)?;
+    let raw_mmap_buf = try_alloc_for_raw_mmap(&mut bs)?;
 
     let descriptor_array_ptr = try_alloc_for_descriptors_array(&mut bs)?;
 
-    let (key, descriptor_iter) = bs
-        .get_memory_map(&mut raw_mmap_buf)
-        .map_err(|e| e.map_value(|_| ()))?;
-
-    st.exit_boot_services(h, key)
-        .map_err(|e| e.map_value(|_| ()))?;
+    let descriptor_iter = try_exit_boot_services(h, st, raw_mmap_buf)?;
 
     // SAFETY: `mmap_len` bytes from `mmap_array_ptr` are in the range of memory allocated by
     // `allocate_pool.` These memory are initialized by the `for` statement.
@@ -35,6 +30,23 @@ fn try_exit_boot_services_and_return_mmap<'a>(
     let descriptors = unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) };
 
     Ok(descriptors)
+}
+
+fn try_exit_boot_services(
+    h: uefi_wrapper::Handle,
+    mut st: crate::SystemTable,
+    mmap_buf: &mut [u8],
+) -> uefi_wrapper::Result<impl ExactSizeIterator<Item = boot::MemoryDescriptor> + '_> {
+    let bs = st.boot_services();
+
+    let (key, descriptor_iter) = bs
+        .get_memory_map(mmap_buf)
+        .map_err(|e| e.map_value(|_| ()))?;
+
+    st.exit_boot_services(h, key)
+        .map_err(|e| e.map_value(|_| ()))?;
+
+    Ok(descriptor_iter)
 }
 
 fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<&'a mut [u8]> {
