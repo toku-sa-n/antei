@@ -63,8 +63,8 @@ fn try_exit_boot_services<'a>(
 
     let raw_mmap_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
 
-    let mmap_array_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
-    let mmap_array_ptr = ptr::cast_mut::<_, boot::MemoryDescriptor>(mmap_array_ptr);
+    let descriptor_array_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
+    let descriptor_array_ptr = ptr::cast_mut::<_, boot::MemoryDescriptor>(descriptor_array_ptr);
 
     // SAFETY: `alloc_size_for_mmap` bytes from `raw_mmap_ptr` are allocated by `allocate_pool`.
     // These memory are readable, writable, and byte-aligned.
@@ -84,7 +84,7 @@ fn try_exit_boot_services<'a>(
     for (i, d) in descriptor_iter.enumerate() {
         // SAFETY: `p` points to an address which is allocated by `allocate_pool`.
         unsafe {
-            let p = mmap_array_ptr.add(i);
+            let p = descriptor_array_ptr.add(i);
             ptr::write(p, d);
         }
     }
@@ -93,7 +93,7 @@ fn try_exit_boot_services<'a>(
     // `allocate_pool.` These memory are initialized by the `for` statement.
     //
     // `mmap_array_ptr` must not be used from this line.
-    let descriptors = unsafe { slice::from_raw_parts_mut(mmap_array_ptr, mmap_len) };
+    let descriptors = unsafe { slice::from_raw_parts_mut(descriptor_array_ptr, mmap_len) };
 
     Ok(descriptors)
 }
