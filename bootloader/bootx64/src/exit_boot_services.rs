@@ -3,6 +3,7 @@ use aligned::slice;
 use uefi_wrapper::service::{self, boot};
 
 #[must_use]
+#[allow(clippy::module_name_repetitions)]
 pub fn exit_boot_services_and_return_mmap<'a>(
     h: uefi_wrapper::Handle,
     st: crate::SystemTable,
