@@ -32,9 +32,7 @@ fn try_exit_boot_services_and_return_mmap<'a>(
     // `allocate_pool.` These memory are initialized by the `for` statement.
     //
     // `mmap_array_ptr` must not be used from this line.
-    let descriptors = unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) };
-
-    Ok(descriptors)
+    Ok(unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) })
 }
 
 fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> Result<&'a mut [u8]> {
