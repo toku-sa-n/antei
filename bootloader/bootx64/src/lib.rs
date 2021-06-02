@@ -1,5 +1,6 @@
 #![no_std]
 
+mod exit_boot_services;
 pub mod fs;
 pub mod gop;
 pub mod io;
