@@ -1,6 +1,6 @@
 use aligned::ptr;
 use aligned::slice;
-use uefi_wrapper::service::boot;
+use uefi_wrapper::service::{self, boot};
 
 #[must_use]
 pub fn exit_boot_services<'a>(
@@ -16,9 +16,7 @@ fn try_exit_boot_services<'a>(
 ) -> uefi_wrapper::Result<&'a mut [boot::MemoryDescriptor]> {
     let mut bs = st.boot_services();
 
-    let mmap_size = bs.get_memory_map_size()?;
-
-    let alloc_size_for_mmap = mmap_size * 2;
+    let alloc_size_for_mmap = alloc_size_for_mmap(&mut bs)?;
 
     let raw_mmap_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
 
@@ -45,6 +43,10 @@ fn try_exit_boot_services<'a>(
     let descriptors = unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) };
 
     Ok(descriptors)
+}
+
+fn alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<usize> {
+    Ok(bs.get_memory_map_size()? * 2)
 }
 
 /// # Safety
