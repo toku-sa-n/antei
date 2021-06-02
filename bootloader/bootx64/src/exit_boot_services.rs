@@ -1,20 +1,25 @@
+use crate::SystemTable;
 use aligned::ptr;
 use aligned::slice;
-use uefi_wrapper::service::{self, boot};
+use boot::MemoryDescriptor;
+use uefi_wrapper::{
+    service::{self, boot},
+    Handle, Result,
+};
 
 #[must_use]
 #[allow(clippy::module_name_repetitions)]
 pub fn exit_boot_services_and_return_mmap<'a>(
-    h: uefi_wrapper::Handle,
-    st: crate::SystemTable,
-) -> &'a mut [boot::MemoryDescriptor] {
+    h: Handle,
+    st: SystemTable,
+) -> &'a mut [MemoryDescriptor] {
     try_exit_boot_services_and_return_mmap(h, st).expect("Failed to exit boot services.")
 }
 
 fn try_exit_boot_services_and_return_mmap<'a>(
-    h: uefi_wrapper::Handle,
-    mut st: crate::SystemTable,
-) -> uefi_wrapper::Result<&'a mut [boot::MemoryDescriptor]> {
+    h: Handle,
+    mut st: SystemTable,
+) -> Result<&'a mut [MemoryDescriptor]> {
     let mut bs = st.boot_services();
 
     let raw_mmap_buf = try_alloc_for_raw_mmap(&mut bs)?;
@@ -33,10 +38,10 @@ fn try_exit_boot_services_and_return_mmap<'a>(
 }
 
 fn try_exit_boot_services(
-    h: uefi_wrapper::Handle,
-    mut st: crate::SystemTable,
+    h: Handle,
+    mut st: SystemTable,
     mmap_buf: &mut [u8],
-) -> uefi_wrapper::Result<impl ExactSizeIterator<Item = boot::MemoryDescriptor> + '_> {
+) -> Result<impl ExactSizeIterator<Item = MemoryDescriptor> + '_> {
     let bs = st.boot_services();
 
     let (key, descriptor_iter) = bs
@@ -49,7 +54,7 @@ fn try_exit_boot_services(
     Ok(descriptor_iter)
 }
 
-fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<&'a mut [u8]> {
+fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> Result<&'a mut [u8]> {
     let size = try_get_alloc_size_for_mmap(bs)?;
     let ptr = bs.allocate_pool(size)?;
 
@@ -58,14 +63,12 @@ fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> uefi_wrapper::Resul
     Ok(unsafe { slice::from_raw_parts_mut(ptr, size) })
 }
 
-fn try_alloc_for_descriptors_array(
-    bs: &mut service::Boot<'_>,
-) -> uefi_wrapper::Result<*mut boot::MemoryDescriptor> {
+fn try_alloc_for_descriptors_array(bs: &mut service::Boot<'_>) -> Result<*mut MemoryDescriptor> {
     let size = try_get_alloc_size_for_mmap(bs)?;
     bs.allocate_pool(size).map(ptr::cast_mut)
 }
 
-fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<usize> {
+fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> Result<usize> {
     Ok(bs.get_memory_map_size()? * 2)
 }
 
@@ -77,9 +80,9 @@ fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Resu
 /// After calling this function, the caller must not derefer `array_ptr` unless the returned
 /// reference is dropped.
 unsafe fn generate_descriptors_array<'a>(
-    descriptors: impl ExactSizeIterator<Item = boot::MemoryDescriptor>,
-    array_ptr: *mut boot::MemoryDescriptor,
-) -> &'a mut [boot::MemoryDescriptor] {
+    descriptors: impl ExactSizeIterator<Item = MemoryDescriptor>,
+    array_ptr: *mut MemoryDescriptor,
+) -> &'a mut [MemoryDescriptor] {
     let mmap_len = descriptors.len();
 
     for (i, d) in descriptors.enumerate() {
