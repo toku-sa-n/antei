@@ -37,9 +37,7 @@ fn try_exit_boot_services_and_return_mmap<'a>(
     Ok(descriptors)
 }
 
-fn try_alloc_for_raw_mmap<'a, 'b, 'c>(
-    bs: &'a mut service::Boot<'b>,
-) -> uefi_wrapper::Result<&'c mut [u8]> {
+fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<&'a mut [u8]> {
     let size = try_get_alloc_size_for_mmap(bs)?;
     let ptr = bs.allocate_pool(size)?;
 
