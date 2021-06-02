@@ -47,6 +47,7 @@ impl SystemTable {
     }
 }
 
+#[must_use]
 pub fn exit_boot_services<'a>(
     h: uefi_wrapper::Handle,
     st: SystemTable,
