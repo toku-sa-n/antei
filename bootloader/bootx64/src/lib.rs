@@ -74,6 +74,9 @@ fn try_exit_boot_services<'a>(
         .get_memory_map(&mut raw_mmap_buf)
         .map_err(|e| e.map_value(|_| ()))?;
 
+    st.exit_boot_services(h, key)
+        .map_err(|e| e.map_value(|_| ()))?;
+
     let mmap_len = descriptor_iter.len();
     for (i, d) in descriptor_iter.enumerate() {
         // SAFETY: `p` points to an address which is allocated by `allocate_pool`.
@@ -88,9 +91,6 @@ fn try_exit_boot_services<'a>(
     //
     // `mmap_array_ptr` must not be used from this line.
     let descriptors = unsafe { slice::from_raw_parts_mut(mmap_array_ptr, mmap_len) };
-
-    st.exit_boot_services(h, key)
-        .map_err(|e| e.map_value(|_| ()))?;
 
     Ok(descriptors)
 }
