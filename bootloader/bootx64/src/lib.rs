@@ -47,8 +47,11 @@ impl SystemTable {
     }
 }
 
-pub fn exit_boot_services(h: uefi_wrapper::Handle, st: SystemTable) {
-    try_exit_boot_services(h, st).expect("Failed to exit boot services.");
+pub fn exit_boot_services<'a>(
+    h: uefi_wrapper::Handle,
+    st: SystemTable,
+) -> &'a mut [boot::MemoryDescriptor] {
+    try_exit_boot_services(h, st).expect("Failed to exit boot services.")
 }
 
 fn try_exit_boot_services<'a>(
