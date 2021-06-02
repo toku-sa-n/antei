@@ -37,6 +37,24 @@ fn try_exit_boot_services_and_return_mmap<'a>(
     Ok(descriptors)
 }
 
+fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> Result<&'a mut [u8]> {
+    let size = try_get_alloc_size_for_mmap(bs)?;
+    let ptr = bs.allocate_pool(size)?;
+
+    // SAFETY: `size` bytes from `ptr` are allocated by `allocate_pool`.
+    // These memory are readable, writable, and byte-aligned.
+    Ok(unsafe { slice::from_raw_parts_mut(ptr, size) })
+}
+
+fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> Result<usize> {
+    Ok(bs.get_memory_map_size()? * 2)
+}
+
+fn try_alloc_for_descriptors_array(bs: &mut service::Boot<'_>) -> Result<*mut MemoryDescriptor> {
+    let size = try_get_alloc_size_for_mmap(bs)?;
+    bs.allocate_pool(size).map(ptr::cast_mut)
+}
+
 fn try_exit_boot_services(
     h: Handle,
     mut st: SystemTable,
@@ -52,24 +70,6 @@ fn try_exit_boot_services(
         .map_err(|e| e.map_value(|_| ()))?;
 
     Ok(descriptor_iter)
-}
-
-fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> Result<&'a mut [u8]> {
-    let size = try_get_alloc_size_for_mmap(bs)?;
-    let ptr = bs.allocate_pool(size)?;
-
-    // SAFETY: `size` bytes from `ptr` are allocated by `allocate_pool`.
-    // These memory are readable, writable, and byte-aligned.
-    Ok(unsafe { slice::from_raw_parts_mut(ptr, size) })
-}
-
-fn try_alloc_for_descriptors_array(bs: &mut service::Boot<'_>) -> Result<*mut MemoryDescriptor> {
-    let size = try_get_alloc_size_for_mmap(bs)?;
-    bs.allocate_pool(size).map(ptr::cast_mut)
-}
-
-fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> Result<usize> {
-    Ok(bs.get_memory_map_size()? * 2)
 }
 
 /// # Safety
