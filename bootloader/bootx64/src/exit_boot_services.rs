@@ -16,7 +16,7 @@ fn try_exit_boot_services<'a>(
 ) -> uefi_wrapper::Result<&'a mut [boot::MemoryDescriptor]> {
     let mut bs = st.boot_services();
 
-    let alloc_size_for_mmap = alloc_size_for_mmap(&mut bs)?;
+    let alloc_size_for_mmap = try_get_alloc_size_for_mmap(&mut bs)?;
 
     let mut raw_mmap_buf = try_alloc_for_raw_mmap(&mut bs)?;
 
@@ -42,7 +42,7 @@ fn try_exit_boot_services<'a>(
 fn try_alloc_for_raw_mmap<'a, 'b, 'c>(
     bs: &'a mut service::Boot<'b>,
 ) -> uefi_wrapper::Result<&'c mut [u8]> {
-    let size = alloc_size_for_mmap(bs)?;
+    let size = try_get_alloc_size_for_mmap(bs)?;
     let ptr = bs.allocate_pool(size)?;
 
     // SAFETY: `size` bytes from `ptr` are allocated by `allocate_pool`.
@@ -50,7 +50,7 @@ fn try_alloc_for_raw_mmap<'a, 'b, 'c>(
     Ok(unsafe { slice::from_raw_parts_mut(ptr, size) })
 }
 
-fn alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<usize> {
+fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> uefi_wrapper::Result<usize> {
     Ok(bs.get_memory_map_size()? * 2)
 }
 
