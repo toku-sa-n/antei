@@ -38,21 +38,34 @@ fn try_exit_boot_services<'a>(
     st.exit_boot_services(h, key)
         .map_err(|e| e.map_value(|_| ()))?;
 
-    let mmap_len = descriptor_iter.len();
-
-    for (i, d) in descriptor_iter.enumerate() {
-        // SAFETY: `p` points to an address which is allocated by `allocate_pool`.
-        unsafe {
-            let p = descriptor_array_ptr.add(i);
-            ptr::write(p, d);
-        }
-    }
-
     // SAFETY: `mmap_len` bytes from `mmap_array_ptr` are in the range of memory allocated by
     // `allocate_pool.` These memory are initialized by the `for` statement.
     //
     // `mmap_array_ptr` must not be used from this line.
-    let descriptors = unsafe { slice::from_raw_parts_mut(descriptor_array_ptr, mmap_len) };
+    let descriptors = unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) };
 
     Ok(descriptors)
+}
+
+/// # Safety
+///
+/// The `size_of::<boot::MemoryDescriptor> * descriptors.len()` bytes from `array_ptr` must be
+/// readable, writable, and dereferencable.
+///
+/// After calling this function, the caller must not derefer `array_ptr` unless the returned
+/// reference is dropped.
+unsafe fn generate_descriptors_array<'a>(
+    descriptors: impl ExactSizeIterator<Item = boot::MemoryDescriptor>,
+    array_ptr: *mut boot::MemoryDescriptor,
+) -> &'a mut [boot::MemoryDescriptor] {
+    let mmap_len = descriptors.len();
+
+    for (i, d) in descriptors.enumerate() {
+        let p = array_ptr.add(i);
+        ptr::write(p, d);
+    }
+
+    // SAFETY: The caller must ensure that `mmap_len` bytes from `mmap_array_ptr` are dereferencable.
+    // These memory are initialized by the `for` statement.
+    slice::from_raw_parts_mut(array_ptr, mmap_len)
 }
