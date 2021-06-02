@@ -70,7 +70,7 @@ fn try_exit_boot_services(
 
 /// # Safety
 ///
-/// The `size_of::<boot::MemoryDescriptor> * descriptors.len()` bytes from `array_ptr` must be
+/// The `size_of::<boot::MemoryDescriptor>() * descriptors.len()` bytes from `array_ptr` must be
 /// readable, writable, and dereferencable.
 ///
 /// After calling this function, the caller must not derefer `array_ptr` unless the returned
