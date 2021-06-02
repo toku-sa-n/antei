@@ -58,9 +58,11 @@ fn try_exit_boot_services<'a>(
     let mut bs = st.boot_services();
 
     let mmap_size = bs.get_memory_map_size()?;
+
     let alloc_size_for_mmap = mmap_size * 2;
 
     let raw_mmap_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
+
     let mmap_array_ptr = bs.allocate_pool(alloc_size_for_mmap)?;
     let mmap_array_ptr = ptr::cast_mut::<_, boot::MemoryDescriptor>(mmap_array_ptr);
 
@@ -78,6 +80,7 @@ fn try_exit_boot_services<'a>(
         .map_err(|e| e.map_value(|_| ()))?;
 
     let mmap_len = descriptor_iter.len();
+
     for (i, d) in descriptor_iter.enumerate() {
         // SAFETY: `p` points to an address which is allocated by `allocate_pool`.
         unsafe {
