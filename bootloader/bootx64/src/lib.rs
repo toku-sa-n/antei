@@ -10,7 +10,7 @@ use core::fmt;
 use uefi_wrapper::service;
 use uefi_wrapper::{protocols::console, service::boot};
 
-pub use exit_boot_services::exit_boot_services;
+pub use exit_boot_services::exit_boot_services_and_return_mmap;
 
 #[repr(transparent)]
 #[derive(Debug)]

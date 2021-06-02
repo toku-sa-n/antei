@@ -3,14 +3,14 @@ use aligned::slice;
 use uefi_wrapper::service::{self, boot};
 
 #[must_use]
-pub fn exit_boot_services<'a>(
+pub fn exit_boot_services_and_return_mmap<'a>(
     h: uefi_wrapper::Handle,
     st: crate::SystemTable,
 ) -> &'a mut [boot::MemoryDescriptor] {
-    try_exit_boot_services(h, st).expect("Failed to exit boot services.")
+    try_exit_boot_services_and_return_mmap(h, st).expect("Failed to exit boot services.")
 }
 
-fn try_exit_boot_services<'a>(
+fn try_exit_boot_services_and_return_mmap<'a>(
     h: uefi_wrapper::Handle,
     mut st: crate::SystemTable,
 ) -> uefi_wrapper::Result<&'a mut [boot::MemoryDescriptor]> {
