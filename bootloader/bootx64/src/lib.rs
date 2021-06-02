@@ -3,7 +3,6 @@
 pub mod fs;
 pub mod gop;
 pub mod io;
-pub mod mem;
 pub mod panic;
 
 use aligned::ptr;
