@@ -28,10 +28,8 @@ fn try_exit_boot_services_and_return_mmap<'a>(
 
     let descriptor_iter = try_exit_boot_services(h, st, raw_mmap_buf)?;
 
-    // SAFETY: `mmap_len` bytes from `mmap_array_ptr` are in the range of memory allocated by
-    // `allocate_pool.` These memory are initialized by the `for` statement.
-    //
-    // `mmap_array_ptr` must not be used from this line.
+    // SAFETY: `descriptor_array_ptr` points to the memory allocated by
+    // `try_alloc_for_descriptors_array`.
     Ok(unsafe { generate_descriptors_array(descriptor_iter, descriptor_array_ptr) })
 }
 
