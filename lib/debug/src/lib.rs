@@ -1,7 +1,10 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+#![no_std]
+
+extern "C" {
+    fn asm_stop();
+}
+
+pub fn stop() {
+    // SAFETY: `asm_stop` just loops infinitely.
+    unsafe { asm_stop() }
 }
