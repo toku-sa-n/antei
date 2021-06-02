@@ -43,7 +43,7 @@ fn try_alloc_for_raw_mmap<'a>(bs: &mut service::Boot<'_>) -> Result<&'a mut [u8]
 }
 
 fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> Result<usize> {
-    Ok(bs.get_memory_map_size()? * 2)
+    bs.get_memory_map_size().map(|size| size * 2)
 }
 
 fn try_alloc_for_descriptors_array(bs: &mut service::Boot<'_>) -> Result<*mut MemoryDescriptor> {
