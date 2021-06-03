@@ -18,7 +18,8 @@ use crate::ERR_MSG;
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn read<T>(p: *const T) -> T {
-    try_read(p).expect(ERR_MSG)
+    // SAFETY: The caller must uphold the all safety rules.
+    unsafe { try_read(p).expect(ERR_MSG) }
 }
 
 /// Reads a value the pointer `p` points with [`core::ptr::read`].
@@ -43,7 +44,8 @@ pub unsafe fn try_read<T>(p: *const T) -> Result<T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
-        Ok(p.read())
+        // SAFETY: The caller must uphold the all safety rules.
+        Ok(unsafe { p.read() })
     } else {
         Err(Error::NotAligned)
     }
@@ -59,7 +61,8 @@ pub unsafe fn try_read<T>(p: *const T) -> Result<T, Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn write<T>(p: *mut T, v: T) {
-    try_write(p, v).expect(ERR_MSG)
+    // SAFETY: The caller must uphold the all safety rules.
+    unsafe { try_write(p, v).expect(ERR_MSG) }
 }
 
 /// Writes a value the pointer `p` points with [`core::ptr::write`].
@@ -78,7 +81,8 @@ pub unsafe fn try_write<T>(p: *mut T, v: T) -> Result<(), Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
-        p.write(v);
+        // SAFETY: The caller must uphold the all safety rules.
+        unsafe { p.write(v) };
         Ok(())
     } else {
         Err(Error::NotAligned)
@@ -100,7 +104,8 @@ pub unsafe fn try_write<T>(p: *mut T, v: T) -> Result<(), Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn get<T: Copy>(p: *const T) -> T {
-    try_get(p).expect(ERR_MSG)
+    // SAFETY: The caller must uphold the all safety rules.
+    unsafe { try_get(p).expect(ERR_MSG) }
 }
 
 /// Gets a value the pointer `p` points by dereferencing it.
@@ -125,7 +130,8 @@ pub unsafe fn try_get<T: Copy>(p: *const T) -> Result<T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
-        Ok(*p)
+        // SAFETY: The caller must uphold the all safety rules.
+        Ok(unsafe { *p })
     } else {
         Err(Error::NotAligned)
     }
@@ -147,7 +153,8 @@ pub unsafe fn try_get<T: Copy>(p: *const T) -> Result<T, Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn as_mut<'a, T>(p: *mut T) -> &'a mut T {
-    try_as_mut(p).expect(ERR_MSG)
+    // SAFETY: The caller must uphold the all safety notes.
+    unsafe { try_as_mut(p).expect(ERR_MSG) }
 }
 
 /// Converts a pointer to a mutable reference.
@@ -172,7 +179,8 @@ pub unsafe fn try_as_mut<'a, T>(p: *mut T) -> Result<&'a mut T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
-        Ok(&mut *p)
+        // SAFETY: The caller must uphold the all safety rules.
+        Ok(unsafe { &mut *p })
     } else {
         Err(Error::NotAligned)
     }
@@ -194,7 +202,8 @@ pub unsafe fn try_as_mut<'a, T>(p: *mut T) -> Result<&'a mut T, Error> {
 ///
 /// This method panics if `p` is either null or not aligned correctly.
 pub unsafe fn as_ref<'a, T>(p: *const T) -> &'a T {
-    try_as_ref(p).expect(ERR_MSG)
+    // SAFETY: The caller must uphold the all safety rules.
+    unsafe { try_as_ref(p).expect(ERR_MSG) }
 }
 
 /// Converts a pointer to an immutable reference.
@@ -219,7 +228,8 @@ pub unsafe fn try_as_ref<'a, T>(p: *const T) -> Result<&'a T, Error> {
     if p.is_null() {
         Err(Error::Null)
     } else if is_aligned(p) {
-        Ok(&*p)
+        // SAFETY: The caller must uphold the all safety rules.
+        Ok(unsafe { &*p })
     } else {
         Err(Error::NotAligned)
     }

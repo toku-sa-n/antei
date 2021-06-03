@@ -7,7 +7,8 @@ use crate::ERR_MSG;
 /// The caller must follow the rules of caling [`core::slice::from_raw_parts_mut`] except the
 /// alignment requirements.
 pub unsafe fn from_raw_parts_mut<'a, T>(data: *mut T, len: usize) -> &'a mut [T] {
-    let r = try_from_raw_parts_mut(data, len);
+    // SAFETY: The caller must uphold the all safety rules.
+    let r = unsafe { try_from_raw_parts_mut(data, len) };
     r.expect(ERR_MSG)
 }
 
@@ -29,7 +30,8 @@ pub unsafe fn try_from_raw_parts_mut<'a, T>(
     if data.is_null() {
         Err(Error::Null)
     } else if is_aligned(data) {
-        Ok(core::slice::from_raw_parts_mut(data, len))
+        // SAFETY: The caller must uphold the all safety rules.
+        Ok(unsafe { core::slice::from_raw_parts_mut(data, len) })
     } else {
         Err(Error::NotAligned)
     }
