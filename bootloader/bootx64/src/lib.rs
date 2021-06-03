@@ -1,13 +1,16 @@
 #![no_std]
 
+mod exit_boot_services;
 pub mod fs;
 pub mod gop;
 pub mod io;
 pub mod panic;
 
 use core::fmt;
-use uefi_wrapper::protocols::console;
 use uefi_wrapper::service;
+use uefi_wrapper::{protocols::console, service::boot};
+
+pub use exit_boot_services::exit_boot_services_and_return_mmap;
 
 #[repr(transparent)]
 #[derive(Debug)]
@@ -31,5 +34,15 @@ impl SystemTable {
                 uefi_panic!(self, "{}: {:?}", msg, e);
             }
         }
+    }
+
+    fn exit_boot_services(
+        self,
+        image_handler: uefi_wrapper::Handle,
+        map_key: boot::MapKey,
+    ) -> uefi_wrapper::Result<(), (Self, uefi_wrapper::Handle)> {
+        let r = self.0.exit_boot_services(image_handler, map_key);
+
+        r.map_err(|e| e.map_value(|(st, h)| (Self(st), h)))
     }
 }
