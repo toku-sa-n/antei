@@ -45,7 +45,7 @@ impl Discovered {
 
         // SAFETY: `self.ptr` is valid for `sz` bytes as it is not null. These memory are not
         // modified.
-        slice::from_raw_parts(self.ptr, sz)
+        unsafe { slice::from_raw_parts(self.ptr, sz) }
     }
 
     fn info_exists(&self) -> bool {

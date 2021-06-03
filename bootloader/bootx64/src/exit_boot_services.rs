@@ -82,11 +82,15 @@ unsafe fn generate_descriptors_array<'a>(
     let mmap_len = descriptors.len();
 
     for (i, d) in descriptors.enumerate() {
-        let p = array_ptr.add(i);
-        ptr::write(p, d);
+        // SAFETY: `p` points to readable, writable, and dereferencable memory as the caller
+        // ensures it.
+        unsafe {
+            let p = array_ptr.add(i);
+            ptr::write(p, d);
+        }
     }
 
     // SAFETY: The caller must ensure that `mmap_len` bytes from `array_ptr` are dereferencable.
     // These memory are initialized by the `for` statement.
-    slice::from_raw_parts_mut(array_ptr, mmap_len)
+    unsafe { slice::from_raw_parts_mut(array_ptr, mmap_len) }
 }

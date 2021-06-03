@@ -1,4 +1,5 @@
 #![no_std]
+#![deny(unsafe_op_in_unsafe_fn)]
 
 extern "C" {
     fn asm_stop() -> !;

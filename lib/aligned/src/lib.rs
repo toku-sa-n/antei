@@ -1,6 +1,7 @@
 //! A library to ensure that a pointer is aligned and not null when it dereferences.
 
 #![no_std]
+#![deny(unsafe_op_in_unsafe_fn)]
 
 pub mod error;
 pub mod ptr;
