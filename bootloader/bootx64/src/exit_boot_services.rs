@@ -86,7 +86,7 @@ unsafe fn generate_descriptors_array<'a>(
         ptr::write(p, d);
     }
 
-    // SAFETY: The caller must ensure that `mmap_len` bytes from `mmap_array_ptr` are dereferencable.
+    // SAFETY: The caller must ensure that `mmap_len` bytes from `array_ptr` are dereferencable.
     // These memory are initialized by the `for` statement.
     slice::from_raw_parts_mut(array_ptr, mmap_len)
 }
