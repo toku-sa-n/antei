@@ -1,13 +1,13 @@
-use crate::Allocator;
+use crate::Mapper;
 use elfloader::ElfLoader;
 
 struct Loader<'a> {
-    allocator: &'a mut Allocator<'a>,
     binary: &'a [u8],
+    mapper: &'a mut Mapper<'a>,
 }
 impl<'a> Loader<'a> {
-    fn new(binary: &'a [u8], allocator: &'a mut Allocator<'a>) -> Self {
-        Self { allocator, binary }
+    fn new(binary: &'a [u8], mapper: &'a mut Mapper<'a>) -> Self {
+        Self { binary, mapper }
     }
 }
 impl ElfLoader for Loader<'_> {
