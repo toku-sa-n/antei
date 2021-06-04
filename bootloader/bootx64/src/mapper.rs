@@ -3,7 +3,7 @@ use aligned_ptr::ptr;
 use os_units::NumOfPages;
 use x86_64::structures::paging::PhysFrame;
 use x86_64::structures::paging::RecursivePageTable;
-use x86_64::structures::paging::{self, Size4KiB};
+use x86_64::structures::paging::Size4KiB;
 use x86_64::structures::paging::{FrameAllocator, PageTableFlags};
 use x86_64::structures::paging::{Mapper as MapperTrait, Page};
 use x86_64::VirtAddr;
@@ -30,11 +30,8 @@ impl<'a> Mapper<'a> {
     /// # Safety
     ///
     /// See [`x86_64::structures::paging::Mapper`].
-    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame) {
-        let flush = unsafe {
-            self.mapper
-                .map_to(page, frame, Self::flags(), self.allocator)
-        };
+    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
+        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
         let flush = flush.expect("Failed to map a page.");
         flush.flush();
     }
@@ -42,24 +39,25 @@ impl<'a> Mapper<'a> {
     /// # Safety
     ///
     /// See [`x86_64::structures::paging::Mapper`].
-    pub(crate) unsafe fn map_range_to_unused(&mut self, v: VirtAddr, n: NumOfPages<Size4KiB>) {
+    pub(crate) unsafe fn map_range_to_unused(
+        &mut self,
+        v: VirtAddr,
+        n: NumOfPages<Size4KiB>,
+        flags: PageTableFlags,
+    ) {
         for i in 0..n.as_usize() {
             let page = Page::from_start_address(v + n.as_bytes().as_usize());
             let page = page.expect("The address is not page-aligned.");
 
-            self.map_to_unused(page);
+            self.map_to_unused(page, flags);
         }
     }
 
-    fn map_to_unused(&mut self, page: Page<Size4KiB>) {
+    fn map_to_unused(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
         let frame = self.allocator.allocate_frame();
         let frame = frame.expect("Physical frame is not available.");
 
         // SAFETY: The physical memory is not used by anyone.
-        unsafe { self.map(page, frame) };
-    }
-
-    fn flags() -> PageTableFlags {
-        PageTableFlags::PRESENT | PageTableFlags::WRITABLE
+        unsafe { self.map(page, frame, flags) };
     }
 }
