@@ -42,7 +42,7 @@ impl<'a> Mapper<'a> {
     /// # Safety
     ///
     /// See [`x86_64::structures::paging::Mapper`].
-    pub unsafe fn map_range_to_unused(&mut self, v: VirtAddr, n: NumOfPages<Size4KiB>) {
+    pub(crate) unsafe fn map_range_to_unused(&mut self, v: VirtAddr, n: NumOfPages<Size4KiB>) {
         for i in 0..n.as_usize() {
             let page = Page::from_start_address(v + n.as_bytes().as_usize());
             let page = page.expect("The address is not page-aligned.");
