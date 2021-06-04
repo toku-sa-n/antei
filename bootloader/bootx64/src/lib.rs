@@ -14,4 +14,5 @@ pub mod system_table;
 
 pub(crate) use allocator::Allocator;
 pub use exit_boot_services::exit_boot_services_and_return_mmap;
+pub(crate) use mapper::Mapper;
 pub use system_table::SystemTable;
