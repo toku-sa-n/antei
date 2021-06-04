@@ -1,16 +1,16 @@
 use crate::Allocator;
 use elfloader::ElfLoader;
 
-struct Mapper<'a> {
+struct Loader<'a> {
     allocator: &'a mut Allocator<'a>,
     binary: &'a [u8],
 }
-impl<'a> Mapper<'a> {
+impl<'a> Loader<'a> {
     fn new(binary: &'a [u8], allocator: &'a mut Allocator<'a>) -> Self {
         Self { allocator, binary }
     }
 }
-impl ElfLoader for Mapper<'_> {
+impl ElfLoader for Loader<'_> {
     fn allocate(&mut self, load_headers: elfloader::LoadableHeaders) -> Result<(), &'static str> {
         todo!()
     }
