@@ -1,10 +1,10 @@
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use uefi_wrapper::service::boot::MemoryType;
 
-struct Mapper<'a> {
+struct Allocator<'a> {
     mem_map: &'a mut [MemoryDescriptor],
 }
-impl<'a> Mapper<'a> {
+impl<'a> Allocator<'a> {
     fn new(mem_map: &'a mut [MemoryDescriptor]) -> Self {
         Self { mem_map }
     }
