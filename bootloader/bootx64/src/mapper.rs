@@ -1,9 +1,9 @@
 use crate::Allocator;
 use aligned::ptr;
-use x86_64::structures::paging::PageTableFlags;
 use x86_64::structures::paging::PhysFrame;
 use x86_64::structures::paging::RecursivePageTable;
 use x86_64::structures::paging::{self, Size4KiB};
+use x86_64::structures::paging::{FrameAllocator, PageTableFlags};
 use x86_64::structures::paging::{Mapper as MapperTrait, Page};
 use x86_64::VirtAddr;
 
@@ -30,10 +30,23 @@ impl<'a> Mapper<'a> {
     ///
     /// See [`x86_64::structures::paging::Mapper`].
     unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame) {
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
-        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
+        let flush = unsafe {
+            self.mapper
+                .map_to(page, frame, Self::flags(), self.allocator)
+        };
         let flush = flush.expect("Failed to map a page.");
         flush.flush();
+    }
+
+    fn map_to_unused(&mut self, page: Page<Size4KiB>) {
+        let frame = self.allocator.allocate_frame();
+        let frame = frame.expect("Physical frame is not available.");
+
+        // SAFETY: The physical memory is not used by anyone.
+        unsafe { self.map(page, frame) };
+    }
+
+    fn flags() -> PageTableFlags {
+        PageTableFlags::PRESENT | PageTableFlags::WRITABLE
     }
 }
