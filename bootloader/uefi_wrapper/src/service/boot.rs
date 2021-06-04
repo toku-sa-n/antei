@@ -6,6 +6,7 @@ use core::mem;
 use r_efi::efi;
 
 pub use r_efi::efi::MemoryDescriptor;
+pub use r_efi::efi::MemoryType;
 
 pub struct Boot<'a>(&'a efi::BootServices);
 impl<'a> Boot<'a> {
