@@ -7,6 +7,7 @@ mod exit_boot_services;
 pub mod fs;
 pub mod gop;
 pub mod io;
+mod mapper;
 pub mod panic;
 pub mod system_table;
 
