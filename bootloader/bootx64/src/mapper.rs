@@ -4,7 +4,7 @@ use x86_64::structures::paging::RecursivePageTable;
 use x86_64::structures::paging::{self, Size4KiB};
 use x86_64::VirtAddr;
 
-const RECURSIVE_PAGING: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
+const RECURSIVE_PAGING: VirtAddr = VirtAddr::new_truncate(0xffff_ff7f_bfdf_e000);
 
 struct Mapper<'a> {
     allocator: &'a mut Allocator<'a>,
