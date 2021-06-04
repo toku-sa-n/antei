@@ -10,11 +10,11 @@ use x86_64::{
 };
 
 struct Allocator<'a> {
-    mem_map: &'a mut [MemoryDescriptor],
+    mmap: &'a mut [MemoryDescriptor],
 }
 impl<'a> Allocator<'a> {
     fn new(mem_map: &'a mut [MemoryDescriptor]) -> Self {
-        Self { mem_map }
+        Self { mmap: mem_map }
     }
 
     fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
@@ -37,9 +37,7 @@ impl<'a> Allocator<'a> {
     }
 
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
-        self.mem_map
-            .iter_mut()
-            .filter(|d| Self::is_usable_memory(d))
+        self.mmap.iter_mut().filter(|d| Self::is_usable_memory(d))
     }
 
     fn is_usable_memory(d: &MemoryDescriptor) -> bool {
