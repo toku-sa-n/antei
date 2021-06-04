@@ -39,7 +39,11 @@ impl<'a> Allocator<'a> {
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
         self.mem_map
             .iter_mut()
-            .filter(|x| x.r#type == MemoryType::ConventionalMemory as u32)
+            .filter(|d| Self::is_usable_memory(d))
+    }
+
+    fn is_usable_memory(d: &MemoryDescriptor) -> bool {
+        d.r#type == MemoryType::ConventionalMemory as u32
     }
 }
 unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
