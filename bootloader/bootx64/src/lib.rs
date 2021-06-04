@@ -6,6 +6,7 @@ pub mod fs;
 pub mod gop;
 pub mod io;
 pub mod panic;
+pub mod system_table;
 
 use core::fmt;
 use uefi_wrapper::service;
