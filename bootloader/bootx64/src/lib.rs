@@ -11,5 +11,6 @@ mod paging;
 pub mod panic;
 pub mod system_table;
 
+pub(crate) use allocator::Allocator;
 pub use exit_boot_services::exit_boot_services_and_return_mmap;
 pub use system_table::SystemTable;
