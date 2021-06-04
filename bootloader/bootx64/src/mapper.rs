@@ -46,11 +46,35 @@ impl<'a> Mapper<'a> {
         flags: PageTableFlags,
     ) {
         for i in 0..n.as_usize() {
-            let page = Page::from_start_address(v + n.as_bytes().as_usize());
+            let i = NumOfPages::<Size4KiB>::new(i);
+
+            let page = Page::from_start_address(v + i.as_bytes().as_usize());
             let page = page.expect("The address is not page-aligned.");
 
             self.map_to_unused(page, flags);
         }
+    }
+
+    pub(crate) unsafe fn update_flags_for_range(
+        &mut self,
+        v: VirtAddr,
+        n: NumOfPages<Size4KiB>,
+        flags: PageTableFlags,
+    ) {
+        for i in 0..n.as_usize() {
+            let i = NumOfPages::<Size4KiB>::new(i);
+
+            let page = Page::from_start_address(v + i.as_bytes().as_usize());
+            let page = page.expect("The address is not page-aligned.");
+
+            unsafe { self.update_flags(page, flags) };
+        }
+    }
+
+    pub(crate) unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
+        let r = unsafe { self.mapper.update_flags(page, flags) };
+        let flush = r.expect("Failed to update flags.");
+        flush.flush();
     }
 
     fn map_to_unused(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {

@@ -1,5 +1,10 @@
 use crate::Mapper;
+use core::convert::TryInto;
+use core::ptr;
 use elfloader::ElfLoader;
+use os_units::Bytes;
+use x86_64::structures::paging::PageTableFlags;
+use x86_64::VirtAddr;
 
 struct Loader<'a> {
     binary: &'a [u8],
@@ -12,7 +17,21 @@ impl<'a> Loader<'a> {
 }
 impl ElfLoader for Loader<'_> {
     fn allocate(&mut self, load_headers: elfloader::LoadableHeaders) -> Result<(), &'static str> {
-        todo!()
+        for h in load_headers {
+            let v = VirtAddr::new(h.virtual_addr());
+
+            let bytes = Bytes::new(h.mem_size().try_into().unwrap());
+
+            let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+            // SAFETY: The page will be used to load the ELF file. The memory does not have to be
+            // initialized.
+            unsafe {
+                self.mapper
+                    .map_range_to_unused(v, bytes.as_num_of_pages(), flags)
+            };
+        }
+
+        Ok(())
     }
 
     fn load(
@@ -21,10 +40,25 @@ impl ElfLoader for Loader<'_> {
         base: elfloader::VAddr,
         region: &[u8],
     ) -> Result<(), &'static str> {
-        todo!()
+        let base = VirtAddr::new(base);
+
+        // SAFETY: Memory is allocated by the previous `allocate` call.
+        unsafe { ptr::copy(region.as_ptr(), base.as_mut_ptr(), region.len()) };
+
+        if !flags.is_write() {
+            let bytes = Bytes::new(region.len());
+            let n = bytes.as_num_of_pages();
+
+            unsafe {
+                self.mapper
+                    .update_flags_for_range(base, n, PageTableFlags::PRESENT)
+            }
+        }
+
+        Ok(())
     }
 
-    fn relocate(&mut self, entry: &elfloader::Rela<elfloader::P64>) -> Result<(), &'static str> {
-        todo!()
+    fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), &'static str> {
+        unimplemented!("The kernel must not have a relocation section.")
     }
 }
