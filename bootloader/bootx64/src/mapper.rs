@@ -1,5 +1,6 @@
 use crate::Allocator;
 use aligned::ptr;
+use os_units::NumOfPages;
 use x86_64::structures::paging::PhysFrame;
 use x86_64::structures::paging::RecursivePageTable;
 use x86_64::structures::paging::{self, Size4KiB};
@@ -36,6 +37,18 @@ impl<'a> Mapper<'a> {
         };
         let flush = flush.expect("Failed to map a page.");
         flush.flush();
+    }
+
+    /// # Safety
+    ///
+    /// See [`x86_64::structures::paging::Mapper`].
+    unsafe fn map_range_to_unused(&mut self, v: VirtAddr, n: NumOfPages<Size4KiB>) {
+        for i in 0..n.as_usize() {
+            let page = Page::from_start_address(v + n.as_bytes().as_usize());
+            let page = page.expect("The address is not page-aligned.");
+
+            self.map_to_unused(page);
+        }
     }
 
     fn map_to_unused(&mut self, page: Page<Size4KiB>) {
