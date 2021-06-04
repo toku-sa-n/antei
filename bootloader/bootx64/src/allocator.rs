@@ -9,7 +9,7 @@ use x86_64::{
     PhysAddr,
 };
 
-struct Allocator<'a> {
+pub(crate) struct Allocator<'a> {
     mmap: &'a mut [MemoryDescriptor],
 }
 impl<'a> Allocator<'a> {
