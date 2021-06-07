@@ -8,10 +8,12 @@ use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
 pub fn enable_write_protect() {
+    // SAFETY: Disabling the write protection does not affect the memory safety.
     unsafe { Cr0::update(|flags| flags.insert(Cr0Flags::WRITE_PROTECT)) }
 }
 
 pub fn disable_write_protect() {
+    // SAFETY: Disabling the write protection does not affect the memory safety.
     unsafe { Cr0::update(|flags| flags.remove(Cr0Flags::WRITE_PROTECT)) }
 }
 
