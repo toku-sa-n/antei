@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 name = "bootx64"
 
 [dependencies]
-aligned = { path = "../../lib/aligned" }
+aligned_ptr = "0.1.0"
 rlibc = "1.0.0"
 spinning_top = "0.2.4"
 uefi_wrapper = { path = "../uefi_wrapper" }
