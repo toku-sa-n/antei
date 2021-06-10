@@ -1,7 +1,7 @@
 use crate::protocols::console;
 use crate::service;
 use crate::service::boot;
-use aligned::ptr;
+use aligned_ptr::ptr;
 use core::fmt;
 use r_efi::efi;
 
