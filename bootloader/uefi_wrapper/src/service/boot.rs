@@ -131,7 +131,7 @@ impl<'a> Boot<'a> {
         }
     }
 
-    pub fn new(bs: &'a efi::BootServices) -> Self {
+    pub(crate) fn new(bs: &'a efi::BootServices) -> Self {
         Self(bs)
     }
 }
