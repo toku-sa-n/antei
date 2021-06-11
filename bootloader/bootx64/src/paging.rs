@@ -1,6 +1,4 @@
 use aligned_ptr::ptr;
-use x86_64::registers::control::Cr0;
-use x86_64::registers::control::Cr0Flags;
 use x86_64::registers::control::Cr3;
 use x86_64::structures::paging::PageTable;
 use x86_64::structures::paging::PageTableFlags;
@@ -8,8 +6,12 @@ use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
 pub fn enable_write_protect() {
-    // SAFETY: Disabling the write protection does not affect the memory safety.
-    todo!();
+    extern "C" {
+        fn asm_enable_page_table_write_protect();
+    }
+
+    // SAFETY: Enabling the write protection does not affect the memory safety.
+    unsafe { asm_enable_page_table_write_protect() }
 }
 
 pub fn disable_write_protect() {
