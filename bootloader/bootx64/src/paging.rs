@@ -8,17 +8,17 @@ use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
 pub fn enable_write_protect() {
-    extern "C" {
-        fn asm_enable_page_table_write_protect();
-    }
-
     // SAFETY: Disabling the write protection does not affect the memory safety.
-    unsafe { asm_enable_page_table_write_protect() }
+    todo!();
 }
 
 pub fn disable_write_protect() {
+    extern "C" {
+        fn asm_disable_page_table_write_protect();
+    }
+
     // SAFETY: Disabling the write protection does not affect the memory safety.
-    unsafe { Cr0::update(|flags| flags.remove(Cr0Flags::WRITE_PROTECT)) }
+    unsafe { asm_disable_page_table_write_protect() }
 }
 
 /// # Safety
