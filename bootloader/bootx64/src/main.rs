@@ -5,6 +5,7 @@
 // For `memcpy`.
 extern crate rlibc as _;
 
+use bootx64::elf;
 use bootx64::gop;
 use bootx64::{fs, uefi_println};
 
@@ -17,6 +18,8 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
 
     let _ = bootx64::exit_boot_services_and_return_mmap(h, st);
+
+    elf::load(bytes);
 
     loop {
         x86_64::instructions::hlt();

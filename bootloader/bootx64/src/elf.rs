@@ -1,3 +1,4 @@
+use crate::paging;
 use crate::Mapper;
 use core::convert::TryInto;
 use core::ptr;
@@ -5,6 +6,10 @@ use elfloader::ElfLoader;
 use os_units::Bytes;
 use x86_64::structures::paging::PageTableFlags;
 use x86_64::VirtAddr;
+
+pub fn load(binary: &[u8]) {
+    paging::disable_write_protect();
+}
 
 struct Loader<'a> {
     binary: &'a [u8],
