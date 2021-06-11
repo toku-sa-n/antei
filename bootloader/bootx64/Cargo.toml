@@ -10,9 +10,9 @@ name = "bootx64"
 
 [dependencies]
 aligned_ptr = "0.1.0"
+elfloader = "0.12.0"
 os_units = "0.4.1"
 rlibc = "1.0.0"
 spinning_top = "0.2.4"
 uefi_wrapper = { path = "../uefi_wrapper" }
 x86_64 = { version = "0.14.3", features = ["instructions", "external_asm"], default-features = false }
-xmas-elf = "0.7.0"

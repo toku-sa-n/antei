@@ -1,5 +1,5 @@
 use crate::Allocator;
-use aligned::ptr;
+use aligned_ptr::ptr;
 use os_units::NumOfPages;
 use x86_64::structures::paging::PhysFrame;
 use x86_64::structures::paging::RecursivePageTable;

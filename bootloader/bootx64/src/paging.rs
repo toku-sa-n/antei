@@ -1,4 +1,4 @@
-use aligned::ptr;
+use aligned_ptr::ptr;
 use x86_64::registers::control::Cr0;
 use x86_64::registers::control::Cr0Flags;
 use x86_64::registers::control::Cr3;
