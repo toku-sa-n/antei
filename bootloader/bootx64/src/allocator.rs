@@ -1,6 +1,9 @@
+use core::convert::TryInto;
+
+use os_units::NumOfPages;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use uefi_wrapper::service::boot::MemoryType;
-use x86_64::structures::paging::{PageSize, Size4KiB};
+use x86_64::structures::paging::Size4KiB;
 use x86_64::{
     structures::paging::{FrameAllocator, PhysFrame},
     PhysAddr,
@@ -14,6 +17,25 @@ impl<'a> Allocator<'a> {
         Self { mem_map }
     }
 
+    fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+        let bytes: u64 = n.as_bytes().as_usize().try_into().unwrap();
+        let n: u64 = n.as_usize().try_into().unwrap();
+
+        for d in self.iter_mut_conventional() {
+            if d.number_of_pages >= n {
+                let f = d.physical_start;
+                let f = PhysAddr::new(f);
+
+                d.number_of_pages -= n;
+                d.physical_start += bytes;
+
+                return Some(f);
+            }
+        }
+
+        None
+    }
+
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
         self.mem_map
             .iter_mut()
@@ -22,20 +44,9 @@ impl<'a> Allocator<'a> {
 }
 unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-        for d in self.iter_mut_conventional() {
-            if d.number_of_pages > 0 {
-                let f = d.physical_start;
-                let f = PhysAddr::new(f);
-                let f = PhysFrame::from_start_address(f);
-                let f = f.expect("The address is not page-aligned.");
+        let f = self.allocate_frames(NumOfPages::new(1))?;
+        let f = PhysFrame::from_start_address(f);
 
-                d.number_of_pages -= 1;
-                d.physical_start += Size4KiB::SIZE;
-
-                return Some(f);
-            }
-        }
-
-        None
+        Some(f.expect("The address is not page-aligned."))
     }
 }
