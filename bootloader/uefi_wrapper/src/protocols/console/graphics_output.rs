@@ -1,7 +1,7 @@
 use crate::result;
 use aligned_ptr::ptr;
 use core::fmt;
-use core::mem;
+use core::mem::MaybeUninit;
 use r_efi::efi;
 use r_efi::efi::protocols::graphics_output;
 
@@ -14,8 +14,8 @@ impl GraphicsOutput {
     ///
     /// Refer to the UEFI specification.
     pub fn query_mode(&mut self, mode: u32) -> crate::Result<ModeInformation> {
-        let mut size = mem::MaybeUninit::uninit();
-        let mut info = mem::MaybeUninit::uninit();
+        let mut size = MaybeUninit::uninit();
+        let mut info = MaybeUninit::uninit();
 
         let r = (self.0.query_mode)(&mut self.0, mode, size.as_mut_ptr(), info.as_mut_ptr());
 
