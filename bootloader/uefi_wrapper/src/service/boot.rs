@@ -7,7 +7,7 @@ use r_efi::efi;
 
 pub use r_efi::efi::MemoryDescriptor;
 
-pub struct Boot<'a>(&'a mut efi::BootServices);
+pub struct Boot<'a>(&'a efi::BootServices);
 impl<'a> Boot<'a> {
     /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
     /// as it may create multiple mutable references to the same object), this method generates
@@ -41,7 +41,7 @@ impl<'a> Boot<'a> {
     /// # Errors
     ///
     /// Refer to the UEFI specification.
-    pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
+    pub fn allocate_pool(&self, size: usize) -> crate::Result<*mut u8> {
         const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::LoaderData;
         let mut buf = mem::MaybeUninit::uninit();
         let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
@@ -55,7 +55,7 @@ impl<'a> Boot<'a> {
     /// # Errors
     ///
     /// Refer to the UEFI specification.
-    pub fn free_pool(&mut self, buf: *mut u8) -> crate::Result<()> {
+    pub fn free_pool(&self, buf: *mut u8) -> crate::Result<()> {
         let r = (self.0.free_pool)(buf.cast());
         result::from_status_and_value(r, ())
     }
@@ -131,7 +131,7 @@ impl<'a> Boot<'a> {
         }
     }
 
-    pub fn new(bs: &'a mut efi::BootServices) -> Self {
+    pub(crate) fn new(bs: &'a efi::BootServices) -> Self {
         Self(bs)
     }
 }

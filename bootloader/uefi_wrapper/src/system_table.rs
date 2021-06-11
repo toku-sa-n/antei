@@ -16,7 +16,7 @@ impl SystemTable {
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method
         // takes a mutable reference and this type does not implement `Copy`, only one mutable
         // reference to `efi::BootServices` is created.
-        let bs = unsafe { ptr::as_mut(self.as_mut().boot_services) };
+        let bs = unsafe { ptr::as_ref(self.as_mut().boot_services) };
 
         service::Boot::new(bs)
     }
