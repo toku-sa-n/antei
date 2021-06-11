@@ -11,14 +11,12 @@ pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
     pub fn boot_services(&mut self) -> service::Boot<'_> {
-        let st = self.as_mut();
-
         // SAFETY: `st.boot_services` points to the instance of `efi::BootServices`.
         //
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method
         // takes a mutable reference and this type does not implement `Copy`, only one mutable
         // reference to `efi::BootServices` is created.
-        let bs = unsafe { ptr::as_mut(st.boot_services) };
+        let bs = unsafe { ptr::as_mut(self.as_mut().boot_services) };
 
         service::Boot::new(bs)
     }
