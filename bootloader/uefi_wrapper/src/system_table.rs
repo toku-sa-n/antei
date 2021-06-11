@@ -10,13 +10,13 @@ use r_efi::efi;
 pub struct SystemTable(*mut efi::SystemTable);
 impl SystemTable {
     #[must_use]
-    pub fn boot_services(&mut self) -> service::Boot<'_> {
+    pub fn boot_services(&self) -> service::Boot<'_> {
         // SAFETY: `st.boot_services` points to the instance of `efi::BootServices`.
         //
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method
         // takes a mutable reference and this type does not implement `Copy`, only one mutable
         // reference to `efi::BootServices` is created.
-        let bs = unsafe { ptr::as_ref(self.as_mut().boot_services) };
+        let bs = unsafe { ptr::as_ref(self.as_ref().boot_services) };
 
         service::Boot::new(bs)
     }
@@ -65,6 +65,12 @@ impl SystemTable {
         // A value of `SystemTable` is created only through the argument of `efi_main`. Since this method takes a mutable
         // reference of an instance and this type does not implement `Copy`, only one mutable reference to `efi::SystemTable` is created.
         unsafe { ptr::as_mut(self.0) }
+    }
+
+    fn as_ref(&self) -> &efi::SystemTable {
+        // SAFETY: A value of `SystemTable` is created only through the argument of `efi_main`. The
+        // UEFI firmware must pass the correct pointer.
+        unsafe { ptr::as_ref(self.0) }
     }
 }
 impl fmt::Debug for SystemTable {
