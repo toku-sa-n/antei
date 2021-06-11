@@ -9,7 +9,6 @@ pub use r_efi::efi::MemoryDescriptor;
 
 pub struct Boot<'a> {
     bs: &'a mut efi::BootServices,
-    _st: &'a mut crate::SystemTable,
 }
 impl<'a> Boot<'a> {
     /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
@@ -134,8 +133,8 @@ impl<'a> Boot<'a> {
         }
     }
 
-    pub fn new(bs: &'a mut efi::BootServices, st: &'a mut crate::SystemTable) -> Self {
-        Self { bs, _st: st }
+    pub fn new(bs: &'a mut efi::BootServices) -> Self {
+        Self { bs }
     }
 }
 impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {

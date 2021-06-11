@@ -20,7 +20,7 @@ impl SystemTable {
         // reference to `efi::BootServices` is created.
         let bs = unsafe { ptr::as_mut(st.boot_services) };
 
-        service::Boot::new(bs, self)
+        service::Boot::new(bs)
     }
 
     #[must_use]
