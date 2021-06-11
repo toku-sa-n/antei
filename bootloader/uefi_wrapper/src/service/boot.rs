@@ -7,9 +7,7 @@ use r_efi::efi;
 
 pub use r_efi::efi::MemoryDescriptor;
 
-pub struct Boot<'a> {
-    bs: &'a mut efi::BootServices,
-}
+pub struct Boot<'a>(&'a mut efi::BootServices);
 impl<'a> Boot<'a> {
     /// To avoid to create multiple pointers to the same protocol (which is potentially dangerous
     /// as it may create multiple mutable references to the same object), this method generates
@@ -25,7 +23,7 @@ impl<'a> Boot<'a> {
 
         let mut protocol = mem::MaybeUninit::uninit();
         let mut g = P::GUID;
-        let r = (self.bs.locate_protocol)(&mut g, WITHOUT_REGISTRATION, protocol.as_mut_ptr());
+        let r = (self.0.locate_protocol)(&mut g, WITHOUT_REGISTRATION, protocol.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
             // SAFETY: `locate_protocol` initializes `protocol`.
@@ -46,7 +44,7 @@ impl<'a> Boot<'a> {
     pub fn allocate_pool(&mut self, size: usize) -> crate::Result<*mut u8> {
         const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::LoaderData;
         let mut buf = mem::MaybeUninit::uninit();
-        let r = (self.bs.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
+        let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
 
         result::from_status_and_closure(r, || {
             // SAFETY: `allocate_pool` initializes `buf`.
@@ -58,7 +56,7 @@ impl<'a> Boot<'a> {
     ///
     /// Refer to the UEFI specification.
     pub fn free_pool(&mut self, buf: *mut u8) -> crate::Result<()> {
-        let r = (self.bs.free_pool)(buf.cast());
+        let r = (self.0.free_pool)(buf.cast());
         result::from_status_and_value(r, ())
     }
 
@@ -75,7 +73,7 @@ impl<'a> Boot<'a> {
         let mut descriptor_size = mem::MaybeUninit::uninit();
         let mut descriptor_version = mem::MaybeUninit::uninit();
 
-        let s = (self.bs.get_memory_map)(
+        let s = (self.0.get_memory_map)(
             &mut memory_map_size,
             buf.as_mut_ptr().cast(),
             map_key.as_mut_ptr(),
@@ -118,7 +116,7 @@ impl<'a> Boot<'a> {
         let mut descriptor_size = mem::MaybeUninit::uninit();
         let mut descriptor_version = mem::MaybeUninit::uninit();
 
-        let r = (self.bs.get_memory_map)(
+        let r = (self.0.get_memory_map)(
             &mut sz,
             buf.as_mut_ptr(),
             map_key.as_mut_ptr(),
@@ -134,7 +132,7 @@ impl<'a> Boot<'a> {
     }
 
     pub fn new(bs: &'a mut efi::BootServices) -> Self {
-        Self { bs }
+        Self(bs)
     }
 }
 impl<'a, P: crate::Protocol> From<WithProtocol<'a, P>> for Boot<'a> {
