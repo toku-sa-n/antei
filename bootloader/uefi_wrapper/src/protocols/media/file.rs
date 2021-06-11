@@ -1,6 +1,6 @@
 use super::simple_file_system::SimpleFileSystem;
 use crate::result;
-use aligned::ptr;
+use aligned_ptr::ptr;
 use core::fmt;
 use core::mem;
 use r_efi::efi::protocols::file;

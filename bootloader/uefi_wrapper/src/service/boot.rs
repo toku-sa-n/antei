@@ -1,5 +1,5 @@
 use crate::result;
-use aligned::ptr;
+use aligned_ptr::ptr;
 use core::ffi;
 use core::fmt;
 use core::mem;
