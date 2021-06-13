@@ -7,6 +7,7 @@ use elfloader::ElfBinary;
 use elfloader::ElfLoader;
 use elfloader::ElfLoaderErr;
 use elfloader::ProgramHeader;
+use elfloader::VAddr;
 use os_units::Bytes;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::structures::paging::PageTableFlags;
@@ -75,13 +76,8 @@ impl ElfLoader for Loader<'_> {
         unsafe { ptr::copy(region.as_ptr(), base.as_mut_ptr(), region.len()) };
 
         if !flags.is_write() {
-            let bytes = Bytes::new(region.len());
-            let n = bytes.as_num_of_pages();
-
-            unsafe {
-                self.mapper
-                    .update_flags_for_range(base, n, PageTableFlags::PRESENT)
-            }
+            let r = self.make_readonly(base.as_u64(), region.len());
+            r.expect("Failed to make a region readonly.");
         }
 
         Ok(())
@@ -89,5 +85,19 @@ impl ElfLoader for Loader<'_> {
 
     fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), ElfLoaderErr> {
         unimplemented!("The kernel must not have a relocation section.")
+    }
+
+    fn make_readonly(&mut self, base: VAddr, size: usize) -> Result<(), ElfLoaderErr> {
+        let base = VirtAddr::new(base);
+
+        let bytes = Bytes::new(size);
+
+        let n = bytes.as_num_of_pages();
+
+        unsafe {
+            self.mapper
+                .update_flags_for_range(base, n, PageTableFlags::PRESENT)
+        }
+        Ok(())
     }
 }
