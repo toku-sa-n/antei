@@ -35,7 +35,10 @@ impl<'a> Loader<'a> {
     }
 }
 impl ElfLoader for Loader<'_> {
-    fn allocate(&mut self, load_headers: elfloader::LoadableHeaders) -> Result<(), &'static str> {
+    fn allocate(
+        &mut self,
+        load_headers: elfloader::LoadableHeaders<'_, '_>,
+    ) -> Result<(), &'static str> {
         for h in load_headers {
             let v = VirtAddr::new(h.virtual_addr());
 
