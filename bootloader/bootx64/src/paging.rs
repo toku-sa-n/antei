@@ -5,7 +5,7 @@ use x86_64::structures::paging::PageTableFlags;
 use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
-pub fn enable_write_protect() {
+pub(crate) fn enable_write_protect() {
     extern "C" {
         fn asm_enable_page_table_write_protect();
     }
@@ -14,7 +14,7 @@ pub fn enable_write_protect() {
     unsafe { asm_enable_page_table_write_protect() }
 }
 
-pub fn disable_write_protect() {
+pub(crate) fn disable_write_protect() {
     extern "C" {
         fn asm_disable_page_table_write_protect();
     }
@@ -27,7 +27,7 @@ pub fn disable_write_protect() {
 ///
 /// This function assumes that the physical and the virtual of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
-pub unsafe fn enable_recursive_paging() {
+pub(crate) unsafe fn enable_recursive_paging() {
     let p = pml4_addr();
     let v = VirtAddr::new(p.as_u64());
 
@@ -39,7 +39,7 @@ pub unsafe fn enable_recursive_paging() {
     table[510].set_addr(p, flags);
 }
 
-pub fn pml4_addr() -> PhysAddr {
+pub(crate) fn pml4_addr() -> PhysAddr {
     let f = Cr3::read().0;
     f.start_address()
 }

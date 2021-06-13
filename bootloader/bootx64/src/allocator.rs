@@ -13,7 +13,7 @@ pub(crate) struct Allocator<'a> {
     mmap: &'a mut [MemoryDescriptor],
 }
 impl<'a> Allocator<'a> {
-    pub fn new(mem_map: &'a mut [MemoryDescriptor]) -> Self {
+    pub(crate) fn new(mem_map: &'a mut [MemoryDescriptor]) -> Self {
         Self { mmap: mem_map }
     }
 
