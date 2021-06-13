@@ -35,7 +35,7 @@ pub unsafe fn enable_recursive_paging() {
     let table: &mut PageTable = unsafe { ptr::as_mut(v.as_mut_ptr()) };
 
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-    table[0x510].set_addr(p, flags);
+    table[510].set_addr(p, flags);
 }
 
 pub fn pml4_addr() -> PhysAddr {

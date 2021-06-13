@@ -1,14 +1,29 @@
+use crate::allocator::Allocator;
 use crate::paging;
 use crate::Mapper;
 use core::convert::TryInto;
 use core::ptr;
+use elfloader::ElfBinary;
 use elfloader::ElfLoader;
 use os_units::Bytes;
+use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::structures::paging::PageTableFlags;
 use x86_64::VirtAddr;
 
-pub fn load(binary: &[u8]) {
+pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     paging::disable_write_protect();
+    unsafe { paging::enable_recursive_paging() };
+
+    let mut allocator = Allocator::new(mmap);
+    let mut mapper = unsafe { Mapper::new(&mut allocator) };
+    let mut loader = Loader::new(binary, &mut mapper);
+    let elf = ElfBinary::new("", binary);
+    let elf = elf.expect("Not a ELF file.");
+
+    let r = elf.load(&mut loader);
+    r.expect("Failed to load a ELF file.");
+
+    paging::enable_write_protect();
 }
 
 struct Loader<'a> {

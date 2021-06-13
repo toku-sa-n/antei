@@ -17,9 +17,9 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     let bytes = fs::locate(&mut st, "kernel");
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
 
-    let _ = bootx64::exit_boot_services_and_return_mmap(h, st);
+    let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
 
-    elf::load(bytes);
+    elf::load(bytes, mmap);
 
     loop {
         x86_64::instructions::hlt();
