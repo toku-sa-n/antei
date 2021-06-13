@@ -18,13 +18,8 @@ impl<'a> Allocator<'a> {
     }
 
     fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        for d in self.iter_mut_conventional() {
-            if let Some(a) = Self::try_alloc_from(d, n) {
-                return Some(a);
-            }
-        }
-
-        None
+        self.iter_mut_conventional()
+            .find_map(|d| Self::try_alloc_from(d, n))
     }
 
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
