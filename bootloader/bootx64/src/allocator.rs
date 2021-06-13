@@ -13,8 +13,8 @@ pub(crate) struct Allocator<'a> {
     mmap: &'a mut [MemoryDescriptor],
 }
 impl<'a> Allocator<'a> {
-    pub(crate) fn new(mem_map: &'a mut [MemoryDescriptor]) -> Self {
-        Self { mmap: mem_map }
+    pub(crate) fn new(mmap: &'a mut [MemoryDescriptor]) -> Self {
+        Self { mmap }
     }
 
     fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
