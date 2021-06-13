@@ -26,6 +26,7 @@ pub fn disable_write_protect() {
 /// # Safety
 ///
 /// This function assumes that the physical and the virtual of the PML4 is the same value.
+#[allow(clippy::module_name_repetitions)]
 pub unsafe fn enable_recursive_paging() {
     let p = pml4_addr();
     let v = VirtAddr::new(p.as_u64());
