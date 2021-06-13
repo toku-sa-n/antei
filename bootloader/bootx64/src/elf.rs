@@ -16,7 +16,7 @@ pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
 
     let mut allocator = Allocator::new(mmap);
     let mut mapper = unsafe { Mapper::new(&mut allocator) };
-    let mut loader = Loader::new(binary, &mut mapper);
+    let mut loader = Loader::new(&mut mapper);
     let elf = ElfBinary::new("", binary);
     let elf = elf.expect("Not a ELF file.");
 
@@ -27,12 +27,11 @@ pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
 }
 
 struct Loader<'a> {
-    binary: &'a [u8],
     mapper: &'a mut Mapper<'a>,
 }
 impl<'a> Loader<'a> {
-    fn new(binary: &'a [u8], mapper: &'a mut Mapper<'a>) -> Self {
-        Self { binary, mapper }
+    fn new(mapper: &'a mut Mapper<'a>) -> Self {
+        Self { mapper }
     }
 }
 impl ElfLoader for Loader<'_> {
