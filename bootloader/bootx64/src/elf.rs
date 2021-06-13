@@ -51,6 +51,9 @@ impl<'a> Loader<'a> {
             self.mapper
                 .map_range_to_unused(v, bytes.as_num_of_pages(), flags)
         };
+
+        // SAFETY: `bytes` from `v` are allocated by `map_range_to_unused`.
+        unsafe { write_zeros(v.as_mut_ptr(), bytes) }
     }
 }
 impl ElfLoader for Loader<'_> {
@@ -98,4 +101,11 @@ impl ElfLoader for Loader<'_> {
         }
         Ok(())
     }
+}
+
+/// # Safety
+///
+/// `start` must be valid for writes of `bytes`.
+unsafe fn write_zeros(start: *mut u8, bytes: Bytes) {
+    unsafe { ptr::write_bytes(start, 0, bytes.as_usize()) }
 }
