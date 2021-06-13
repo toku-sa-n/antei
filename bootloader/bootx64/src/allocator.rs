@@ -1,5 +1,5 @@
+use core::convert::TryFrom;
 use core::convert::TryInto;
-
 use os_units::NumOfPages;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use uefi_wrapper::service::boot::MemoryType;
@@ -32,21 +32,26 @@ impl<'a> Allocator<'a> {
     }
 
     fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        let bytes = n.as_bytes();
-        let bytes: u64 = bytes.as_usize().try_into().unwrap();
-        let n: u64 = n.as_usize().try_into().unwrap();
-
-        if d.number_of_pages >= n {
-            let f = d.physical_start;
-            let f = PhysAddr::new(f);
-
-            d.number_of_pages -= n;
-            d.physical_start += bytes;
-
-            Some(f)
+        if d.number_of_pages >= u64::try_from(n.as_usize()).unwrap() {
+            Some(Self::alloc_from(d, n))
         } else {
             None
         }
+    }
+
+    fn alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> PhysAddr {
+        let bytes = n.as_bytes();
+        let bytes: u64 = bytes.as_usize().try_into().unwrap();
+
+        let n: u64 = n.as_usize().try_into().unwrap();
+
+        let f = d.physical_start;
+        let f = PhysAddr::new(f);
+
+        d.number_of_pages -= n;
+        d.physical_start += bytes;
+
+        f
     }
 
     fn is_usable_memory(d: &MemoryDescriptor) -> bool {
