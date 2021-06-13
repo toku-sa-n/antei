@@ -67,7 +67,7 @@ impl ElfLoader for Loader<'_> {
     fn load(
         &mut self,
         flags: elfloader::Flags,
-        base: elfloader::VAddr,
+        base: VAddr,
         region: &[u8],
     ) -> Result<(), ElfLoaderErr> {
         let base = VirtAddr::new(base);
