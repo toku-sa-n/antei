@@ -6,6 +6,7 @@ use core::convert::TryInto;
 use elfloader::ElfBinary;
 use elfloader::ElfLoader;
 use elfloader::ElfLoaderErr;
+use elfloader::LoadableHeaders;
 use elfloader::ProgramHeader;
 use elfloader::VAddr;
 use os_units::Bytes;
@@ -53,10 +54,7 @@ impl<'a> Loader<'a> {
     }
 }
 impl ElfLoader for Loader<'_> {
-    fn allocate(
-        &mut self,
-        load_headers: elfloader::LoadableHeaders<'_, '_>,
-    ) -> Result<(), ElfLoaderErr> {
+    fn allocate(&mut self, load_headers: LoadableHeaders<'_, '_>) -> Result<(), ElfLoaderErr> {
         for h in load_headers {
             self.allocate_for_header(h);
         }
