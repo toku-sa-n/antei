@@ -36,7 +36,7 @@ impl<'a> Loader<'a> {
         Self { mapper }
     }
 
-    fn allocate_for_header(&mut self, h: ProgramHeader) {
+    fn allocate_for_header(&mut self, h: ProgramHeader<'_>) {
         let v = VirtAddr::new(h.virtual_addr());
 
         let bytes = Bytes::new(h.mem_size().try_into().unwrap());
