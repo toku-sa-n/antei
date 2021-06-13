@@ -42,6 +42,7 @@ impl<'a> Loader<'a> {
         let bytes = Bytes::new(h.mem_size().try_into().unwrap());
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+
         // SAFETY: The page will be used to load the ELF file. The memory does not have to be
         // initialized.
         unsafe {
