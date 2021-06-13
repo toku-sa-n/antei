@@ -6,6 +6,7 @@ use core::ptr;
 use elfloader::ElfBinary;
 use elfloader::ElfLoader;
 use elfloader::ElfLoaderErr;
+use elfloader::ProgramHeader;
 use os_units::Bytes;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::structures::paging::PageTableFlags;
@@ -34,6 +35,20 @@ impl<'a> Loader<'a> {
     fn new(mapper: &'a mut Mapper<'a>) -> Self {
         Self { mapper }
     }
+
+    fn allocate_for_header(&mut self, h: ProgramHeader) {
+        let v = VirtAddr::new(h.virtual_addr());
+
+        let bytes = Bytes::new(h.mem_size().try_into().unwrap());
+
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+        // SAFETY: The page will be used to load the ELF file. The memory does not have to be
+        // initialized.
+        unsafe {
+            self.mapper
+                .map_range_to_unused(v, bytes.as_num_of_pages(), flags)
+        };
+    }
 }
 impl ElfLoader for Loader<'_> {
     fn allocate(
@@ -41,17 +56,7 @@ impl ElfLoader for Loader<'_> {
         load_headers: elfloader::LoadableHeaders<'_, '_>,
     ) -> Result<(), ElfLoaderErr> {
         for h in load_headers {
-            let v = VirtAddr::new(h.virtual_addr());
-
-            let bytes = Bytes::new(h.mem_size().try_into().unwrap());
-
-            let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-            // SAFETY: The page will be used to load the ELF file. The memory does not have to be
-            // initialized.
-            unsafe {
-                self.mapper
-                    .map_range_to_unused(v, bytes.as_num_of_pages(), flags)
-            };
+            self.allocate_for_header(h);
         }
 
         Ok(())
