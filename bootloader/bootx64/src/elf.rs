@@ -1,8 +1,8 @@
 use crate::allocator::Allocator;
 use crate::paging;
 use crate::Mapper;
+use aligned_ptr::ptr;
 use core::convert::TryInto;
-use core::ptr;
 use elfloader::ElfBinary;
 use elfloader::ElfLoader;
 use elfloader::ElfLoaderErr;
