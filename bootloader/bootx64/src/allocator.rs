@@ -18,18 +18,9 @@ impl<'a> Allocator<'a> {
     }
 
     fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        let bytes: u64 = n.as_bytes().as_usize().try_into().unwrap();
-        let n: u64 = n.as_usize().try_into().unwrap();
-
         for d in self.iter_mut_conventional() {
-            if d.number_of_pages >= n {
-                let f = d.physical_start;
-                let f = PhysAddr::new(f);
-
-                d.number_of_pages -= n;
-                d.physical_start += bytes;
-
-                return Some(f);
+            if let Some(a) = Self::try_alloc_from(d, n) {
+                return Some(a);
             }
         }
 
@@ -38,6 +29,24 @@ impl<'a> Allocator<'a> {
 
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
         self.mmap.iter_mut().filter(|d| Self::is_usable_memory(d))
+    }
+
+    fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+        let bytes = n.as_bytes();
+        let bytes: u64 = bytes.as_usize().try_into().unwrap();
+        let n: u64 = n.as_usize().try_into().unwrap();
+
+        if d.number_of_pages >= n {
+            let f = d.physical_start;
+            let f = PhysAddr::new(f);
+
+            d.number_of_pages -= n;
+            d.physical_start += bytes;
+
+            Some(f)
+        } else {
+            None
+        }
     }
 
     fn is_usable_memory(d: &MemoryDescriptor) -> bool {
