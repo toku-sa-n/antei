@@ -10,7 +10,7 @@ name = "bootx64"
 
 [dependencies]
 aligned_ptr = "0.1.0"
-elfloader = "0.12.0"
+elfloader = "0.13.0"
 os_units = "0.4.1"
 rlibc = "1.0.0"
 spinning_top = "0.2.4"

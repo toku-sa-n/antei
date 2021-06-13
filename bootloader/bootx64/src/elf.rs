@@ -5,6 +5,7 @@ use core::convert::TryInto;
 use core::ptr;
 use elfloader::ElfBinary;
 use elfloader::ElfLoader;
+use elfloader::ElfLoaderErr;
 use os_units::Bytes;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::structures::paging::PageTableFlags;
@@ -17,7 +18,7 @@ pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     let mut allocator = Allocator::new(mmap);
     let mut mapper = unsafe { Mapper::new(&mut allocator) };
     let mut loader = Loader::new(&mut mapper);
-    let elf = ElfBinary::new("", binary);
+    let elf = ElfBinary::new(binary);
     let elf = elf.expect("Not a ELF file.");
 
     let r = elf.load(&mut loader);
@@ -38,7 +39,7 @@ impl ElfLoader for Loader<'_> {
     fn allocate(
         &mut self,
         load_headers: elfloader::LoadableHeaders<'_, '_>,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), ElfLoaderErr> {
         for h in load_headers {
             let v = VirtAddr::new(h.virtual_addr());
 
@@ -61,7 +62,7 @@ impl ElfLoader for Loader<'_> {
         flags: elfloader::Flags,
         base: elfloader::VAddr,
         region: &[u8],
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), ElfLoaderErr> {
         let base = VirtAddr::new(base);
 
         // SAFETY: Memory is allocated by the previous `allocate` call.
@@ -80,7 +81,7 @@ impl ElfLoader for Loader<'_> {
         Ok(())
     }
 
-    fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), &'static str> {
+    fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), ElfLoaderErr> {
         unimplemented!("The kernel must not have a relocation section.")
     }
 }
