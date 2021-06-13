@@ -34,19 +34,19 @@ impl<'a> Allocator<'a> {
         }
     }
 
-    fn alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> PhysAddr {
-        let bytes = n.as_bytes();
+    fn alloc_from(d: &mut MemoryDescriptor, num_pages: NumOfPages<Size4KiB>) -> PhysAddr {
+        let bytes = num_pages.as_bytes();
         let bytes: u64 = bytes.as_usize().try_into().unwrap();
 
-        let n: u64 = n.as_usize().try_into().unwrap();
+        let num_pages: u64 = num_pages.as_usize().try_into().unwrap();
 
-        let f = d.physical_start;
-        let f = PhysAddr::new(f);
+        let addr = d.physical_start;
+        let addr = PhysAddr::new(addr);
 
-        d.number_of_pages -= n;
+        d.number_of_pages -= num_pages;
         d.physical_start += bytes;
 
-        f
+        addr
     }
 
     fn is_usable_memory(d: &MemoryDescriptor) -> bool {
