@@ -17,7 +17,7 @@ pub(crate) struct Mapper<'a> {
 impl<'a> Mapper<'a> {
     /// # Safety
     ///
-    /// The caller must ensure that the recursive paging address 0xff7f_bfdf_e000 is accessible.
+    /// The caller must ensure that the recursive paging address `0xff7f_bfdf_e000` is accessible.
     pub(crate) unsafe fn new(allocator: &'a mut Allocator<'a>) -> Self {
         // SAFETY: The caller ensures that the recursive paging address is accessible.
         let table = unsafe { ptr::as_mut(RECURSIVE_PAGING.as_mut_ptr()) };
