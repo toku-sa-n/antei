@@ -19,8 +19,11 @@ pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     unsafe { paging::enable_recursive_paging() };
 
     let mut allocator = Allocator::new(mmap);
+
     let mut mapper = unsafe { Mapper::new(&mut allocator) };
+
     let mut loader = Loader::new(&mut mapper);
+
     let elf = ElfBinary::new(binary);
     let elf = elf.expect("Not a ELF file.");
 
