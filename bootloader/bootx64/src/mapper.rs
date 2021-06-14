@@ -33,15 +33,6 @@ impl<'a> Mapper<'a> {
     /// # Safety
     ///
     /// See [`x86_64::structures::paging::Mapper`].
-    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
-        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
-        let flush = flush.expect("Failed to map a page.");
-        flush.flush();
-    }
-
-    /// # Safety
-    ///
-    /// See [`x86_64::structures::paging::Mapper`].
     pub(crate) unsafe fn map_range_to_unused(
         &mut self,
         v: VirtAddr,
@@ -72,6 +63,15 @@ impl<'a> Mapper<'a> {
 
             unsafe { self.update_flags(page, flags) };
         }
+    }
+
+    /// # Safety
+    ///
+    /// See [`x86_64::structures::paging::Mapper`].
+    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
+        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
+        let flush = flush.expect("Failed to map a page.");
+        flush.flush();
     }
 
     pub(crate) unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
