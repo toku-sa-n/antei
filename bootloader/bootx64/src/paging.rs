@@ -25,9 +25,29 @@ pub(crate) fn disable_write_protect() {
 
 /// # Safety
 ///
-/// This function assumes that the physical and the virtual of the PML4 is the same value.
+/// This function assumes that the physical and virtual addresses of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
-pub(crate) unsafe fn enable_recursive_paging() {
+pub unsafe fn enable_recursive_paging() {
+    disable_write_protect();
+
+    // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
+    // same value.
+    unsafe {
+        set_recursive_entry();
+    }
+
+    enable_write_protect();
+}
+
+pub(crate) fn pml4_addr() -> PhysAddr {
+    let f = Cr3::read().0;
+    f.start_address()
+}
+
+/// # Safety
+///
+/// This function assumes that the physical and virtual addresses of the PML4 is the same value.
+unsafe fn set_recursive_entry() {
     let p = pml4_addr();
     let v = VirtAddr::new(p.as_u64());
 
@@ -37,9 +57,4 @@ pub(crate) unsafe fn enable_recursive_paging() {
 
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
     table[510].set_addr(p, flags);
-}
-
-pub(crate) fn pml4_addr() -> PhysAddr {
-    let f = Cr3::read().0;
-    f.start_address()
 }

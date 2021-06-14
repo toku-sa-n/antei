@@ -7,6 +7,7 @@ extern crate rlibc as _;
 
 use bootx64::elf;
 use bootx64::gop;
+use bootx64::paging;
 use bootx64::{fs, uefi_println};
 
 #[no_mangle]
@@ -18,6 +19,9 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
 
     let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
+
+    // SAFETY: Yes, the addresses are the same.
+    unsafe { paging::enable_recursive_paging() };
 
     elf::load(bytes, mmap);
 

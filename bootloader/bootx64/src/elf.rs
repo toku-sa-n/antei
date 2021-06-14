@@ -16,7 +16,6 @@ use x86_64::VirtAddr;
 
 pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     paging::disable_write_protect();
-    unsafe { paging::enable_recursive_paging() };
 
     let mut allocator = Allocator::new(mmap);
 

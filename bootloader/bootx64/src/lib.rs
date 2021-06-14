@@ -8,7 +8,7 @@ pub mod fs;
 pub mod gop;
 pub mod io;
 mod mapper;
-mod paging;
+pub mod paging;
 pub mod panic;
 pub mod system_table;
 
