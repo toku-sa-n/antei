@@ -74,7 +74,7 @@ impl<'a> Mapper<'a> {
         flush.flush();
     }
 
-    pub(crate) unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
+    unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
         let r = unsafe { self.mapper.update_flags(page, flags) };
         let flush = r.expect("Failed to update flags.");
         flush.flush();
