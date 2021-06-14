@@ -14,7 +14,10 @@ use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::structures::paging::PageTableFlags;
 use x86_64::VirtAddr;
 
-pub fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
+/// # Safety
+///
+/// The caller must ensure that the recursive paging is enabled.
+pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     paging::disable_write_protect();
 
     let mut allocator = Allocator::new(mmap);

@@ -23,7 +23,8 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     // SAFETY: Yes, the addresses are the same.
     unsafe { paging::enable_recursive_paging() };
 
-    elf::load(bytes, mmap);
+    // SAFETY: Yes, the recursive paging is enabled.
+    unsafe { elf::load(bytes, mmap) };
 
     loop {
         x86_64::instructions::hlt();
