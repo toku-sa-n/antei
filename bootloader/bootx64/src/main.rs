@@ -23,7 +23,7 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     // SAFETY: Yes, the addresses are the same.
     unsafe { paging::enable_recursive_paging() };
 
-    // SAFETY: Yes, the recursive paging is enabled.
+    // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
     unsafe { elf::load(bytes, mmap) };
 
     loop {
