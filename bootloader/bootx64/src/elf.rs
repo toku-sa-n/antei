@@ -18,7 +18,7 @@ use x86_64::VirtAddr;
 ///
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
-/// - There is no references to the PML4.
+/// - There are no references to the PML4.
 pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
     paging::disable_write_protect();
 
