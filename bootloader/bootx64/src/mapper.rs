@@ -19,7 +19,7 @@ impl<'a> Mapper<'a> {
     ///
     /// The caller must ensure that while the returned instance is alive
     /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
-    /// - The page tables are not accessed.
+    /// - There is no reference to one of the all working page tables.
     pub(crate) unsafe fn new(allocator: &'a mut Allocator<'a>) -> Self {
         // SAFETY: The caller ensures that the recursive paging address is accessible.
         let table = unsafe { ptr::as_mut(RECURSIVE_PAGING.as_mut_ptr()) };
