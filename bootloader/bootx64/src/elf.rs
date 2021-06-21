@@ -24,6 +24,8 @@ pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
 
     let mut allocator = Allocator::new(mmap);
 
+    // SAFETY: The caller ensures that the recursive paging is enabled and there is no reference to
+    // one of the all working page tables.
     let mut mapper = unsafe { Mapper::new(&mut allocator) };
 
     let mut loader = Loader::new(&mut mapper);
