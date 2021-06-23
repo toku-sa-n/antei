@@ -175,23 +175,31 @@ impl<'a> MemoryMapIter<'a> {
             len: memory_map_size / descriptor_size,
         }
     }
+
+    /// # Safety
+    ///
+    /// The next element must exist.
+    unsafe fn next_unchecked(&mut self) -> MemoryDescriptor {
+        let p = self.buf.as_ptr() as usize + self.descriptor_size * self.i;
+        let p = p as *const MemoryDescriptor;
+
+        let d = unsafe { p.read_unaligned() };
+
+        self.i += 1;
+
+        d
+    }
+
+    fn next_exists(&self) -> bool {
+        self.i < self.len
+    }
 }
 impl Iterator for MemoryMapIter<'_> {
     type Item = MemoryDescriptor;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.i < self.len {
-            let p = self.buf.as_ptr() as usize + self.descriptor_size * self.i;
-            let p = p as *const MemoryDescriptor;
-
-            let d = unsafe { p.read_unaligned() };
-
-            self.i += 1;
-
-            Some(d)
-        } else {
-            None
-        }
+        // SAFETY: The next element exists.
+        self.next_exists().then(|| unsafe { self.next_unchecked() })
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
