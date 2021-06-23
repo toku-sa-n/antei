@@ -27,11 +27,7 @@ impl<'a> Allocator<'a> {
     }
 
     fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        if d.number_of_pages >= u64::try_from(n.as_usize()).unwrap() {
-            Some(Self::alloc_from(d, n))
-        } else {
-            None
-        }
+        (d.number_of_pages >= u64::try_from(n.as_usize()).unwrap()).then(|| Self::alloc_from(d, n))
     }
 
     fn alloc_from(d: &mut MemoryDescriptor, num_pages: NumOfPages<Size4KiB>) -> PhysAddr {
