@@ -23,6 +23,7 @@ impl<'a> Mapper<'a> {
     pub(crate) unsafe fn new(allocator: &'a mut Allocator<'a>) -> Self {
         // SAFETY: The caller ensures that the recursive paging address is accessible.
         let table = unsafe { ptr::as_mut(RECURSIVE_PAGING.as_mut_ptr()) };
+
         let mapper = RecursivePageTable::new(table);
         let mapper = mapper.expect("The recursive entry is not enabled.");
 
