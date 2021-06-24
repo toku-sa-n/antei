@@ -62,19 +62,6 @@ impl<'a> Mapper<'a> {
         }
     }
 
-    unsafe fn update_flags_for_address(&mut self, addr: VirtAddr, flags: PageTableFlags) {
-        let page = Page::from_start_address(addr);
-        let page = page.expect("The address is not page-aligned.");
-
-        unsafe { self.update_flags(page, flags) };
-    }
-
-    unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
-        let r = unsafe { self.mapper.update_flags(page, flags) };
-        let flush = r.expect("Failed to update flags.");
-        flush.flush();
-    }
-
     fn map_to_unused(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
         let frame = self.allocator.allocate_frame();
         let frame = frame.expect("Physical frame is not available.");
@@ -89,6 +76,19 @@ impl<'a> Mapper<'a> {
     unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
         let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
         let flush = flush.expect("Failed to map a page.");
+        flush.flush();
+    }
+
+    unsafe fn update_flags_for_address(&mut self, addr: VirtAddr, flags: PageTableFlags) {
+        let page = Page::from_start_address(addr);
+        let page = page.expect("The address is not page-aligned.");
+
+        unsafe { self.update_flags(page, flags) };
+    }
+
+    unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {
+        let r = unsafe { self.mapper.update_flags(page, flags) };
+        let flush = r.expect("Failed to update flags.");
         flush.flush();
     }
 }
