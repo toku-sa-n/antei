@@ -61,15 +61,6 @@ impl<'a> Mapper<'a> {
         }
     }
 
-    /// # Safety
-    ///
-    /// See [`x86_64::structures::paging::Mapper`].
-    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
-        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
-        let flush = flush.expect("Failed to map a page.");
-        flush.flush();
-    }
-
     unsafe fn update_flags_for_address(&mut self, addr: VirtAddr, flags: PageTableFlags) {
         let page = Page::from_start_address(addr);
         let page = page.expect("The address is not page-aligned.");
@@ -89,5 +80,14 @@ impl<'a> Mapper<'a> {
 
         // SAFETY: The physical memory is not used by anyone.
         unsafe { self.map(page, frame, flags) };
+    }
+
+    /// # Safety
+    ///
+    /// See [`x86_64::structures::paging::Mapper`].
+    unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
+        let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
+        let flush = flush.expect("Failed to map a page.");
+        flush.flush();
     }
 }
