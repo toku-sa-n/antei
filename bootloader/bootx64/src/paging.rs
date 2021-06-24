@@ -5,22 +5,10 @@ use x86_64::structures::paging::PageTableFlags;
 use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
-pub(crate) fn enable_write_protect() {
-    extern "C" {
-        fn asm_enable_page_table_write_protect();
-    }
-
-    // SAFETY: Enabling the write protection does not affect the memory safety.
-    unsafe { asm_enable_page_table_write_protect() }
-}
-
-pub(crate) fn disable_write_protect() {
-    extern "C" {
-        fn asm_disable_page_table_write_protect();
-    }
-
-    // SAFETY: Disabling the write protection does not affect the memory safety.
-    unsafe { asm_disable_page_table_write_protect() }
+pub(crate) fn edit_page_tables(f: impl FnOnce()) {
+    disable_write_protect();
+    f();
+    enable_write_protect();
 }
 
 /// # Safety
@@ -28,15 +16,11 @@ pub(crate) fn disable_write_protect() {
 /// This function assumes that the physical and virtual addresses of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
 pub unsafe fn enable_recursive_paging() {
-    disable_write_protect();
-
     // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
     // same value.
-    unsafe {
+    edit_page_tables(|| unsafe {
         set_recursive_entry();
-    }
-
-    enable_write_protect();
+    })
 }
 
 pub(crate) fn pml4_addr() -> PhysAddr {
@@ -57,4 +41,22 @@ unsafe fn set_recursive_entry() {
 
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
     table[510].set_addr(p, flags);
+}
+
+fn enable_write_protect() {
+    extern "C" {
+        fn asm_enable_page_table_write_protect();
+    }
+
+    // SAFETY: Enabling the write protection does not affect the memory safety.
+    unsafe { asm_enable_page_table_write_protect() }
+}
+
+fn disable_write_protect() {
+    extern "C" {
+        fn asm_disable_page_table_write_protect();
+    }
+
+    // SAFETY: Disabling the write protection does not affect the memory safety.
+    unsafe { asm_disable_page_table_write_protect() }
 }
