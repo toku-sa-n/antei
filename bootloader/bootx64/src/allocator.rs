@@ -46,7 +46,7 @@ impl<'a> Allocator<'a> {
     }
 
     fn is_usable_memory(d: &MemoryDescriptor) -> bool {
-        d.r#type == MemoryType::ConventionalMemory as u32
+        d.r#type == MemoryType::ConventionalMemory as _
     }
 }
 unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
