@@ -76,6 +76,7 @@ impl<'a> Mapper<'a> {
     unsafe fn map(&mut self, page: Page<Size4KiB>, frame: PhysFrame, flags: PageTableFlags) {
         let flush = unsafe { self.mapper.map_to(page, frame, flags, self.allocator) };
         let flush = flush.expect("Failed to map a page.");
+
         flush.flush();
     }
 
