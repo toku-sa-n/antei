@@ -32,12 +32,8 @@ impl Discovered {
     }
 
     fn get_info(&self) -> Option<&[u8]> {
-        if self.info_exists() {
-            // SAFETY: The EDID Discovered information exists.
-            Some(unsafe { self.get_info_unchecked() })
-        } else {
-            None
-        }
+        self.info_exists()
+            .then(|| unsafe { self.get_info_unchecked() })
     }
 
     unsafe fn get_info_unchecked(&self) -> &[u8] {
