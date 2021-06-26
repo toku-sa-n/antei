@@ -5,10 +5,11 @@ use x86_64::structures::paging::PageTableFlags;
 use x86_64::PhysAddr;
 use x86_64::VirtAddr;
 
-pub(crate) fn edit_page_tables(f: impl FnOnce()) {
+pub(crate) fn edit_page_tables<T>(f: impl FnOnce() -> T) -> T {
     disable_write_protect();
-    f();
+    let r = f();
     enable_write_protect();
+    r
 }
 
 /// # Safety

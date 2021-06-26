@@ -19,7 +19,7 @@ use x86_64::VirtAddr;
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
-pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
+pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     // SAFETY: The all rules are satisfied.
     paging::edit_page_tables(|| unsafe { load_without_disabling_page_table_protects(binary, mmap) })
 }
@@ -29,7 +29,10 @@ pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
-unsafe fn load_without_disabling_page_table_protects(binary: &[u8], mmap: &mut [MemoryDescriptor]) {
+unsafe fn load_without_disabling_page_table_protects(
+    binary: &[u8],
+    mmap: &mut [MemoryDescriptor],
+) -> VirtAddr {
     let mut allocator = Allocator::new(mmap);
 
     // SAFETY: The caller ensures that the recursive paging is enabled and there is no reference to
@@ -43,6 +46,8 @@ unsafe fn load_without_disabling_page_table_protects(binary: &[u8], mmap: &mut [
 
     let r = elf.load(&mut loader);
     r.expect("Failed to load a ELF file.");
+
+    VirtAddr::new(elf.entry_point())
 }
 
 struct Loader<'a> {
