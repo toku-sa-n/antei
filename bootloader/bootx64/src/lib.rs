@@ -10,6 +10,7 @@ pub mod io;
 mod mapper;
 pub mod paging;
 pub mod panic;
+pub mod stack;
 pub mod system_table;
 
 pub(crate) use allocator::Allocator;
