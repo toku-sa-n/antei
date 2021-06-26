@@ -24,9 +24,8 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
     unsafe { paging::enable_recursive_paging() };
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
-    unsafe { elf::load(bytes, mmap) };
+    let entry = unsafe { elf::load(bytes, mmap) };
+    let entry: fn() -> ! = unsafe { core::mem::transmute(entry) };
 
-    loop {
-        x86_64::instructions::hlt();
-    }
+    (entry)()
 }
