@@ -25,6 +25,10 @@ pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemT
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
     let entry = unsafe { elf::load(bytes, mmap) };
+    assert!(!entry.is_null(), "The entry address is null.");
+
+    // SAFETY: Safe as described in
+    // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html#representation.
     let entry: fn() -> ! = unsafe { core::mem::transmute(entry) };
 
     (entry)()
