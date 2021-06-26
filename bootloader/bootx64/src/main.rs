@@ -13,7 +13,7 @@ use bootx64::{fs, uefi_println};
 #[no_mangle]
 pub extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemTable) -> ! {
     let resolution = gop::set_preferred_resolution(&mut st);
-    uefi_println!(&mut st, "GOP info: {:?}", resolution,);
+    uefi_println!(&mut st, "GOP info: {:?}", resolution);
 
     let bytes = fs::locate(&mut st, "kernel");
     uefi_println!(&mut st, "{:X?}", &bytes[0..8]);
