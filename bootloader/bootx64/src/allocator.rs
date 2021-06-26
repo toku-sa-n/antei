@@ -51,9 +51,8 @@ impl<'a> Allocator<'a> {
 }
 unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-        let f = self.allocate_frames(NumOfPages::new(1))?;
-        let f = PhysFrame::from_start_address(f);
-
-        Some(f.expect("The address is not page-aligned."))
+        self.allocate_frames(NumOfPages::new(1))
+            .map(PhysFrame::from_start_address)
+            .map(|x| x.expect("The address is not page-aligned."))
     }
 }
