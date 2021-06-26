@@ -23,7 +23,7 @@ impl<'a> Allocator<'a> {
     }
 
     fn iter_mut_conventional(&mut self) -> impl Iterator<Item = &mut MemoryDescriptor> {
-        self.mmap.iter_mut().filter(|d| Self::is_usable_memory(d))
+        self.mmap.iter_mut().filter(|d| is_usable_memory(d))
     }
 
     fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
@@ -44,10 +44,6 @@ impl<'a> Allocator<'a> {
 
         addr
     }
-
-    fn is_usable_memory(d: &MemoryDescriptor) -> bool {
-        d.r#type == MemoryType::ConventionalMemory as _
-    }
 }
 unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
@@ -55,4 +51,8 @@ unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
             .map(PhysFrame::from_start_address)
             .map(|x| x.expect("The address is not page-aligned."))
     }
+}
+
+fn is_usable_memory(d: &MemoryDescriptor) -> bool {
+    d.r#type == MemoryType::ConventionalMemory as _
 }
