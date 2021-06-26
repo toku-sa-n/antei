@@ -27,7 +27,7 @@ impl<'a> Allocator<'a> {
     }
 
     fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        (d.number_of_pages >= u64::try_from(n.as_usize()).unwrap()).then(|| Self::alloc_from(d, n))
+        is_enough_memory(d, n).then(|| Self::alloc_from(d, n))
     }
 
     fn alloc_from(d: &mut MemoryDescriptor, num_pages: NumOfPages<Size4KiB>) -> PhysAddr {
@@ -55,4 +55,8 @@ unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
 
 fn is_usable_memory(d: &MemoryDescriptor) -> bool {
     d.r#type == MemoryType::ConventionalMemory as _
+}
+
+fn is_enough_memory(d: &MemoryDescriptor, n: NumOfPages<Size4KiB>) -> bool {
+    d.number_of_pages >= u64::try_from(n.as_usize()).unwrap()
 }
