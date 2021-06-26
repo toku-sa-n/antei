@@ -6,6 +6,7 @@ use core::mem;
 use r_efi::efi;
 
 pub use r_efi::efi::MemoryDescriptor;
+pub use r_efi::efi::MemoryType;
 
 pub struct Boot<'a>(&'a efi::BootServices);
 impl<'a> Boot<'a> {
@@ -42,7 +43,7 @@ impl<'a> Boot<'a> {
     ///
     /// Refer to the UEFI specification.
     pub fn allocate_pool(&self, size: usize) -> crate::Result<*mut u8> {
-        const MEMORY_TYPE: efi::MemoryType = efi::MemoryType::LoaderData;
+        const MEMORY_TYPE: MemoryType = MemoryType::LoaderData;
         let mut buf = mem::MaybeUninit::uninit();
         let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
 
