@@ -3,6 +3,7 @@ members = [
     "bootloader/bootx64",
     "bootloader/uefi_wrapper",
     "libs/debug",
+    "servers/init",
     "kernel",
 ]
 
