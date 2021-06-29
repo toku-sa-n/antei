@@ -17,6 +17,15 @@ KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
 KERNEL	=	target/$(ARCH)-unknown-linux-gnu/debug/kernel
 
+SERVERS_DIR	=	servers
+
+INIT_DIR	=	$(SERVERS_DIR)/init
+INIT_SRCS	=	$(shell find $(INIT_DIR) -name *.rs)
+INIT_SRCS	+=	$(shell find $(INIT_DIR) -name *.s)
+INIT_SRCS	+=	$(INIT_DIR)/Cargo.toml
+INIT_SRCS	+=	$(INIT_DIR)/.cargo/config.toml
+INIT	=	target/debug/init
+
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
 .PHONY:	all clean
@@ -31,8 +40,11 @@ $(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
 	mcopy -i $@ $(KERNEL) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
+$(KERNEL): $(KERNEL_SRCS) $(INIT)|$(BUILD_DIR)
 	cd $(KERNEL_DIR) && cargo build
+
+$(INIT): $(INIT_SRCS)
+	cd $(INIT_DIR) && cargo build
 
 $(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
 	mv $^ $@
