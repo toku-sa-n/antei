@@ -15,7 +15,7 @@ KERNEL_SRCS	=	$(shell find $(KERNEL_DIR) -name *.rs)
 KERNEL_SRCS	+=	$(KERNEL_DIR)/Cargo.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
-KERNEL	=	target/debug/kernel
+KERNEL	=	target/$(ARCH)-unknown-linux-gnu/debug/kernel
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 

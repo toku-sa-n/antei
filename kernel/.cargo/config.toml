@@ -1,4 +1,7 @@
 [build]
+target = "x86_64-unknown-linux-gnu"
+
+[target.x86_64-unknown-linux-gnu]
 rustflags = [
     "-C", "code-model=kernel",
     "-C", "link-args=-T kernel/kernel.ld",
