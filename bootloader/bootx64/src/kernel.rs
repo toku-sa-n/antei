@@ -16,7 +16,7 @@ pub unsafe fn load_and_jump(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> ! {
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
-pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
+unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     // SAFETY: The caller upholds the safety requirements.
     let entry = unsafe { elf::load(binary, mmap) };
 
@@ -25,7 +25,7 @@ pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     entry
 }
 
-pub fn jump_to_kernel(entry: VirtAddr) -> ! {
+fn jump_to_kernel(entry: VirtAddr) -> ! {
     // SAFETY: Safe as described in
     // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html#representation.
     let entry: fn() -> ! = unsafe { core::mem::transmute(entry.as_ptr::<()>()) };
