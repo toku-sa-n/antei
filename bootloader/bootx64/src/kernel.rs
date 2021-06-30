@@ -7,6 +7,15 @@ use x86_64::VirtAddr;
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
+pub unsafe fn load_and_jump(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> ! {
+    jump_to_kernel(unsafe { load(binary, mmap) });
+}
+
+/// # Safety
+///
+/// The caller must ensure that
+/// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
+/// - There is no reference to one of the all working page tables.
 pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     // SAFETY: The caller upholds the safety requirements.
     let entry = unsafe { elf::load(binary, mmap) };
