@@ -5,13 +5,12 @@
 // For `memcpy`.
 extern crate rlibc as _;
 
-use bootx64::fs;
 use bootx64::kernel;
 use bootx64::paging;
 
 #[no_mangle]
 extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemTable) -> ! {
-    let binary = fs::locate(&mut st, "kernel");
+    let binary = kernel::locate(&mut st);
 
     let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
 

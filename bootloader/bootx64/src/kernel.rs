@@ -1,6 +1,12 @@
 use crate::elf;
+use crate::fs;
+use crate::SystemTable;
 use uefi_wrapper::service::boot::MemoryDescriptor;
 use x86_64::VirtAddr;
+
+pub fn locate<'a>(st: &mut SystemTable) -> &'a [u8] {
+    fs::locate(st, "kernel")
+}
 
 /// # Safety
 ///
