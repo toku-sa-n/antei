@@ -32,15 +32,16 @@ ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
 all: $(ISO_FILE)
 
-$(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
+$(ISO_FILE): $(KERNEL) $(BOOTX64) $(INIT)|$(BUILD_DIR)
 	dd if=/dev/zero of=$@ count=65536
 	mformat -i $@ -h 200 -t 500 -s 144::
 	mmd -i $@ ::/efi
 	mmd -i $@ ::/efi/boot
 	mcopy -i $@ $(KERNEL) ::/
+	mcopy -i $@ $(INIT) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(KERNEL): $(KERNEL_SRCS) $(INIT)|$(BUILD_DIR)
+$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
 	cd $(KERNEL_DIR) && cargo build
 
 $(INIT): $(INIT_SRCS)
