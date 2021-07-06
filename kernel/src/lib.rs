@@ -1,7 +1,9 @@
 #![no_std]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-mod gdt;
+extern crate rlibc as _;
+
+pub mod gdt;
 
 use core::panic;
 
