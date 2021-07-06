@@ -5,9 +5,9 @@ extern crate rlibc as _;
 
 pub mod gdt;
 
-use core::panic;
+use core::panic::PanicInfo;
 
 #[panic_handler]
-fn panic(_: &panic::PanicInfo<'_>) -> ! {
+fn panic(_: &PanicInfo<'_>) -> ! {
     loop {}
 }
