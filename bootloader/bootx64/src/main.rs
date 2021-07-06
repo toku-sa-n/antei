@@ -2,9 +2,6 @@
 #![no_main]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-// For `memcpy`.
-extern crate rlibc as _;
-
 use bootx64::kernel;
 use bootx64::paging;
 
