@@ -5,9 +5,12 @@
 extern crate kernel as _;
 
 use kernel::gdt;
+use qemu_print::qemu_println;
 
 #[no_mangle]
 fn main() {
+    qemu_println!("Hello world.");
+
     gdt::init();
 
     unsafe {
