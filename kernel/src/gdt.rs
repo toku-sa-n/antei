@@ -1,5 +1,11 @@
 use conquer_once::spin::OnceCell;
-use x86_64::instructions::segmentation;
+use x86_64::instructions::segmentation::Segment;
+use x86_64::instructions::segmentation::CS;
+use x86_64::instructions::segmentation::DS;
+use x86_64::instructions::segmentation::ES;
+use x86_64::instructions::segmentation::FS;
+use x86_64::instructions::segmentation::GS;
+use x86_64::instructions::segmentation::SS;
 use x86_64::structures::gdt::Descriptor;
 use x86_64::structures::gdt::GlobalDescriptorTable;
 use x86_64::structures::gdt::SegmentSelector;
@@ -59,13 +65,13 @@ fn load_segments() {
     let data = selectors.kernel_data;
 
     unsafe {
-        segmentation::set_cs(code);
+        CS::set_reg(code);
 
-        segmentation::load_ds(data);
-        segmentation::load_es(data);
-        segmentation::load_fs(data);
-        segmentation::load_gs(data);
-        segmentation::load_ss(data);
+        DS::set_reg(data);
+        ES::set_reg(data);
+        FS::set_reg(data);
+        GS::set_reg(data);
+        SS::set_reg(data);
     }
 }
 

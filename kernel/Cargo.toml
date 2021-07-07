@@ -8,4 +8,4 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 conquer-once = { version = "0.3.2", default-features = false }
 rlibc = "1.0.0"
-x86_64 = { version = "0.14.3", features = ["instructions", "external_asm"], default-features = false }
+x86_64 = { git = "https://github.com/toku-sa-n/x86_64", branch = "stable_idt", features = ["instructions", "external_asm"], default-features = false }
