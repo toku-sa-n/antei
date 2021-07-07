@@ -19,7 +19,15 @@ KERNEL	=	target/$(ARCH)-unknown-linux-gnu/debug/kernel
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
-.PHONY:	all clean
+QEMU	=	qemu-system-x86_64
+QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
+				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
+				-drive format=raw,file=$(ISO_FILE)	\
+				-m 4G	\
+				-serial stdio	\
+				-display none
+
+.PHONY:	all clean run
 
 all: $(ISO_FILE)
 
@@ -42,6 +50,9 @@ $(BOOTX64_EXE): $(BOOTX64_SRCS)|$(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $@
+
+run: $(ISO_FILE)
+	$(QEMU) $(QEMU_PARAMS)
 
 clean:
 	rm -rf $(BUILD_DIR)
