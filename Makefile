@@ -63,3 +63,4 @@ run: $(ISO_FILE)
 
 clean:
 	rm -rf $(BUILD_DIR)
+	cargo clean
