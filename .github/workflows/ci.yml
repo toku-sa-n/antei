@@ -48,3 +48,6 @@ jobs:
 
       - name: Build the OS
         run: make -j$(nproc)
+
+      - name: Build the OS with optimizations
+        run: make -j$(nproc) RELEASE=1
