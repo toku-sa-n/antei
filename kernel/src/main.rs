@@ -4,14 +4,11 @@
 
 extern crate kernel as _;
 
-use kernel::gdt;
-use x86_64::instructions::hlt;
+use kernel::{fini, gdt};
 
 #[no_mangle]
 fn main() {
     gdt::init();
 
-    loop {
-        hlt();
-    }
+    fini();
 }
