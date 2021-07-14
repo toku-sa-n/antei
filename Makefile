@@ -50,7 +50,7 @@ $(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
 	cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS)
 
 $(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
-	mv $^ $@
+	cp $^ $@
 
 $(BOOTX64_EXE): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	cd $(BOOTX64_SRC_DIR) && cargo build $(RUSTFLAGS)
