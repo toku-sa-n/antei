@@ -34,7 +34,7 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-serial stdio	\
 				-display none
 
-.PHONY:	all clean run
+.PHONY:	all run clean
 
 all: $(ISO_FILE)
 
