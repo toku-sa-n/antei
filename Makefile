@@ -46,13 +46,13 @@ $(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
 	mcopy -i $@ $(KERNEL) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
+$(KERNEL): $(KERNEL_SRCS)
 	cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS)
 
 $(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
 	cp $^ $@
 
-$(BOOTX64_EXE): $(BOOTX64_SRCS)|$(BUILD_DIR)
+$(BOOTX64_EXE): $(BOOTX64_SRCS)
 	cd $(BOOTX64_SRC_DIR) && cargo build $(RUSTFLAGS)
 
 $(BUILD_DIR):
