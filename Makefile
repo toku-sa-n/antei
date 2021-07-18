@@ -75,7 +75,7 @@ test: QEMU_PARAMS	+=	\
 test: RUSTFLAGS	+=	--features test_on_qemu
 test: SUCCESS	=	33
 test: $(ISO_FILE)
-	sh -c '$(QEMU) $(QEMU_PARAMS)'
+	$(QEMU) $(QEMU_PARAMS)
 	if [ $$? == $(SUCCESS) ]
 	then
 		@echo Test succeeds!
