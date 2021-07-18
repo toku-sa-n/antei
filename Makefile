@@ -10,10 +10,10 @@ endif
 BUILD_DIR	=	build/$(RELEASE_OR_DEBUG)
 
 BOOTLOADER_DIR	=	bootloader
-BOOTX64_SRC_DIR	=	$(BOOTLOADER_DIR)/bootx64
+BOOTX64_DIR	=	$(BOOTLOADER_DIR)/bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
-BOOTX64_SRCS 	+=	$(BOOTX64_SRC_DIR)/Cargo.toml
-BOOTX64_SRCS	+=	$(BOOTX64_SRC_DIR)/.cargo/config.toml
+BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
+BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
 BOOTX64_EXE	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
@@ -53,7 +53,7 @@ $(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
 	cp $^ $@
 
 $(BOOTX64_EXE): $(BOOTX64_SRCS)
-	cd $(BOOTX64_SRC_DIR) && cargo build $(RUSTFLAGS)
+	cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS)
 
 $(BUILD_DIR):
 	mkdir -p $@
