@@ -32,6 +32,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D clippy::pedantic -D clippy::all
 
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --features test_on_qemu -- -D clippy::pedantic -D clippy::all
+
   build:
     runs-on: ubuntu-latest
 
