@@ -35,6 +35,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        release: [0, 1]
+
     steps:
       - uses: actions/checkout@v2
 
@@ -46,8 +50,9 @@ jobs:
           sudo apt-get install gcc-mingw-w64 mtools lld
           sudo ln -s /usr/bin/lld /usr/bin/lld-link --verbose
 
+      # Don't remove this step as the normal and test builds use different codes. Succeeding in building the test code does not mean the success of building the normal code.
       - name: Build the OS
-        run: make -j$(nproc)
+        run: make -j$(nproc) RELEASE=${{ matrix.release }}
 
-      - name: Build the OS with optimizations
-        run: make -j$(nproc) RELEASE=1
+      - name: Test the OS
+        run: make -j$(nproc) RELEASE=${{ matrix.release }} test
