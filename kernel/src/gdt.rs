@@ -31,6 +31,9 @@ pub fn init() {
     init_gdt();
     lgdt();
     load_segments();
+
+    #[cfg(feature = "test_on_qemu")]
+    assert();
 }
 
 fn init_gdt() {
@@ -73,6 +76,33 @@ fn load_segments() {
         GS::set_reg(data);
         SS::set_reg(data);
     }
+}
+
+#[cfg(feature = "test_on_qemu")]
+fn assert() {
+    let selectors = selectors();
+
+    let code = selectors.kernel_code;
+    let data = selectors.kernel_data;
+
+    macro_rules! assert_segment {
+        ($seg:ident,$correct:expr) => {
+            assert_eq!(
+                $seg::get_reg(),
+                $correct,
+                "Incorrect {}",
+                core::stringify!($seg)
+            );
+        };
+    }
+
+    assert_segment!(CS, code);
+
+    assert_segment!(DS, data);
+    assert_segment!(ES, data);
+    assert_segment!(FS, data);
+    assert_segment!(GS, data);
+    assert_segment!(SS, data);
 }
 
 fn gdt<'a>() -> &'a GlobalDescriptorTable {
