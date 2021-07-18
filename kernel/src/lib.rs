@@ -23,5 +23,17 @@ pub fn fini() -> ! {
 fn panic(i: &PanicInfo<'_>) -> ! {
     qemu_println!("{}", i);
 
-    loop {}
+    exit_panic();
+}
+
+#[cfg(feature = "test_on_qemu")]
+pub fn exit_panic() -> ! {
+    qemu::exit_failure();
+}
+
+#[cfg(not(feature = "test_on_qemu"))]
+pub fn exit_panic() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
