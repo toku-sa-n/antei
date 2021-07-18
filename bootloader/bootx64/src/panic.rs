@@ -1,4 +1,4 @@
-use core::panic::PanicInfo;
+use {core::panic::PanicInfo, qemu_print::qemu_println};
 
 #[macro_export]
 macro_rules! uefi_panic {
@@ -12,7 +12,9 @@ macro_rules! uefi_panic {
 }
 
 #[panic_handler]
-fn panic(_: &PanicInfo<'_>) -> ! {
+fn panic(i: &PanicInfo<'_>) -> ! {
+    qemu_println!("{}", i);
+
     loop {
         x86_64::instructions::hlt();
     }
