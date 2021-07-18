@@ -64,4 +64,5 @@ jobs:
         run: make -j$(nproc) RELEASE=${{ matrix.release }}
 
       - name: Test the OS
+        timeout-minutes: 1
         run: make -j$(nproc) RELEASE=${{ matrix.release }} test
