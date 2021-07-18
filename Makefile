@@ -81,5 +81,5 @@ test: $(ISO_FILE)
 	fi
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
 	cargo clean
