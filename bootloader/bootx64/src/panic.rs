@@ -15,6 +15,16 @@ macro_rules! uefi_panic {
 fn panic(i: &PanicInfo<'_>) -> ! {
     qemu_println!("{}", i);
 
+    fini();
+}
+
+#[cfg(features = "test_on_qemu")]
+fn fini() -> ! {
+    qemu::exit_failure();
+}
+
+#[cfg(not(features = "test_on_qemu"))]
+fn fini() -> ! {
     loop {
         x86_64::instructions::hlt();
     }
