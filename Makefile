@@ -76,7 +76,7 @@ test: RUSTFLAGS	+=	--features test_on_qemu
 test: SUCCESS	=	33
 test: $(ISO_FILE)
 	$(QEMU) $(QEMU_PARAMS)
-	if [ $$? == $(SUCCESS) ]
+	if [ $$? -eq $(SUCCESS) ]
 	then
 		@echo Test succeeds!
 	else
