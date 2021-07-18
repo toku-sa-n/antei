@@ -5,8 +5,12 @@ authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
+[features]
+test_on_qemu = ["qemu"]
+
 [dependencies]
 conquer-once = { version = "0.3.2", default-features = false }
+qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { git = "https://github.com/toku-sa-n/qemu_print", branch = "implement", default-features = false, features = ["stable"] }
 rlibc = "1.0.0"
 x86_64 = { git = "https://github.com/rust-osdev/x86_64", features = ["instructions", "external_asm"], default-features = false }

@@ -8,10 +8,14 @@ license = "MIT OR Apache-2.0"
 [[bin]]
 name = "bootx64"
 
+[features]
+test_on_qemu = ["qemu"]
+
 [dependencies]
 aligned_ptr = "0.1.0"
 elfloader = "0.13.0"
 os_units = "0.4.1"
+qemu = { path = "../../libs/qemu", optional = true }
 qemu_print = { git = "https://github.com/toku-sa-n/qemu_print", branch = "implement", features = ["stable"], default-features = false }
 rlibc = "1.0.0"
 spinning_top = "0.2.4"

@@ -1,0 +1,9 @@
+[package]
+name = "qemu"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+static_assertions = "1.1.0"
+x86_64 = { git = "https://github.com/rust-osdev/x86_64", features = ["instructions", "external_asm"], default-features = false }

@@ -7,14 +7,18 @@ else
 	RELEASE_OR_DEBUG	=	debug
 endif
 
-BUILD_DIR	=	build/$(RELEASE_OR_DEBUG)
+ifeq ($(MAKECMDGOALS), test)
+	BUILD_DIR	=	build/$(RELEASE_OR_DEBUG)/test
+else
+	BUILD_DIR	=	build/$(RELEASE_OR_DEBUG)
+endif
 
 BOOTLOADER_DIR	=	bootloader
 BOOTX64_DIR	=	$(BOOTLOADER_DIR)/bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
-BOOTX64_EXE	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
+BOOTX64_IN_TARGET	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 KERNEL_DIR	=	kernel
@@ -22,7 +26,8 @@ KERNEL_SRCS	=	$(shell find $(KERNEL_DIR) -name *.rs)
 KERNEL_SRCS	+=	$(KERNEL_DIR)/Cargo.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
-KERNEL	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
+KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
+KERNEL	=	$(BUILD_DIR)/kernel
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
@@ -34,7 +39,7 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-serial stdio	\
 				-display none
 
-.PHONY:	all run clean
+.PHONY:	all run test clean
 
 all: $(ISO_FILE)
 
@@ -46,14 +51,17 @@ $(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
 	mcopy -i $@ $(KERNEL) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(KERNEL): $(KERNEL_SRCS)
-	cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS)
+# Do not add a target like $(KERNEL_IN_TARGET).
+# Otherwise `make test` may use the normal kernel binary, for example.
+$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
+	(cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS))
+	cp $(KERNEL_IN_TARGET) $@
 
-$(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
-	cp $^ $@
-
-$(BOOTX64_EXE): $(BOOTX64_SRCS)
-	cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS)
+# Do not add a target like $(BOOTX64_IN_TARGET).
+# Otherwise `make test` may use the normal $(BOOTX64_IN_TARGET) file, for example.
+$(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
+	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
+	cp $(BOOTX64_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -61,6 +69,21 @@ $(BUILD_DIR):
 run: $(ISO_FILE)
 	$(QEMU) $(QEMU_PARAMS)
 
+.ONESHELL:
+test: QEMU_PARAMS	+=	\
+	-device isa-debug-exit,iobase=0xf4,iosize=0x04
+test: RUSTFLAGS	+=	--features test_on_qemu
+test: SUCCESS	=	33
+test: $(ISO_FILE)
+	$(QEMU) $(QEMU_PARAMS)
+	if [ $$? -eq $(SUCCESS) ]
+	then
+		@echo Test succeeds!
+	else
+		@echo Test failed!
+		exit 1
+	fi
+
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf build
 	cargo clean
