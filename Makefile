@@ -18,7 +18,7 @@ BOOTX64_DIR	=	$(BOOTLOADER_DIR)/bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
-BOOTX64_EXE	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
+BOOTX64_IN_TARGET	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 KERNEL_DIR	=	kernel
@@ -26,7 +26,8 @@ KERNEL_SRCS	=	$(shell find $(KERNEL_DIR) -name *.rs)
 KERNEL_SRCS	+=	$(KERNEL_DIR)/Cargo.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
 KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
-KERNEL	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
+KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
+KERNEL	=	$(BUILD_DIR)/kernel
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
@@ -50,14 +51,17 @@ $(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
 	mcopy -i $@ $(KERNEL) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
-$(KERNEL): $(KERNEL_SRCS)
-	cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS)
+# Do not add a target like $(KERNEL_IN_TARGET).
+# Otherwise `make test` may use the normal kernel binary, for example.
+$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
+	(cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS))
+	cp $(KERNEL_IN_TARGET) $@
 
-$(BOOTX64): $(BOOTX64_EXE)|$(BUILD_DIR)
-	cp $^ $@
-
-$(BOOTX64_EXE): $(BOOTX64_SRCS)
-	cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS)
+# Do not add a target like $(BOOTX64_IN_TARGET).
+# Otherwise `make test` may use the normal $(BOOTX64_IN_TARGET) file, for example.
+$(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
+	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
+	cp $(BOOTX64_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@
