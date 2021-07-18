@@ -116,12 +116,20 @@ mod tests {
             };
         }
 
-        assert_segment!(CS, code);
+        macro_rules! code{
+            ($($seg:ident),+)=>{
+                $(assert_segment!($seg,code);)+
+            }
+        }
 
-        assert_segment!(DS, data);
-        assert_segment!(ES, data);
-        assert_segment!(FS, data);
-        assert_segment!(GS, data);
-        assert_segment!(SS, data);
+        macro_rules! data{
+            ($($seg:ident),+)=>{
+                $(assert_segment!($seg,data);)+
+            }
+        }
+
+        code!(CS);
+
+        data!(DS, ES, FS, GS, SS);
     }
 }
