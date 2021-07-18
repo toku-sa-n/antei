@@ -33,7 +33,7 @@ pub fn init() {
     load_segments();
 
     #[cfg(feature = "test_on_qemu")]
-    assert();
+    tests::main();
 }
 
 fn init_gdt() {
@@ -78,33 +78,6 @@ fn load_segments() {
     }
 }
 
-#[cfg(feature = "test_on_qemu")]
-fn assert() {
-    let selectors = selectors();
-
-    let code = selectors.kernel_code;
-    let data = selectors.kernel_data;
-
-    macro_rules! assert_segment {
-        ($seg:ident,$correct:expr) => {
-            assert_eq!(
-                $seg::get_reg(),
-                $correct,
-                "Incorrect {}",
-                core::stringify!($seg)
-            );
-        };
-    }
-
-    assert_segment!(CS, code);
-
-    assert_segment!(DS, data);
-    assert_segment!(ES, data);
-    assert_segment!(FS, data);
-    assert_segment!(GS, data);
-    assert_segment!(SS, data);
-}
-
 fn gdt<'a>() -> &'a GlobalDescriptorTable {
     let gdt = GDT.try_get();
     gdt.expect("GDT is not initialized.")
@@ -113,4 +86,42 @@ fn gdt<'a>() -> &'a GlobalDescriptorTable {
 fn selectors<'a>() -> &'a Selectors {
     let selectors = SELECTORS.try_get();
     selectors.expect("`SELECTORS` is not initialized.")
+}
+
+#[cfg(feature = "test_on_qemu")]
+mod tests {
+    use {
+        super::selectors,
+        x86_64::instructions::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+    };
+
+    pub(super) fn main() {
+        assert();
+    }
+
+    fn assert() {
+        let selectors = selectors();
+
+        let code = selectors.kernel_code;
+        let data = selectors.kernel_data;
+
+        macro_rules! assert_segment {
+            ($seg:ident,$correct:expr) => {
+                assert_eq!(
+                    $seg::get_reg(),
+                    $correct,
+                    "Incorrect {}",
+                    core::stringify!($seg)
+                );
+            };
+        }
+
+        assert_segment!(CS, code);
+
+        assert_segment!(DS, data);
+        assert_segment!(ES, data);
+        assert_segment!(FS, data);
+        assert_segment!(GS, data);
+        assert_segment!(SS, data);
+    }
 }
