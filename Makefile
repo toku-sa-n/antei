@@ -69,19 +69,18 @@ $(BUILD_DIR):
 run: $(ISO_FILE)
 	$(QEMU) $(QEMU_PARAMS)
 
-.ONESHELL:
 test: QEMU_PARAMS	+=	\
 	-device isa-debug-exit,iobase=0xf4,iosize=0x04
 test: RUSTFLAGS	+=	--features test_on_qemu
 test: SUCCESS	=	33
 test: $(ISO_FILE)
-	$(QEMU) $(QEMU_PARAMS)
-	if [ $$? -eq $(SUCCESS) ]
-	then
-		@echo Test succeeds!
-	else
-		@echo Test failed!
-		exit 1
+	$(QEMU) $(QEMU_PARAMS);\
+	if [ $$? -eq $(SUCCESS) ];\
+	then\
+		echo Test succeeds!;\
+	else\
+		echo Test failed!;\
+		exit 1;\
 	fi
 
 clean:
