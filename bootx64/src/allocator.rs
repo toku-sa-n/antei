@@ -53,7 +53,7 @@ unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
 }
 
 fn is_usable_memory(d: &MemoryDescriptor) -> bool {
-    d.r#type == CONVENTIONAL_MEMORY as _
+    d.r#type == CONVENTIONAL_MEMORY
 }
 
 fn is_enough_memory(d: &MemoryDescriptor, n: NumOfPages<Size4KiB>) -> bool {
