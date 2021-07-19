@@ -4,7 +4,7 @@
 extern crate rlibc as _;
 
 pub mod gdt;
-mod idt;
+pub mod idt;
 
 use {core::panic::PanicInfo, qemu_print::qemu_println};
 
