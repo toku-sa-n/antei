@@ -13,8 +13,7 @@ else
 	BUILD_DIR	=	build/$(RELEASE_OR_DEBUG)
 endif
 
-BOOTLOADER_DIR	=	bootloader
-BOOTX64_DIR	=	$(BOOTLOADER_DIR)/bootx64
+BOOTX64_DIR	=	bootx64
 BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
 BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
 BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
