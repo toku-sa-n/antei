@@ -16,6 +16,7 @@ pub struct BootInfo {
     magic_footer: u64,
 }
 impl BootInfo {
+    #[must_use]
     pub fn new(mmap_start: VirtAddr, mmap_len: usize) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
