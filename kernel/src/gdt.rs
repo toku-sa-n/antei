@@ -91,12 +91,32 @@ fn selectors<'a>() -> &'a Selectors {
 #[cfg(feature = "test_on_qemu")]
 mod tests {
     use {
-        super::selectors,
-        x86_64::instructions::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+        super::{gdt, selectors},
+        x86_64::{
+            instructions::{
+                segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+                tables,
+            },
+            VirtAddr,
+        },
     };
 
     pub(super) fn main() {
+        assert_gdt_address_is_correct();
         assert_selectors_are_correctly_set();
+    }
+
+    fn assert_gdt_address_is_correct() {
+        let gdt = gdt();
+        let expected_addr = VirtAddr::from_ptr(gdt);
+
+        let descriptor_table_ptr = tables::sgdt();
+        let actual_addr = descriptor_table_ptr.base;
+
+        assert_eq!(
+            expected_addr, actual_addr,
+            "The address of the current GDT is not correct."
+        );
     }
 
     fn assert_selectors_are_correctly_set() {
