@@ -14,14 +14,14 @@ test_on_qemu = ["qemu"]
 [dependencies]
 aligned_ptr = "0.1.0"
 boot_info = { path = "../libs/boot_info" }
-elfloader = "0.13.0"
-os_units = "0.4.1"
+elfloader = "0.14.0"
+os_units = "0.4.2"
 qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { git = "https://github.com/toku-sa-n/qemu_print", branch = "implement", features = ["stable"], default-features = false }
 rlibc = "1.0.0"
 spinning_top = "0.2.4"
 uefi_wrapper = { path = "../libs/uefi_wrapper" }
-x86_64 = { version = "0.14.3", features = ["instructions", "external_asm"], default-features = false }
+x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
 
 [build-dependencies]
-cc = "1.0.68"
+cc = "1.0.69"
