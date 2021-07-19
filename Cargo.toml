@@ -13,6 +13,3 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
-
-[patch.crates-io]
-x86_64 = { git = "https://github.com/rust-osdev/x86_64", default-features = false, features = ["instructions", "external_asm"] }
