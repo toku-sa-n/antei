@@ -13,6 +13,7 @@ test_on_qemu = ["qemu"]
 
 [dependencies]
 aligned_ptr = "0.1.0"
+boot_info = { path = "../libs/boot_info" }
 elfloader = "0.13.0"
 os_units = "0.4.1"
 qemu = { path = "../libs/qemu", optional = true }

@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 test_on_qemu = ["qemu"]
 
 [dependencies]
+boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
 qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { git = "https://github.com/toku-sa-n/qemu_print", branch = "implement", default-features = false, features = ["stable"] }

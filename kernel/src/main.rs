@@ -4,10 +4,15 @@
 
 extern crate kernel as _;
 
-use kernel::{fini, gdt, idt};
+use {
+    boot_info::BootInfo,
+    kernel::{fini, gdt, idt},
+};
 
 #[no_mangle]
-fn main() {
+extern "sysv64" fn main(boot_info: BootInfo) {
+    boot_info.check_header_and_footer();
+
     gdt::init();
     idt::init();
 

@@ -1,8 +1,9 @@
-use crate::elf;
-use crate::fs;
-use crate::SystemTable;
-use uefi_wrapper::service::boot::MemoryDescriptor;
-use x86_64::VirtAddr;
+use {
+    crate::{elf, fs, SystemTable},
+    boot_info::BootInfo,
+    uefi_wrapper::service::boot::MemoryDescriptor,
+    x86_64::VirtAddr,
+};
 
 pub fn locate<'a>(st: &mut SystemTable) -> &'a [u8] {
     fs::locate(st, "kernel")
@@ -34,7 +35,8 @@ unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
 fn jump(entry: VirtAddr) -> ! {
     // SAFETY: Safe as described in
     // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html#representation.
-    let entry: fn() -> ! = unsafe { core::mem::transmute(entry.as_ptr::<()>()) };
+    let entry: extern "sysv64" fn(BootInfo) -> ! =
+        unsafe { core::mem::transmute(entry.as_ptr::<()>()) };
 
-    (entry)()
+    (entry)(BootInfo::new())
 }
