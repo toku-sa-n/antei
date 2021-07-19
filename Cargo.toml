@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "bootx64",
+    "libs/boot_info",
     "libs/uefi_wrapper",
     "libs/debug",
     "libs/qemu",
