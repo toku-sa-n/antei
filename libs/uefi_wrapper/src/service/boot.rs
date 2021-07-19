@@ -1,12 +1,11 @@
-use crate::result;
-use aligned_ptr::ptr;
-use core::ffi;
-use core::fmt;
-use core::mem;
-use r_efi::efi;
+use {
+    crate::result,
+    aligned_ptr::ptr,
+    core::{ffi, fmt, mem},
+    r_efi::efi::{self, MemoryType},
+};
 
-pub use r_efi::efi::MemoryDescriptor;
-pub use r_efi::efi::MemoryType;
+pub use r_efi::efi::{MemoryDescriptor, CONVENTIONAL_MEMORY, LOADER_DATA};
 
 pub struct Boot<'a>(&'a efi::BootServices);
 impl<'a> Boot<'a> {
@@ -43,7 +42,7 @@ impl<'a> Boot<'a> {
     ///
     /// Refer to the UEFI specification.
     pub fn allocate_pool(&self, size: usize) -> crate::Result<*mut u8> {
-        const MEMORY_TYPE: MemoryType = MemoryType::LoaderData;
+        const MEMORY_TYPE: MemoryType = efi::LOADER_DATA;
         let mut buf = mem::MaybeUninit::uninit();
         let r = (self.0.allocate_pool)(MEMORY_TYPE, size, buf.as_mut_ptr());
 

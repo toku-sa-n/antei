@@ -1,12 +1,11 @@
-use core::convert::TryFrom;
-use core::convert::TryInto;
-use os_units::NumOfPages;
-use uefi_wrapper::service::boot::MemoryDescriptor;
-use uefi_wrapper::service::boot::MemoryType;
-use x86_64::structures::paging::Size4KiB;
-use x86_64::{
-    structures::paging::{FrameAllocator, PhysFrame},
-    PhysAddr,
+use {
+    core::convert::{TryFrom, TryInto},
+    os_units::NumOfPages,
+    uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
+    x86_64::{
+        structures::paging::{FrameAllocator, PhysFrame, Size4KiB},
+        PhysAddr,
+    },
 };
 
 pub(crate) struct Allocator<'a> {
@@ -54,7 +53,7 @@ unsafe impl FrameAllocator<Size4KiB> for Allocator<'_> {
 }
 
 fn is_usable_memory(d: &MemoryDescriptor) -> bool {
-    d.r#type == MemoryType::ConventionalMemory as _
+    d.r#type == CONVENTIONAL_MEMORY as _
 }
 
 fn is_enough_memory(d: &MemoryDescriptor, n: NumOfPages<Size4KiB>) -> bool {
