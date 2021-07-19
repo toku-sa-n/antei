@@ -96,10 +96,10 @@ mod tests {
     };
 
     pub(super) fn main() {
-        assert();
+        assert_selectors_are_correctly_set();
     }
 
-    fn assert() {
+    fn assert_selectors_are_correctly_set() {
         let selectors = selectors();
 
         let code = selectors.kernel_code;
