@@ -23,8 +23,8 @@ impl FrameAllocator {
         Self(ArrayVec::new_const())
     }
 
-    pub fn init(&mut self, mem_map: &[MemoryDescriptor]) {
-        for descriptor in mem_map {
+    pub fn init(&mut self, mmap: &[MemoryDescriptor]) {
+        for descriptor in mmap {
             if is_conventional(descriptor) {
                 self.init_for_descriptor(descriptor);
             }
