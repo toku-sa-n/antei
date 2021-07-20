@@ -226,7 +226,7 @@ mod tests {
         };
     }
 
-    macro_rules! manager {
+    macro_rules! allocator {
         ($($is_available:ident $start:expr => $end:expr),*$(,)*) => {
             FrameAllocator(arrayvec![
                 $(frames!($is_available $start => $end)),*
@@ -237,7 +237,7 @@ mod tests {
 
     #[test]
     fn fail_to_allocate() {
-        let mut f = manager!(
+        let mut f = allocator!(
             A 0 => 0x1000,
             A 0x2000 => 0xc000,
             U 0xc000 => 0x10000,
@@ -251,7 +251,7 @@ mod tests {
 
     #[test]
     fn allocate_not_power_of_two() {
-        let mut f = manager!(
+        let mut f = allocator!(
             A 0 => 0x1000,
             A 0x2000 => 0xc000,
             U 0xc000 => 0x10000,
@@ -262,7 +262,7 @@ mod tests {
         assert_eq!(a, Some(PhysAddr::new(0x2000)));
         assert_eq!(
             f,
-            manager!(
+            allocator!(
                 A 0 => 0x1000,
                 U 0x2000 => 0x5000,
                 A 0x5000 => 0xc000,
@@ -273,24 +273,24 @@ mod tests {
 
     #[test]
     fn allocate_full_frames() {
-        let mut f = manager!(A 0 => 0x3000);
+        let mut f = allocator!(A 0 => 0x3000);
         let a = f.alloc(NumOfPages::new(3));
 
         assert_eq!(a, Some(PhysAddr::zero()));
-        assert_eq!(f, manager!(U 0 => 0x3000));
+        assert_eq!(f, allocator!(U 0 => 0x3000));
     }
 
     #[test]
     fn free_single_frames() {
-        let mut f = manager!(U 0 => 0x3000);
+        let mut f = allocator!(U 0 => 0x3000);
         f.dealloc(PhysAddr::zero());
 
-        assert_eq!(f, manager!(A 0 => 0x3000));
+        assert_eq!(f, allocator!(A 0 => 0x3000));
     }
 
     #[test]
     fn free_and_merge_with_before() {
-        let mut f = manager!(
+        let mut f = allocator!(
             A 0 => 0x1000,
             A 0x2000 => 0xc000,
             U 0xc000 => 0x10000,
@@ -300,7 +300,7 @@ mod tests {
 
         assert_eq!(
             f,
-            manager! (
+            allocator! (
                 A 0 => 0x1000,
                 A 0x2000 => 0x10000
             )
@@ -309,7 +309,7 @@ mod tests {
 
     #[test]
     fn free_and_merge_with_after() {
-        let mut f = manager!(
+        let mut f = allocator!(
             U 0 => 0x3000,
             A 0x3000 => 0x5000,
         );
@@ -318,7 +318,7 @@ mod tests {
 
         assert_eq!(
             f,
-            manager!(
+            allocator!(
                 A 0 => 0x5000,
             )
         )
@@ -326,7 +326,7 @@ mod tests {
 
     #[test]
     fn free_and_merge_with_before_and_after() {
-        let mut f = manager!(
+        let mut f = allocator!(
             A 0 => 0x3000,
             U 0x3000 => 0x5000,
             A 0x5000 => 0x10000,
@@ -334,7 +334,7 @@ mod tests {
 
         f.dealloc(PhysAddr::new(0x3000));
 
-        assert_eq!(f, manager!(A 0 => 0x10000))
+        assert_eq!(f, allocator!(A 0 => 0x10000))
     }
 
     #[test]
