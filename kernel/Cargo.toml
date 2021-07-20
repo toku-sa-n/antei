@@ -8,6 +8,13 @@ license = "MIT OR Apache-2.0"
 [features]
 test_on_qemu = ["qemu"]
 
+[[bin]]
+name = "kernel"
+test = false
+
+[lib]
+test = false
+
 [dependencies]
 boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
