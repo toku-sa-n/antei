@@ -11,7 +11,7 @@ use {
 
 #[no_mangle]
 extern "sysv64" fn main(boot_info: BootInfo) {
-    boot_info.check_header_and_footer();
+    boot_info.validate();
 
     gdt::init();
     idt::init();
