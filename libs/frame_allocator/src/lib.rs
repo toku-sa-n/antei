@@ -6,7 +6,9 @@ use {
     os_units::NumOfPages,
     uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
-        structures::paging::{FrameAllocator, FrameDeallocator, PhysFrame, Size4KiB},
+        structures::paging::{
+            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PhysFrame, Size4KiB,
+        },
         PhysAddr,
     },
 };
@@ -14,8 +16,8 @@ use {
 const REASONABLE_MAX_DESCRIPTORS: usize = 128;
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct FrameManager(ArrayVec<FrameDescriptor, REASONABLE_MAX_DESCRIPTORS>);
-impl FrameManager {
+pub struct FrameAllocator(ArrayVec<FrameDescriptor, REASONABLE_MAX_DESCRIPTORS>);
+impl FrameAllocator {
     #[must_use]
     pub const fn new() -> Self {
         Self(ArrayVec::new_const())
@@ -37,7 +39,7 @@ impl FrameManager {
         self.0.push(frames);
     }
 }
-impl FrameManager {
+impl FrameAllocator {
     pub fn alloc(&mut self, num_of_pages: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
         for i in 0..self.0.len() {
             if self.0[i].is_available_for_allocating(num_of_pages) {
@@ -76,7 +78,7 @@ impl FrameManager {
         self.0.insert(i + 1, new_frames);
     }
 }
-impl FrameManager {
+impl FrameAllocator {
     pub fn free(&mut self, addr: PhysAddr) {
         for i in 0..self.0.len() {
             if self.0[i].start == addr && !self.0[i].available {
@@ -117,13 +119,13 @@ impl FrameManager {
         self.0.remove(i + 1);
     }
 }
-unsafe impl FrameAllocator<Size4KiB> for FrameManager {
+unsafe impl FrameAllocatorTrait<Size4KiB> for FrameAllocator {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
         let addr = self.alloc(NumOfPages::new(1))?;
         Some(PhysFrame::from_start_address(addr).unwrap())
     }
 }
-impl FrameDeallocator<Size4KiB> for FrameManager {
+impl FrameDeallocator<Size4KiB> for FrameAllocator {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
         let addr = frame.start_address();
         self.free(addr);
@@ -193,7 +195,7 @@ fn is_conventional(d: &MemoryDescriptor) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{FrameDescriptor, FrameManager};
+    use super::{FrameAllocator, FrameDescriptor};
     use os_units::NumOfPages;
     use x86_64::PhysAddr;
 
