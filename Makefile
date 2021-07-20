@@ -73,7 +73,7 @@ test: QEMU_PARAMS	+=	\
 test: RUSTFLAGS	+=	--features test_on_qemu
 test: SUCCESS	=	33
 test: $(ISO_FILE)
-	cargo test
+	cargo test $(RUSTFLAGS)
 	$(QEMU) $(QEMU_PARAMS);\
 	if [ $$? -eq $(SUCCESS) ];\
 	then\
