@@ -1,12 +1,14 @@
-use crate::Allocator;
-use aligned_ptr::ptr;
-use os_units::NumOfPages;
-use x86_64::structures::paging::PhysFrame;
-use x86_64::structures::paging::RecursivePageTable;
-use x86_64::structures::paging::Size4KiB;
-use x86_64::structures::paging::{FrameAllocator, PageTableFlags};
-use x86_64::structures::paging::{Mapper as MapperTrait, Page};
-use x86_64::VirtAddr;
+use {
+    crate::{Allocator, NumOfPages},
+    aligned_ptr::ptr,
+    x86_64::{
+        structures::paging::{
+            FrameAllocator, Mapper as MapperTrait, Page, PageTableFlags, PhysFrame,
+            RecursivePageTable, Size4KiB,
+        },
+        VirtAddr,
+    },
+};
 
 const RECURSIVE_PAGING: VirtAddr = VirtAddr::new_truncate(0xffff_ff7f_bfdf_e000);
 
@@ -36,7 +38,7 @@ impl<'a> Mapper<'a> {
     pub(crate) unsafe fn map_range_to_unused(
         &mut self,
         v: VirtAddr,
-        n: NumOfPages<Size4KiB>,
+        n: NumOfPages,
         flags: PageTableFlags,
     ) {
         for i in 0..n.as_usize() {
@@ -52,7 +54,7 @@ impl<'a> Mapper<'a> {
     pub(crate) unsafe fn update_flags_for_range(
         &mut self,
         v: VirtAddr,
-        n: NumOfPages<Size4KiB>,
+        n: NumOfPages,
         flags: PageTableFlags,
     ) {
         for i in 0..n.as_usize() {
