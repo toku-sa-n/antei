@@ -7,6 +7,10 @@ license = "MIT OR Apache-2.0"
 
 [[bin]]
 name = "bootx64"
+test = false
+
+[lib]
+test = false
 
 [features]
 test_on_qemu = ["qemu"]
