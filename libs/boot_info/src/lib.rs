@@ -31,8 +31,8 @@ impl BootInfo {
         self.check_footer();
     }
 
-    pub fn mmap(&mut self) -> &mut [MemoryDescriptor] {
-        self.mmap.as_slice_mut()
+    pub fn mmap_mut(&mut self) -> &mut Mmap {
+        &mut self.mmap
     }
 
     fn check_header(&self) {
@@ -65,7 +65,7 @@ impl Mmap {
         Self { start, len }
     }
 
-    fn as_slice_mut(&mut self) -> &mut [MemoryDescriptor] {
+    pub fn as_slice_mut(&mut self) -> &mut [MemoryDescriptor] {
         // SAFETY: `BootInfo::new` ensures the safety.
         unsafe { slice::from_raw_parts_mut(self.start.as_mut_ptr(), self.len) }
     }
