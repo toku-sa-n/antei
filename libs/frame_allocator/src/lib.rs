@@ -24,11 +24,9 @@ impl FrameAllocator {
     }
 
     pub fn init(&mut self, mmap: &[MemoryDescriptor]) {
-        for descriptor in mmap {
-            if is_conventional(descriptor) {
-                self.init_for_descriptor(descriptor);
-            }
-        }
+        mmap.iter()
+            .filter(|d| is_conventional(d))
+            .for_each(|d| self.init_for_descriptor(d))
     }
 
     fn init_for_descriptor(&mut self, descriptor: &MemoryDescriptor) {
