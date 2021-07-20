@@ -38,14 +38,12 @@ impl FrameAllocator {
     }
 }
 impl FrameAllocator {
-    pub fn alloc(&mut self, num_of_pages: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
-        for i in 0..self.0.len() {
-            if self.0[i].is_available_for_allocating(num_of_pages) {
-                return Some(self.alloc_from_frames_at(i, num_of_pages));
-            }
-        }
-
-        None
+    pub fn alloc(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+        (0..self.0.len()).find_map(|i| {
+            self.0[i]
+                .is_available_for_allocating(n)
+                .then(|| self.alloc_from_frames_at(i, n))
+        })
     }
 
     fn alloc_from_frames_at(&mut self, i: usize, n: NumOfPages<Size4KiB>) -> PhysAddr {
