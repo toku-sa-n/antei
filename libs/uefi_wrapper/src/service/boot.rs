@@ -2,10 +2,17 @@ use {
     crate::result,
     aligned_ptr::ptr,
     core::{ffi, fmt, mem},
-    r_efi::efi::{self, MemoryType},
+    r_efi::efi,
 };
 
-pub use r_efi::efi::{MemoryDescriptor, CONVENTIONAL_MEMORY, LOADER_DATA};
+pub use r_efi::efi::{
+    MemoryDescriptor, MemoryType, ACPI_MEMORY_NVS, ACPI_RECLAIM_MEMORY, BOOT_SERVICES_CODE,
+    BOOT_SERVICES_DATA, CONVENTIONAL_MEMORY, LOADER_CODE, LOADER_DATA, MEMORY_MAPPED_IO,
+    MEMORY_MAPPED_IO_PORT_SPACE, MEMORY_MORE_RELIABLE, MEMORY_NV, MEMORY_RO, MEMORY_RP,
+    MEMORY_RUNTIME, MEMORY_UC, MEMORY_UCE, MEMORY_WB, MEMORY_WC, MEMORY_WP, MEMORY_WT, MEMORY_XP,
+    PAL_CODE, PERSISTENT_MEMORY, RESERVED_MEMORY_TYPE, RUNTIME_SERVICES_CODE,
+    RUNTIME_SERVICES_DATA, UNUSABLE_MEMORY,
+};
 
 pub struct Boot<'a>(&'a efi::BootServices);
 impl<'a> Boot<'a> {
