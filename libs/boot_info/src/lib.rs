@@ -156,7 +156,7 @@ impl DescriptorValidater {
             | MEMORY_RO
             | MEMORY_RUNTIME;
 
-        if self.0.attribute & ALL_ATTRIBUTES != ALL_ATTRIBUTES {
+        if self.0.attribute | ALL_ATTRIBUTES != ALL_ATTRIBUTES {
             panic!("Invalid memory attribute: 0x{:X}", self.0.attribute);
         }
     }
