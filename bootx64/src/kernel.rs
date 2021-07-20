@@ -1,6 +1,6 @@
 use {
     crate::{elf, fs, SystemTable},
-    boot_info::BootInfo,
+    boot_info::{BootInfo, Mmap},
     uefi_wrapper::service::boot::MemoryDescriptor,
     x86_64::VirtAddr,
 };
@@ -41,8 +41,10 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor]) -> ! {
     let mmap_start = VirtAddr::from_ptr(mmap.as_ptr());
     let mmap_len = mmap.len();
 
-    // SAFETY: The pointer and length are correct.
-    let boot_info = unsafe { BootInfo::new(mmap_start, mmap_len) };
+    // SAFETY: The pointer and the length are the correct ones.
+    let mmap = unsafe { Mmap::new(mmap_start, mmap_len) };
+
+    let boot_info = BootInfo::new(mmap);
 
     (entry)(boot_info)
 }

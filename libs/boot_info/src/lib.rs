@@ -10,23 +10,17 @@ const MAGIC_FOOTER: u64 = 0x0334_0072_dead_cafe;
 pub struct BootInfo {
     magic_header: u64,
 
-    mmap_start: VirtAddr,
-    mmap_len: usize,
+    mmap: Mmap,
 
     magic_footer: u64,
 }
 impl BootInfo {
-    /// # Safety
-    ///
-    /// - An array of the type [`MemoryDescriptor`] whose len is `mmap_len` must exist from
-    /// `mmap_start`.
     #[must_use]
-    pub unsafe fn new(mmap_start: VirtAddr, mmap_len: usize) -> Self {
+    pub fn new(mmap: Mmap) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
 
-            mmap_start,
-            mmap_len,
+            mmap,
 
             magic_footer: MAGIC_FOOTER,
         }
@@ -38,8 +32,7 @@ impl BootInfo {
     }
 
     pub fn mmap(&mut self) -> &mut [MemoryDescriptor] {
-        // SAFETY: `BootInfo::new` ensures the safety.
-        unsafe { slice::from_raw_parts_mut(self.mmap_start.as_mut_ptr(), self.mmap_len) }
+        self.mmap.as_slice_mut()
     }
 
     fn check_header(&self) {
@@ -54,5 +47,26 @@ impl BootInfo {
             self.magic_footer, MAGIC_FOOTER,
             "Invalid boot information footer."
         );
+    }
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
+pub struct Mmap {
+    start: VirtAddr,
+    len: usize,
+}
+impl Mmap {
+    /// # Safety
+    ///
+    /// An array of the type [`MemoryDescriptor`] whose len is `len` must exist from
+    /// `start`.
+    pub unsafe fn new(start: VirtAddr, len: usize) -> Self {
+        Self { start, len }
+    }
+
+    fn as_slice_mut(&mut self) -> &mut [MemoryDescriptor] {
+        // SAFETY: `BootInfo::new` ensures the safety.
+        unsafe { slice::from_raw_parts_mut(self.start.as_mut_ptr(), self.len) }
     }
 }
