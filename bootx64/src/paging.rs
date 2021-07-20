@@ -1,9 +1,11 @@
-use aligned_ptr::ptr;
-use x86_64::registers::control::Cr3;
-use x86_64::structures::paging::PageTable;
-use x86_64::structures::paging::PageTableFlags;
-use x86_64::PhysAddr;
-use x86_64::VirtAddr;
+use {
+    aligned_ptr::ptr,
+    x86_64::{
+        registers::control::{Cr0, Cr0Flags, Cr3},
+        structures::paging::{PageTable, PageTableFlags},
+        PhysAddr, VirtAddr,
+    },
+};
 
 pub(crate) fn edit_page_tables<T>(f: impl FnOnce() -> T) -> T {
     disable_write_protect();
@@ -45,19 +47,13 @@ unsafe fn set_recursive_entry() {
 }
 
 fn enable_write_protect() {
-    extern "C" {
-        fn asm_enable_page_table_write_protect();
-    }
-
     // SAFETY: Enabling the write protection does not affect the memory safety.
-    unsafe { asm_enable_page_table_write_protect() }
+    unsafe {
+        Cr0::update(|cr0| cr0.insert(Cr0Flags::WRITE_PROTECT));
+    }
 }
 
 fn disable_write_protect() {
-    extern "C" {
-        fn asm_disable_page_table_write_protect();
-    }
-
     // SAFETY: Disabling the write protection does not affect the memory safety.
-    unsafe { asm_disable_page_table_write_protect() }
+    unsafe { Cr0::update(|cr0| cr0.remove(Cr0Flags::WRITE_PROTECT)) }
 }
