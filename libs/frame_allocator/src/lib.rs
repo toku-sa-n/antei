@@ -219,7 +219,7 @@ mod tests {
                 $(
                     v.push($elem);
                 )*
-                    v
+                v
             }
         };
     }
