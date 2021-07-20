@@ -18,7 +18,11 @@ test = false
 [dependencies]
 boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
+frame_allocator = { path = "../libs/frame_allocator" }
+os_units = "0.4.2"
 qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { version = "0.1.0", features = ["stable"], default-features = false }
 rlibc = "1.0.0"
+spinning_top = "0.2.4"
+uefi_wrapper = { path = "../libs/uefi_wrapper" }
 x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
