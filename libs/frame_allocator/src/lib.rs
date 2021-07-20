@@ -14,7 +14,7 @@ use {
 const REASONABLE_MAX_DESCRIPTORS: usize = 128;
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct FrameManager(ArrayVec<Frames, REASONABLE_MAX_DESCRIPTORS>);
+pub struct FrameManager(ArrayVec<FrameDescriptor, REASONABLE_MAX_DESCRIPTORS>);
 impl FrameManager {
     #[must_use]
     pub const fn new() -> Self {
@@ -32,7 +32,7 @@ impl FrameManager {
     fn init_for_descriptor(&mut self, descriptor: &MemoryDescriptor) {
         let start = PhysAddr::new(descriptor.physical_start);
         let num = NumOfPages::new(descriptor.number_of_pages.try_into().unwrap());
-        let frames = Frames::new_for_available(start, num);
+        let frames = FrameDescriptor::new_for_available(start, num);
 
         self.0.push(frames);
     }
@@ -70,7 +70,7 @@ impl FrameManager {
     fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<Size4KiB>) {
         let new_frames_start = self.0[i].start + requested.as_bytes().as_usize();
         let new_frames_num = self.0[i].num_of_pages - requested;
-        let new_frames = Frames::new_for_available(new_frames_start, new_frames_num);
+        let new_frames = FrameDescriptor::new_for_available(new_frames_start, new_frames_num);
 
         self.0[i].num_of_pages = requested;
         self.0.insert(i + 1, new_frames);
@@ -131,12 +131,12 @@ impl FrameDeallocator<Size4KiB> for FrameManager {
 }
 
 #[derive(PartialEq, Eq)]
-struct Frames {
+struct FrameDescriptor {
     start: PhysAddr,
     num_of_pages: NumOfPages<Size4KiB>,
     available: bool,
 }
-impl Frames {
+impl FrameDescriptor {
     fn new_for_available(start: PhysAddr, num_of_pages: NumOfPages<Size4KiB>) -> Self {
         Self {
             start,
@@ -174,7 +174,7 @@ impl Frames {
         self.start + self.num_of_pages.as_bytes().as_usize()
     }
 }
-impl fmt::Debug for Frames {
+impl fmt::Debug for FrameDescriptor {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let suffix = if self.available { "Available" } else { "Used" };
         write!(
@@ -193,7 +193,7 @@ fn is_conventional(d: &MemoryDescriptor) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{FrameManager, Frames};
+    use super::{FrameDescriptor, FrameManager};
     use os_units::NumOfPages;
     use x86_64::PhysAddr;
 
