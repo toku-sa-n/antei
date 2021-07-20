@@ -1,6 +1,6 @@
 use {
+    crate::NumOfPages,
     core::convert::{TryFrom, TryInto},
-    os_units::NumOfPages,
     uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{FrameAllocator, PhysFrame, Size4KiB},
@@ -16,7 +16,7 @@ impl<'a> Allocator<'a> {
         Self { mmap }
     }
 
-    fn allocate_frames(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+    fn allocate_frames(&mut self, n: NumOfPages) -> Option<PhysAddr> {
         self.iter_mut_conventional()
             .find_map(|d| Self::try_alloc_from(d, n))
     }
@@ -25,11 +25,11 @@ impl<'a> Allocator<'a> {
         self.mmap.iter_mut().filter(|d| is_usable_memory(d))
     }
 
-    fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+    fn try_alloc_from(d: &mut MemoryDescriptor, n: NumOfPages) -> Option<PhysAddr> {
         is_enough_memory(d, n).then(|| Self::alloc_from(d, n))
     }
 
-    fn alloc_from(d: &mut MemoryDescriptor, num_pages: NumOfPages<Size4KiB>) -> PhysAddr {
+    fn alloc_from(d: &mut MemoryDescriptor, num_pages: NumOfPages) -> PhysAddr {
         let bytes = num_pages.as_bytes();
         let bytes: u64 = bytes.as_usize().try_into().unwrap();
 
@@ -56,6 +56,6 @@ fn is_usable_memory(d: &MemoryDescriptor) -> bool {
     d.r#type == CONVENTIONAL_MEMORY
 }
 
-fn is_enough_memory(d: &MemoryDescriptor, n: NumOfPages<Size4KiB>) -> bool {
+fn is_enough_memory(d: &MemoryDescriptor, n: NumOfPages) -> bool {
     d.number_of_pages >= u64::try_from(n.as_usize()).unwrap()
 }
