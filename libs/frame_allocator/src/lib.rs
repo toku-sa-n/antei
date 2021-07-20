@@ -199,13 +199,13 @@ mod tests {
 
     macro_rules! frames {
         (A $start:expr => $end:expr) => {
-            Frames::new_for_available(
+            FrameDescriptor::new_for_available(
                 PhysAddr::new($start),
                 os_units::Bytes::new($end - $start).as_num_of_pages(),
             )
         };
         (U $start:expr => $end:expr) => {
-            Frames::new_for_used(
+            FrameDescriptor::new_for_used(
                 PhysAddr::new($start),
                 os_units::Bytes::new($end - $start).as_num_of_pages(),
             )
