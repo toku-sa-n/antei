@@ -1,6 +1,6 @@
 #![no_std]
 
-use x86_64::VirtAddr;
+use {aligned_ptr::slice, uefi_wrapper::service::boot::MemoryDescriptor, x86_64::VirtAddr};
 
 const MAGIC_HEADER: u64 = 0x0114_0514_1919_0810;
 const MAGIC_FOOTER: u64 = 0x0334_0072_dead_cafe;
@@ -16,8 +16,12 @@ pub struct BootInfo {
     magic_footer: u64,
 }
 impl BootInfo {
+    /// # Safety
+    ///
+    /// - An array of the type [`MemoryDescriptor`] whose len is `mmap_len` must exist from
+    /// `mmap_start`.
     #[must_use]
-    pub fn new(mmap_start: VirtAddr, mmap_len: usize) -> Self {
+    pub unsafe fn new(mmap_start: VirtAddr, mmap_len: usize) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
 
@@ -31,6 +35,11 @@ impl BootInfo {
     pub fn check_header_and_footer(&self) {
         self.check_header();
         self.check_footer();
+    }
+
+    pub fn mmap(&mut self) -> &mut [MemoryDescriptor] {
+        // SAFETY: `BootInfo::new` ensures the safety.
+        unsafe { slice::from_raw_parts_mut(self.mmap_start.as_mut_ptr(), self.mmap_len) }
     }
 
     fn check_header(&self) {

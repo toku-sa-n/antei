@@ -41,5 +41,8 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor]) -> ! {
     let mmap_start = VirtAddr::from_ptr(mmap.as_ptr());
     let mmap_len = mmap.len();
 
-    (entry)(BootInfo::new(mmap_start, mmap_len))
+    // SAFETY: The pointer and length are correct.
+    let boot_info = unsafe { BootInfo::new(mmap_start, mmap_len) };
+
+    (entry)(boot_info)
 }
