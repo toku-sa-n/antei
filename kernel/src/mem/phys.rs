@@ -15,6 +15,7 @@ pub fn init(mmap: &[MemoryDescriptor]) {
     tests::main();
 }
 
+#[must_use]
 pub fn alloc(n: NumOfPages) -> Option<PhysAddr> {
     frame_allocator().alloc(n)
 }
