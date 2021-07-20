@@ -67,7 +67,7 @@ impl Mmap {
     }
 
     pub fn as_slice_mut(&mut self) -> &mut [MemoryDescriptor] {
-        // SAFETY: `BootInfo::new` ensures the safety.
+        // SAFETY: `Mmap::new` ensures the safety.
         unsafe { slice::from_raw_parts_mut(self.start.as_mut_ptr(), self.len) }
     }
 }
