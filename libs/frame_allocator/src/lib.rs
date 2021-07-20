@@ -79,7 +79,7 @@ impl FrameAllocator {
     }
 }
 impl FrameAllocator {
-    pub fn free(&mut self, addr: PhysAddr) {
+    pub fn dealloc(&mut self, addr: PhysAddr) {
         for i in 0..self.0.len() {
             if self.0[i].start == addr && !self.0[i].available {
                 return self.free_memory_for_frames_at(i);
@@ -128,7 +128,7 @@ unsafe impl FrameAllocatorTrait<Size4KiB> for FrameAllocator {
 impl FrameDeallocator<Size4KiB> for FrameAllocator {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
         let addr = frame.start_address();
-        self.free(addr);
+        self.dealloc(addr);
     }
 }
 
@@ -283,7 +283,7 @@ mod tests {
     #[test]
     fn free_single_frames() {
         let mut f = manager!(U 0 => 0x3000);
-        f.free(PhysAddr::zero());
+        f.dealloc(PhysAddr::zero());
 
         assert_eq!(f, manager!(A 0 => 0x3000));
     }
@@ -296,7 +296,7 @@ mod tests {
             U 0xc000 => 0x10000,
         );
 
-        f.free(PhysAddr::new(0xc000));
+        f.dealloc(PhysAddr::new(0xc000));
 
         assert_eq!(
             f,
@@ -314,7 +314,7 @@ mod tests {
             A 0x3000 => 0x5000,
         );
 
-        f.free(PhysAddr::zero());
+        f.dealloc(PhysAddr::zero());
 
         assert_eq!(
             f,
@@ -332,7 +332,7 @@ mod tests {
             A 0x5000 => 0x10000,
         );
 
-        f.free(PhysAddr::new(0x3000));
+        f.dealloc(PhysAddr::new(0x3000));
 
         assert_eq!(f, manager!(A 0 => 0x10000))
     }
