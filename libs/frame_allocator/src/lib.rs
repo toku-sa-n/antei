@@ -228,7 +228,7 @@ mod tests {
 
     macro_rules! manager {
         ($($is_available:ident $start:expr => $end:expr),*$(,)*) => {
-            FrameManager(arrayvec![
+            FrameAllocator(arrayvec![
                 $(frames!($is_available $start => $end)),*
             ]
             )
