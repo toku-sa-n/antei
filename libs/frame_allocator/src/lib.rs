@@ -117,8 +117,8 @@ impl FrameAllocator {
 }
 unsafe impl FrameAllocatorTrait<Size4KiB> for FrameAllocator {
     fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-        let addr = self.alloc(NumOfPages::new(1))?;
-        Some(PhysFrame::from_start_address(addr).unwrap())
+        self.alloc(NumOfPages::new(1))
+            .map(|a| PhysFrame::from_start_address(a).unwrap())
     }
 }
 impl FrameDeallocator<Size4KiB> for FrameAllocator {
