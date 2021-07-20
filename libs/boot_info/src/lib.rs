@@ -61,6 +61,7 @@ impl Mmap {
     ///
     /// An array of the type [`MemoryDescriptor`] whose len is `len` must exist from
     /// `start`.
+    #[must_use]
     pub unsafe fn new(start: VirtAddr, len: usize) -> Self {
         Self { start, len }
     }
