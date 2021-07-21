@@ -1,0 +1,13 @@
+[package]
+name = "frame_allocator"
+version = "0.1.0"
+authors = ["toku-sa-n <tokusan441@gmail.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+arrayvec = { version = "0.7.1", default-features = false }
+bit_field = "0.10.1"
+os_units = "0.4.0"
+uefi_wrapper = { path = "../uefi_wrapper" }
+x86_64 = { version = "0.14.4", default-features = false }
