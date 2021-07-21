@@ -10,7 +10,7 @@ use {
         MEMORY_XP, PAL_CODE, PERSISTENT_MEMORY, RESERVED_MEMORY_TYPE, RUNTIME_SERVICES_CODE,
         RUNTIME_SERVICES_DATA, UNUSABLE_MEMORY,
     },
-    x86_64::VirtAddr,
+    x86_64::{PhysAddr, VirtAddr},
 };
 
 const MAGIC_HEADER: u64 = 0x0114_0514_1919_0810;
@@ -22,16 +22,18 @@ pub struct BootInfo {
     magic_header: u64,
 
     mmap: Mmap,
+    rsdp: PhysAddr,
 
     magic_footer: u64,
 }
 impl BootInfo {
     #[must_use]
-    pub fn new(mmap: Mmap) -> Self {
+    pub fn new(mmap: Mmap, rsdp: PhysAddr) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
 
             mmap,
+            rsdp,
 
             magic_footer: MAGIC_FOOTER,
         }
