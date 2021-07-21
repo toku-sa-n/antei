@@ -1,2 +1,2 @@
 pub mod phys;
-mod pml4;
+pub mod pml4;
