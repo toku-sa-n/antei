@@ -32,7 +32,7 @@ pub fn init() {
     lgdt();
     load_segments();
 
-    #[cfg(feature = "test_on_qemu")]
+    #[cfg(test_on_qemu)]
     tests::main();
 }
 
@@ -88,7 +88,7 @@ fn selectors<'a>() -> &'a Selectors {
     selectors.expect("`SELECTORS` is not initialized.")
 }
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 mod tests {
     use {
         super::{gdt, selectors},

@@ -26,3 +26,6 @@ rlibc = "1.0.0"
 spinning_top = "0.2.4"
 uefi_wrapper = { path = "../libs/uefi_wrapper" }
 x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
+
+[build-dependencies]
+cfg_aliases = "0.1.1"

@@ -18,12 +18,12 @@ fn panic(i: &PanicInfo<'_>) -> ! {
     fini();
 }
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 fn fini() -> ! {
     qemu::exit_failure();
 }
 
-#[cfg(not(feature = "test_on_qemu"))]
+#[cfg(not(test_on_qemu))]
 fn fini() -> ! {
     loop {
         x86_64::instructions::hlt();

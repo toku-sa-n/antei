@@ -11,7 +11,7 @@ static FRAME_ALLOCATOR: Spinlock<FrameAllocator> = const_spinlock(FrameAllocator
 pub fn init(mmap: &[MemoryDescriptor]) {
     frame_allocator().init(mmap);
 
-    #[cfg(feature = "test_on_qemu")]
+    #[cfg(test_on_qemu)]
     tests::main();
 }
 
@@ -30,7 +30,7 @@ fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
     f.expect("Failed to acquire the lock of the frame allocator.")
 }
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 mod tests {
     use {
         super::{alloc, dealloc},
