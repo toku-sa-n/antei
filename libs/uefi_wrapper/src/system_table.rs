@@ -31,7 +31,7 @@ impl SystemTable {
         // reference to `efi::simple_text_output::Protocol` is created.
         let con_out = unsafe { ptr::as_mut(st.con_out) };
 
-        console::SimpleTextOutput::new(con_out, self)
+        console::SimpleTextOutput::new(con_out)
     }
 
     /// # Errors
