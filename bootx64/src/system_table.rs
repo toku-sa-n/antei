@@ -1,7 +1,11 @@
-use crate::uefi_panic;
-use core::fmt;
-use uefi_wrapper::service;
-use uefi_wrapper::{protocols::console, service::boot};
+use {
+    crate::uefi_panic,
+    core::fmt,
+    uefi_wrapper::{
+        protocols::console,
+        service::{self, boot},
+    },
+};
 
 #[repr(transparent)]
 #[derive(Debug)]
