@@ -11,12 +11,12 @@ use {core::panic::PanicInfo, qemu_print::qemu_println, x86_64::structures::pagin
 
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 pub fn fini() -> ! {
     qemu::exit_success();
 }
 
-#[cfg(not(feature = "test_on_qemu"))]
+#[cfg(not(test_on_qemu))]
 pub fn fini() -> ! {
     loop {
         x86_64::instructions::hlt();
@@ -30,12 +30,12 @@ fn panic(i: &PanicInfo<'_>) -> ! {
     exit_panic();
 }
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 pub fn exit_panic() -> ! {
     qemu::exit_failure();
 }
 
-#[cfg(not(feature = "test_on_qemu"))]
+#[cfg(not(test_on_qemu))]
 pub fn exit_panic() -> ! {
     loop {
         x86_64::instructions::hlt();

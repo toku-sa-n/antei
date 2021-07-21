@@ -6,11 +6,11 @@ static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(InterruptDescriptorTable:
 pub fn init() {
     IDT.load();
 
-    #[cfg(feature = "test_on_qemu")]
+    #[cfg(test_on_qemu)]
     tests::main();
 }
 
-#[cfg(feature = "test_on_qemu")]
+#[cfg(test_on_qemu)]
 mod tests {
     use {
         super::IDT,
