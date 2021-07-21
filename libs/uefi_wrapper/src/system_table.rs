@@ -3,10 +3,12 @@ use {
         protocols::console,
         service::{self, boot},
     },
-    aligned_ptr::ptr,
+    aligned_ptr::{ptr, slice},
     core::fmt,
     r_efi::efi,
 };
+
+pub use efi::ConfigurationTable;
 
 #[repr(transparent)]
 #[allow(missing_copy_implementations)]
@@ -35,6 +37,12 @@ impl SystemTable {
         let con_out = unsafe { ptr::as_mut(st.con_out) };
 
         console::SimpleTextOutput::new(con_out)
+    }
+
+    pub fn configuration_table(&self) -> &[ConfigurationTable] {
+        let st = self.as_ref();
+
+        unsafe { slice::from_raw_parts(st.configuration_table, st.number_of_table_entries) }
     }
 
     /// # Errors
