@@ -48,6 +48,7 @@ impl SystemTable {
         console::SimpleTextOutput::new(con_out)
     }
 
+    #[must_use]
     pub fn configuration_table(&self) -> &[ConfigurationTable] {
         let st = self.as_ref();
 
