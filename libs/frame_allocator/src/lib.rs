@@ -195,7 +195,7 @@ mod tests {
     use os_units::NumOfPages;
     use x86_64::PhysAddr;
 
-    macro_rules! frames {
+    macro_rules! descriptor {
         (A $start:expr => $end:expr) => {
             FrameDescriptor::new_for_available(
                 PhysAddr::new($start),
@@ -225,7 +225,7 @@ mod tests {
     macro_rules! allocator {
         ($($is_available:ident $start:expr => $end:expr),*$(,)*) => {
             FrameAllocator(arrayvec![
-                $(frames!($is_available $start => $end)),*
+                $(descriptor!($is_available $start => $end)),*
             ]
             )
         };
@@ -335,8 +335,8 @@ mod tests {
 
     #[test]
     fn mergable_two_frmaes() {
-        let f1 = frames!(A 0x2000 => 0xc000);
-        let f2 = frames!(A 0xc000 => 0x10000);
+        let f1 = descriptor!(A 0x2000 => 0xc000);
+        let f2 = descriptor!(A 0xc000 => 0x10000);
 
         assert!(f1.is_mergeable(&f2));
     }
