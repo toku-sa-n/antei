@@ -1,9 +1,12 @@
-use crate::protocols::console;
-use crate::service;
-use crate::service::boot;
-use aligned_ptr::ptr;
-use core::fmt;
-use r_efi::efi;
+use {
+    crate::{
+        protocols::console,
+        service::{self, boot},
+    },
+    aligned_ptr::ptr,
+    core::fmt,
+    r_efi::efi,
+};
 
 #[repr(transparent)]
 #[allow(missing_copy_implementations)]
