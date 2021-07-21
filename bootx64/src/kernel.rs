@@ -2,7 +2,7 @@ use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
     uefi_wrapper::service::boot::MemoryDescriptor,
-    x86_64::VirtAddr,
+    x86_64::{PhysAddr, VirtAddr},
 };
 
 pub fn locate<'a>(st: &mut SystemTable) -> &'a [u8] {
@@ -14,8 +14,8 @@ pub fn locate<'a>(st: &mut SystemTable) -> &'a [u8] {
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
-pub unsafe fn load_and_jump(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> ! {
-    jump(unsafe { load(binary, mmap) }, mmap);
+pub unsafe fn load_and_jump(binary: &[u8], mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
+    jump(unsafe { load(binary, mmap) }, mmap, rsdp);
 }
 
 /// # Safety
@@ -32,7 +32,7 @@ unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     entry
 }
 
-fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor]) -> ! {
+fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
     // SAFETY: Safe as described in
     // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html#representation.
     let entry: extern "sysv64" fn(BootInfo) -> ! =
@@ -44,7 +44,7 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor]) -> ! {
     // SAFETY: The pointer and the length are the correct ones.
     let mmap = unsafe { Mmap::new(mmap_start, mmap_len) };
 
-    let boot_info = BootInfo::new(mmap);
+    let boot_info = BootInfo::new(mmap, rsdp);
 
     (entry)(boot_info)
 }

@@ -4,6 +4,7 @@ use {
     uefi_wrapper::{
         protocols::console,
         service::{self, boot},
+        system_table::ConfigurationTable,
     },
 };
 
@@ -17,6 +18,11 @@ impl SystemTable {
 
     pub fn con_out(&mut self) -> console::SimpleTextOutput<'_> {
         self.0.con_out()
+    }
+
+    #[must_use]
+    pub fn configuration_table(&self) -> &[ConfigurationTable] {
+        self.0.configuration_table()
     }
 
     /// # Panics
