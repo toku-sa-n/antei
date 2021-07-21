@@ -5,10 +5,19 @@ use {
     },
     aligned_ptr::{ptr, slice},
     core::fmt,
-    r_efi::efi,
+    r_efi::efi::{self, Guid},
 };
 
 pub use efi::ConfigurationTable;
+
+pub const EFI_ACPI_TABLE_GUID: Guid = Guid::from_fields(
+    0x8868_e871,
+    0xe4f1,
+    0x11d3,
+    0xbc,
+    0x22,
+    &[0x00, 0x80, 0xc7, 0x3c, 0x88, 0x81],
+);
 
 #[repr(transparent)]
 #[allow(missing_copy_implementations)]
