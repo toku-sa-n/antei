@@ -7,7 +7,7 @@ use {
     uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{
-            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PhysFrame, Size4KiB,
+            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PageSize, PhysFrame, Size4KiB,
         },
         PhysAddr,
     },
@@ -31,6 +31,11 @@ impl FrameAllocator {
 
     fn init_for_descriptor(&mut self, descriptor: &MemoryDescriptor) {
         let start = PhysAddr::new(descriptor.physical_start);
+        assert!(
+            start.is_aligned(Size4KiB::SIZE),
+            "The address is not page-aligned."
+        );
+
         let num = NumOfPages::new(descriptor.number_of_pages.try_into().unwrap());
         let frames = FrameDescriptor::new_for_available(start, num);
 
