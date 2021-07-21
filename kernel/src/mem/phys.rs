@@ -38,10 +38,10 @@ mod tests {
     };
 
     pub(super) fn main() {
-        allocate_single_page();
+        allocate_single_page_and_dealloc();
     }
 
-    fn allocate_single_page() {
+    fn allocate_single_page_and_dealloc() {
         let p = alloc(NumOfPages::new(1));
         let p = p.expect("Failed to allocate a page.");
 
