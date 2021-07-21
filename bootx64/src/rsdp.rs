@@ -4,6 +4,7 @@ use {
     x86_64::PhysAddr,
 };
 
+#[must_use]
 pub fn get(st: &SystemTable) -> PhysAddr {
     st.configuration_table()
         .iter()

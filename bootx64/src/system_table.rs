@@ -20,6 +20,7 @@ impl SystemTable {
         self.0.con_out()
     }
 
+    #[must_use]
     pub fn configuration_table(&self) -> &[ConfigurationTable] {
         self.0.configuration_table()
     }
