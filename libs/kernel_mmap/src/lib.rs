@@ -16,6 +16,11 @@ impl Region {
     pub const fn start(&self) -> VirtAddr {
         VirtAddr::new_truncate(self.0.start as u64)
     }
+
+    pub const fn end(&self) -> VirtAddr {
+        VirtAddr::new_truncate(self.start().as_u64() + self.bytes().as_usize() as u64)
+    }
+
     pub const fn bytes(&self) -> Bytes {
         Bytes::new(self.0.end - self.0.start)
     }
