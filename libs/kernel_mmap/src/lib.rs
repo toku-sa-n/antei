@@ -13,6 +13,10 @@ use {
 #[derive(Clone, Debug)]
 pub struct Region(Range<usize>);
 impl Region {
+    pub const fn bytes(&self) -> Bytes {
+        Bytes::new(self.0.end - self.0.start)
+    }
+
     const fn new(start: VirtAddr, bytes: Bytes) -> Self {
         let start = start.as_u64() as usize;
 
@@ -86,5 +90,13 @@ mod tests {
 
         assert!(r1.overlaps_with(&r2));
         assert!(r2.overlaps_with(&r1));
+    }
+
+    #[test]
+    fn bytes() {
+        let bytes = Bytes::new(16);
+        let r = Region::new(VirtAddr::zero(), bytes);
+
+        assert_eq!(r.bytes(), bytes);
     }
 }
