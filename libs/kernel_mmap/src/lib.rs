@@ -13,19 +13,23 @@ use {
 #[derive(Clone, Debug)]
 pub struct Region(Range<usize>);
 impl Region {
+    #[must_use]
     pub const fn start(&self) -> VirtAddr {
         VirtAddr::new_truncate(self.0.start as u64)
     }
 
+    #[must_use]
     pub const fn end(&self) -> VirtAddr {
         VirtAddr::new_truncate(self.start().as_u64() + self.bytes().as_usize() as u64)
     }
 
+    #[must_use]
     pub const fn bytes(&self) -> Bytes {
         Bytes::new(self.0.end - self.0.start)
     }
 
     const fn new(start: VirtAddr, bytes: Bytes) -> Self {
+        #[allow(clippy::cast_possible_truncation)]
         let start = start.as_u64() as usize;
 
         let end = start + bytes.as_usize();
@@ -46,6 +50,7 @@ pub const KERNEL: Region = Region::new(
 
 pub const STACK: Region = Region::new(
     VirtAddr::new_truncate(0xffff_ffff_a000_0000),
+    #[allow(clippy::cast_possible_truncation)]
     Bytes::new(4 * Size4KiB::SIZE as usize),
 );
 
