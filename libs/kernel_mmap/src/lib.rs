@@ -13,6 +13,9 @@ use {
 #[derive(Clone, Debug)]
 pub struct Region(Range<usize>);
 impl Region {
+    pub const fn start(&self) -> VirtAddr {
+        VirtAddr::new_truncate(self.0.start as u64)
+    }
     pub const fn bytes(&self) -> Bytes {
         Bytes::new(self.0.end - self.0.start)
     }
@@ -90,6 +93,14 @@ mod tests {
 
         assert!(r1.overlaps_with(&r2));
         assert!(r2.overlaps_with(&r1));
+    }
+
+    #[test]
+    fn start() {
+        let start = VirtAddr::new(0xffff_ffff_8000_0000);
+        let r = Region::new(start, Bytes::new(0x2000));
+
+        assert_eq!(r.start(), start);
     }
 
     #[test]
