@@ -8,4 +8,4 @@
     .global switch_stack_and_call_kernel_code
 switch_stack_and_call_kernel_code:
     mov rsp, rdx
-    call rsi
+    jmp rsi
