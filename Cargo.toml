@@ -3,6 +3,7 @@ members = [
     "bootx64",
     "libs/boot_info",
     "libs/frame_allocator",
+    "libs/kernel_mmap",
     "libs/uefi_wrapper",
     "libs/debug",
     "libs/qemu",

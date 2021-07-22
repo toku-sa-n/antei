@@ -14,6 +14,7 @@ mod mapper;
 pub mod paging;
 pub mod panic;
 pub mod rsdp;
+pub mod stack;
 pub mod system_table;
 
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;

@@ -3,7 +3,7 @@ OUTPUT_FORMAT(elf64-x86-64);
 ENTRY(main);
 
 MEMORY {
-    kernel (WX) : ORIGIN = 0xffffffff80000000, LENGTH = 0x80000000
+    kernel (WX) : ORIGIN = 0xffffffff80000000, LENGTH = 0x20000000
 }
 
 SECTIONS {

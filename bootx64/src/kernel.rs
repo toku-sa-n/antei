@@ -1,6 +1,7 @@
 use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
+    kernel_mmap::STACK,
     uefi_wrapper::service::boot::MemoryDescriptor,
     x86_64::{PhysAddr, VirtAddr},
 };
@@ -33,10 +34,13 @@ unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
 }
 
 fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
-    // SAFETY: Safe as described in
-    // https://rust-lang.github.io/unsafe-code-guidelines/layout/function-pointers.html#representation.
-    let entry: extern "sysv64" fn(BootInfo) -> ! =
-        unsafe { core::mem::transmute(entry.as_ptr::<()>()) };
+    extern "sysv64" {
+        fn switch_stack_and_call_kernel_code(
+            boot_info: *mut BootInfo,
+            entry: VirtAddr,
+            stack_ptr: VirtAddr,
+        ) -> !;
+    }
 
     let mmap_start = VirtAddr::from_ptr(mmap.as_ptr());
     let mmap_len = mmap.len();
@@ -44,7 +48,8 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
     // SAFETY: The pointer and the length are the correct ones.
     let mmap = unsafe { Mmap::new(mmap_start, mmap_len) };
 
-    let boot_info = BootInfo::new(mmap, rsdp);
+    let mut boot_info = BootInfo::new(mmap, rsdp);
 
-    (entry)(boot_info)
+    // SAFETY: Correct arguments.
+    unsafe { switch_stack_and_call_kernel_code(&mut boot_info, entry, STACK.end()) };
 }
