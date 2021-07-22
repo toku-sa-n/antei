@@ -7,7 +7,7 @@ use {
 
 const RECURSIVE_ADDR: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
 
-static PML4: OnceCell<Spinlock<RecursivePageTable>> = OnceCell::uninit();
+static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 
 /// # Safety
 ///
