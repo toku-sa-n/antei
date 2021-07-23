@@ -9,6 +9,7 @@ use {
     },
 };
 
+#[must_use]
 pub fn find_unused_pages_from_region(n: NumOfPages, r: &Region) -> VirtAddr {
     try_find_unused_pages_from_region(n, r).expect("Failed to allocate a virtual page.")
 }
