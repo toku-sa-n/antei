@@ -22,7 +22,7 @@ unsafe extern "sysv64" fn main(boot_info: *mut BootInfo) {
     let mut boot_info = unsafe { ptr::get(boot_info) };
     boot_info.validate();
 
-    mem::phys::init(boot_info.mmap_mut().as_slice_mut());
+    mem::phys::init(boot_info.mmap().as_slice());
 
     // SAFETY: The recursive address is accessible and there are no references to the current
     // working PML4.
