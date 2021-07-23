@@ -8,8 +8,6 @@ use {
     },
 };
 
-const RECURSIVE_ADDR: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
-
 static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 
 /// # Safety
@@ -25,6 +23,8 @@ pub unsafe fn init() {
 }
 
 fn init_static() {
+    const RECURSIVE_ADDR: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
+
     // SAFETY: The caller must ensure that the recursive paging address must point to the current
     // working PML4.
     let working_pml4 = unsafe { ptr::as_mut(RECURSIVE_ADDR.as_mut_ptr()) };
