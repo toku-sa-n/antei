@@ -7,7 +7,10 @@ extern crate kernel as _;
 use {
     aligned_ptr::ptr,
     boot_info::BootInfo,
-    kernel::{fini, gdt, idt, mem},
+    kernel::{
+        fini, gdt, idt,
+        mem::{self, pml4},
+    },
 };
 
 /// # Safety
@@ -20,6 +23,10 @@ unsafe extern "sysv64" fn main(boot_info: *mut BootInfo) {
     boot_info.validate();
 
     mem::phys::init(boot_info.mmap_mut().as_slice_mut());
+
+    // SAFETY: The recursive address is accessible and there are no references to the current
+    // working PML4.
+    unsafe { pml4::init() };
 
     gdt::init();
     idt::init();
