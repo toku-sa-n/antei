@@ -52,6 +52,7 @@ pub const KERNEL: Region = Region::new(
     Bytes::new(0x2000_0000),
 );
 
+#[allow(clippy::cast_possible_truncation)]
 pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(4 * Size4KiB::SIZE as usize));
 
 const_assert!(!KERNEL.overlaps_with(&STACK));
