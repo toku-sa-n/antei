@@ -55,7 +55,10 @@ pub const KERNEL: Region = Region::new(
 #[allow(clippy::cast_possible_truncation)]
 pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(4 * Size4KiB::SIZE as usize));
 
+pub const TIMER: Region = Region::next_to(&STACK, Bytes::new(4 * 1024 * 1024));
+
 const_assert!(!KERNEL.overlaps_with(&STACK));
+const_assert!(!STACK.overlaps_with(&TIMER));
 
 #[cfg(test)]
 mod tests {
