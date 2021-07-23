@@ -45,8 +45,7 @@ fn unmap_all_user_regions() {
 }
 
 fn pml4<'a>() -> MappedSpinlockGuard<'a, PageTable> {
-    let mapper = mapper();
-    SpinlockGuard::map(mapper, |m| m.level_4_table())
+    SpinlockGuard::map(mapper(), |m| m.level_4_table())
 }
 
 fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
