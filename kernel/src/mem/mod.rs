@@ -5,7 +5,10 @@ mod virt;
 
 use {phys::frame_allocator, pml4::mapper, uefi_wrapper::service::boot::MemoryDescriptor};
 
-pub use mapping::{map_to, unmap};
+pub use {
+    mapping::{map_to, unmap},
+    virt::find_unused_pages_from_region,
+};
 
 /// # Safety
 ///
