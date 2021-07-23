@@ -2,7 +2,7 @@ mod mapping;
 mod phys;
 mod pml4;
 
-use uefi_wrapper::service::boot::MemoryDescriptor;
+use {phys::frame_allocator, pml4::mapper, uefi_wrapper::service::boot::MemoryDescriptor};
 
 pub use mapping::{map_to, unmap};
 
