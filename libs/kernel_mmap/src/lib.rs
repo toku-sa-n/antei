@@ -37,6 +37,10 @@ impl Region {
         Self(start..end)
     }
 
+    const fn next_to(other: &Region, bytes: Bytes) -> Self {
+        Self::new(other.end(), bytes)
+    }
+
     #[allow(dead_code)]
     const fn overlaps_with(&self, other: &Region) -> bool {
         self.0.end > other.0.start && other.0.end > self.0.start
@@ -48,11 +52,8 @@ pub const KERNEL: Region = Region::new(
     Bytes::new(0x2000_0000),
 );
 
-pub const STACK: Region = Region::new(
-    VirtAddr::new_truncate(0xffff_ffff_a000_0000),
-    #[allow(clippy::cast_possible_truncation)]
-    Bytes::new(4 * Size4KiB::SIZE as usize),
-);
+#[allow(clippy::cast_possible_truncation)]
+pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(4 * Size4KiB::SIZE as usize));
 
 const_assert!(!KERNEL.overlaps_with(&STACK));
 
@@ -119,5 +120,14 @@ mod tests {
         let r = Region::new(VirtAddr::zero(), bytes);
 
         assert_eq!(r.bytes(), bytes);
+    }
+
+    #[test]
+    fn next_to() {
+        let r1 = Region::new(VirtAddr::new(0x1000), Bytes::new(0x1000));
+        let r2 = Region::next_to(&r1, Bytes::new(0x1000));
+
+        assert_eq!(r2.start(), VirtAddr::new(0x2000));
+        assert!(!r1.overlaps_with(&r2));
     }
 }
