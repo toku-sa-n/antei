@@ -1,5 +1,5 @@
 mod phys;
-mod pml4;
+mod virt;
 
 use uefi_wrapper::service::boot::MemoryDescriptor;
 
@@ -12,5 +12,5 @@ pub unsafe fn init(mmap: &[MemoryDescriptor]) {
     phys::init(mmap);
 
     // SAFETY: The caller must uphold the safety requirements.
-    unsafe { pml4::init() };
+    unsafe { virt::init() };
 }
