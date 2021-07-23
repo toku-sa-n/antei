@@ -84,6 +84,7 @@ impl Mmap {
         Self { start, len }
     }
 
+    #[must_use]
     pub fn as_slice(&self) -> &[MemoryDescriptor] {
         // SAFETY: `Mmap::new` ensures the safety.
         unsafe { slice::from_raw_parts(self.start.as_ptr(), self.len) }
