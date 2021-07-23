@@ -1,27 +1,16 @@
 use {
-    crate::NumOfPages,
     frame_allocator::FrameAllocator,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
     uefi_wrapper::service::boot::MemoryDescriptor,
-    x86_64::PhysAddr,
 };
 
 static FRAME_ALLOCATOR: Spinlock<FrameAllocator> = const_spinlock(FrameAllocator::new());
 
-pub fn init(mmap: &[MemoryDescriptor]) {
+pub(super) fn init(mmap: &[MemoryDescriptor]) {
     frame_allocator().init(mmap);
 
     #[cfg(test_on_qemu)]
     tests::main();
-}
-
-#[must_use]
-pub fn alloc(n: NumOfPages) -> Option<PhysAddr> {
-    frame_allocator().alloc(n)
-}
-
-pub fn dealloc(a: PhysAddr) {
-    frame_allocator().dealloc(a)
 }
 
 fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
@@ -32,10 +21,7 @@ fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
 
 #[cfg(test_on_qemu)]
 mod tests {
-    use {
-        super::{alloc, dealloc},
-        crate::NumOfPages,
-    };
+    use {super::frame_allocator, crate::NumOfPages, x86_64::PhysAddr};
 
     pub(super) fn main() {
         allocate_single_page_and_dealloc();
@@ -46,5 +32,14 @@ mod tests {
         let p = p.expect("Failed to allocate a page.");
 
         dealloc(p);
+    }
+
+    #[must_use]
+    fn alloc(n: NumOfPages) -> Option<PhysAddr> {
+        frame_allocator().alloc(n)
+    }
+
+    fn dealloc(a: PhysAddr) {
+        frame_allocator().dealloc(a)
     }
 }

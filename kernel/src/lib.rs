@@ -7,8 +7,11 @@ pub mod gdt;
 pub mod idt;
 pub mod mem;
 
-use {core::panic::PanicInfo, qemu_print::qemu_println, x86_64::structures::paging::Size4KiB};
+#[cfg(test_on_qemu)]
+use x86_64::structures::paging::Size4KiB;
+use {core::panic::PanicInfo, qemu_print::qemu_println};
 
+#[cfg(test_on_qemu)]
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
 #[cfg(test_on_qemu)]
