@@ -15,7 +15,7 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 /// Hereafter,
 /// - The recursive address `0xff7f_bfdf_e000` must point to the current working PML4.
 /// - There must not exist any references that point to the current working PML4.
-pub unsafe fn init() {
+pub(super) unsafe fn init() {
     // SAFETY: The caller must uphold the safety requirement.
     unsafe { init_static() };
 
