@@ -1,8 +1,11 @@
 use {
     aligned_ptr::ptr,
     conquer_once::spin::OnceCell,
-    spinning_top::{Spinlock, SpinlockGuard},
-    x86_64::{structures::paging::RecursivePageTable, VirtAddr},
+    spinning_top::{MappedSpinlockGuard, Spinlock, SpinlockGuard},
+    x86_64::{
+        structures::paging::{PageTable, RecursivePageTable},
+        VirtAddr,
+    },
 };
 
 const RECURSIVE_ADDR: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
@@ -16,6 +19,9 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 pub unsafe fn init() {
     init_static();
     unmap_all_user_regions();
+
+    #[cfg(test_on_qemu)]
+    tests::main();
 }
 
 fn init_static() {
@@ -32,17 +38,38 @@ fn init_static() {
 
 fn unmap_all_user_regions() {
     let mut pml4 = pml4();
-    let pml4 = pml4.level_4_table();
 
     for i in 0..510 {
         pml4[i].set_unused();
     }
 }
 
-fn pml4<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
+fn pml4<'a>() -> MappedSpinlockGuard<'a, PageTable> {
+    let mapper = mapper();
+    SpinlockGuard::map(mapper, |m| m.level_4_table())
+}
+
+fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
     let pml4 = PML4.try_get();
     let pml4 = pml4.expect("`pml4::init` is not called.");
     let pml4 = pml4.try_lock();
 
     pml4.expect("Failed to acquire kernel's PML4.")
+}
+
+#[cfg(test_on_qemu)]
+mod tests {
+    use super::pml4;
+
+    pub(super) fn main() {
+        user_region_is_not_mapped();
+    }
+
+    fn user_region_is_not_mapped() {
+        let pml4 = pml4();
+
+        for i in 0..510 {
+            assert!(pml4[i].is_unused());
+        }
+    }
 }
