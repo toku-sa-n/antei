@@ -1,6 +1,7 @@
 mod mapping;
 mod phys;
 mod pml4;
+mod virt;
 
 use {phys::frame_allocator, pml4::mapper, uefi_wrapper::service::boot::MemoryDescriptor};
 
