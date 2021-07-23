@@ -5,6 +5,7 @@ extern crate rlibc as _;
 
 pub mod gdt;
 pub mod idt;
+mod interrupt;
 pub mod mem;
 
 use x86_64::structures::paging::Size4KiB;
