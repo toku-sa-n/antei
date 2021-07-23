@@ -13,7 +13,7 @@ pub(super) fn init(mmap: &[MemoryDescriptor]) {
     tests::main();
 }
 
-fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
+pub(super) fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
     let f = FRAME_ALLOCATOR.try_lock();
 
     f.expect("Failed to acquire the lock of the frame allocator.")

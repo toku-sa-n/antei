@@ -4,6 +4,8 @@ mod pml4;
 
 use uefi_wrapper::service::boot::MemoryDescriptor;
 
+pub use mapping::{map_to, unmap};
+
 /// # Safety
 ///
 /// When and after calling this function,

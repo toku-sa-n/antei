@@ -25,6 +25,14 @@ pub(super) unsafe fn init() {
     tests::main();
 }
 
+pub(super) fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
+    let pml4 = PML4.try_get();
+    let pml4 = pml4.expect("`pml4::init` is not called.");
+    let pml4 = pml4.try_lock();
+
+    pml4.expect("Failed to acquire the lock of kernel's PML4.")
+}
+
 /// # Safety
 ///
 /// Hereafter, the virtual address `0xff7f_bfdf_e000` must point to the current working PML4.
@@ -52,14 +60,6 @@ fn unmap_all_user_regions() {
 
 fn pml4<'a>() -> MappedSpinlockGuard<'a, PageTable> {
     SpinlockGuard::map(mapper(), |m| m.level_4_table())
-}
-
-fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
-    let pml4 = PML4.try_get();
-    let pml4 = pml4.expect("`pml4::init` is not called.");
-    let pml4 = pml4.try_lock();
-
-    pml4.expect("Failed to acquire the lock of kernel's PML4.")
 }
 
 #[cfg(test_on_qemu)]
