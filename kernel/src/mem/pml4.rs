@@ -53,7 +53,7 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
     let pml4 = pml4.expect("`pml4::init` is not called.");
     let pml4 = pml4.try_lock();
 
-    pml4.expect("Failed to acquire kernel's PML4.")
+    pml4.expect("Failed to acquire the lock of kernel's PML4.")
 }
 
 #[cfg(test_on_qemu)]
