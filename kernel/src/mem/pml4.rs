@@ -83,7 +83,6 @@ mod tests {
         let mut mapper = mapper();
         let expected_pml4 = mapper.level_4_table();
         let expected_pml4_addr = VirtAddr::from_ptr(expected_pml4);
-
         let expected_pml4_addr = mapper.translate_addr(expected_pml4_addr).unwrap();
 
         assert_eq!(current_pml4_addr, expected_pml4_addr);
