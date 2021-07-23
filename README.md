@@ -1,6 +1,47 @@
 # Antei
 
-Antei is an experimental Operating System which is written in stable Rust.
+Antei is an experimental Operating System for the `x86_64` architecture written in stable Rust.
+
+## Dependencies
+
+You need to install these programs:
+- `rustup`
+- `cargo`
+- `qemu-system-x86_64`
+- `mtools`
+- `x86_64-pc-linux-gnu-gcc`
+- `x86_64-w64-mingw32-gcc`
+- `lld-link`
+
+You need to install the Rust toolchain for Windows:
+```sh
+rustup target add x86_64-pc-windows-gnu
+```
+
+These binaries must exist at the same directory which `Makefile` is in.
+- `OVMF_VARS.fd`
+- `OVMF_CODE.fd`
+
+## Running
+```sh
+make run
+```
+
+Adding `RELEASE=1` will compile binaries with optimizations.
+```sh
+make RELEASE=1 run
+```
+
+## Testing
+```sh
+make test
+```
+
+Adding `RELEASE=1` will test the OS with optimizations.
+```sh
+make RELEASE=1 test
+```
+
 
 ## License
 
