@@ -15,14 +15,19 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 /// - The recursive address `0xff7f_bfdf_e000` must point to the current working PML4.
 /// - There must not exist any references that point to the current working PML4.
 pub unsafe fn init() {
-    init_static();
+    // SAFETY: The caller must uphold the safety requirement.
+    unsafe { init_static() };
+
     unmap_all_user_regions();
 
     #[cfg(test_on_qemu)]
     tests::main();
 }
 
-fn init_static() {
+/// # Safety
+///
+/// The virtual address `0xff7f_bfdf_e000` must point to the current working PML4.
+unsafe fn init_static() {
     const RECURSIVE_ADDR: VirtAddr = VirtAddr::new_truncate(0xff7f_bfdf_e000);
 
     // SAFETY: The caller must ensure that the recursive paging address must point to the current
