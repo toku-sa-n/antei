@@ -58,10 +58,14 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 
 #[cfg(test_on_qemu)]
 mod tests {
-    use super::pml4;
+    use {
+        super::{mapper, pml4},
+        x86_64::{registers::control::Cr3, structures::paging::Translate, VirtAddr},
+    };
 
     pub(super) fn main() {
         user_region_is_not_mapped();
+        cr3_indicates_correct_pml4();
     }
 
     fn user_region_is_not_mapped() {
@@ -70,5 +74,18 @@ mod tests {
         for i in 0..510 {
             assert!(pml4[i].is_unused());
         }
+    }
+
+    fn cr3_indicates_correct_pml4() {
+        let (current_pml4, _) = Cr3::read();
+        let current_pml4_addr = current_pml4.start_address();
+
+        let mut mapper = mapper();
+        let expected_pml4 = mapper.level_4_table();
+        let expected_pml4_addr = VirtAddr::from_ptr(expected_pml4);
+
+        let expected_pml4_addr = mapper.translate_addr(expected_pml4_addr).unwrap();
+
+        assert_eq!(current_pml4_addr, expected_pml4_addr);
     }
 }
