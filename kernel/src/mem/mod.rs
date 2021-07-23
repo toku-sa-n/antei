@@ -1,3 +1,4 @@
+mod mapping;
 mod phys;
 mod pml4;
 
