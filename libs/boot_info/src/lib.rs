@@ -44,13 +44,13 @@ impl BootInfo {
         self.mmap.vaildate();
     }
 
+    pub fn mmap(&mut self) -> &Mmap {
+        &self.mmap
+    }
+
     fn check_header_and_footer(&self) {
         self.check_header();
         self.check_footer();
-    }
-
-    pub fn mmap(&mut self) -> &Mmap {
-        &self.mmap
     }
 
     fn check_header(&self) {
