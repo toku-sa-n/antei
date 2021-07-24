@@ -1,11 +1,15 @@
 use {
     super::phys::frame_allocator,
+    crate::NumOfPages,
     aligned_ptr::ptr,
     conquer_once::spin::OnceCell,
+    core::convert::TryInto,
+    kernel_mmap::Region,
     spinning_top::{MappedSpinlockGuard, Spinlock, SpinlockGuard},
     x86_64::{
         structures::paging::{
-            Mapper, Page, PageTable, PageTableFlags, PhysFrame, RecursivePageTable,
+            Mapper, Page, PageSize, PageTable, PageTableFlags, PhysFrame, RecursivePageTable,
+            Size4KiB, Translate,
         },
         VirtAddr,
     },
@@ -57,6 +61,52 @@ fn unmap(page: Page) {
     let (_, f) = r.expect("Failed to unmap a page.");
 
     f.flush();
+}
+
+fn find_unmapped_pages_from_region(n: NumOfPages, r: &Region) -> VirtAddr {
+    try_find_unmapped_pages_from_region(n, r).expect("Pages unavailable.")
+}
+
+fn try_find_unmapped_pages_from_region(n: NumOfPages, r: &Region) -> Option<VirtAddr> {
+    let start = r.start().as_u64();
+    let end = r.end().as_u64();
+    let addrs = (start..end)
+        .step_by(Size4KiB::SIZE.try_into().unwrap())
+        .map(VirtAddr::new);
+
+    find_consecutive_satisfying_elements(addrs, is_available, n.as_usize())
+}
+
+fn find_consecutive_satisfying_elements<T>(
+    iter: impl Iterator<Item = T>,
+    cond: impl Fn(&T) -> bool,
+    n: usize,
+) -> Option<T> {
+    let mut cnt = 0;
+    let mut start = None;
+
+    for x in iter {
+        if cond(&x) {
+            cnt += 1;
+
+            if start.is_none() {
+                start = Some(x);
+            }
+
+            if cnt >= n {
+                return start;
+            }
+        } else {
+            cnt = 0;
+            start = None;
+        }
+    }
+
+    None
+}
+
+fn is_available(a: &VirtAddr) -> bool {
+    mapper().translate_addr(*a).is_none() && !a.is_null()
 }
 
 fn unmap_all_user_regions() {
