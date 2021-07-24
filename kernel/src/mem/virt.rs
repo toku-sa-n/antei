@@ -52,6 +52,13 @@ fn map_to(page: Page, frame: PhysFrame, flags: PageTableFlags) {
     f.flush();
 }
 
+fn unmap(page: Page) {
+    let r = mapper().unmap(page);
+    let (_, f) = r.expect("Failed to unmap a page.");
+
+    f.flush();
+}
+
 fn unmap_all_user_regions() {
     let mut pml4 = pml4();
 
