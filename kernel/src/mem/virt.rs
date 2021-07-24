@@ -49,6 +49,14 @@ unsafe fn init_static() {
     r.expect("Failed to initialize a reference to PML4.");
 }
 
+fn map_multiple_pages_and_frames_to(pages: &[Page], frames: &[PhysFrame], flags: PageTableFlags) {
+    assert_eq!(pages.len(), frames.len(), "Slice lengths are not same.");
+
+    for (&p, &f) in pages.iter().zip(frames.iter()) {
+        map_to(p, f, flags);
+    }
+}
+
 fn map_to(page: Page, frame: PhysFrame, flags: PageTableFlags) {
     let f = unsafe { mapper().map_to(page, frame, flags, &mut *frame_allocator()) };
     let f = f.expect("Failed to map a page.");
