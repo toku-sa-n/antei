@@ -70,9 +70,8 @@ fn find_unmapped_pages_from_region(n: NumOfPages, r: &Region) -> VirtAddr {
 fn try_find_unmapped_pages_from_region(n: NumOfPages, r: &Region) -> Option<VirtAddr> {
     let start = r.start().as_u64();
     let end = r.end().as_u64();
-    let addrs = (start..end)
-        .step_by(Size4KiB::SIZE.try_into().unwrap())
-        .map(VirtAddr::new);
+    let addrs = (start..end).step_by(Size4KiB::SIZE.try_into().unwrap());
+    let addrs = addrs.map(VirtAddr::new);
 
     find_consecutive_satisfying_elements(addrs, is_available, n.as_usize())
 }
