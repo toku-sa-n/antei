@@ -1,9 +1,12 @@
 use {
+    super::phys::frame_allocator,
     aligned_ptr::ptr,
     conquer_once::spin::OnceCell,
     spinning_top::{MappedSpinlockGuard, Spinlock, SpinlockGuard},
     x86_64::{
-        structures::paging::{PageTable, RecursivePageTable},
+        structures::paging::{
+            Mapper, Page, PageTable, PageTableFlags, PhysFrame, RecursivePageTable,
+        },
         VirtAddr,
     },
 };
@@ -40,6 +43,13 @@ unsafe fn init_static() {
 
     let r = PML4.try_init_once(|| Spinlock::new(working_pml4));
     r.expect("Failed to initialize a reference to PML4.");
+}
+
+fn map_to(page: Page, frame: PhysFrame, flags: PageTableFlags) {
+    let f = unsafe { mapper().map_to(page, frame, flags, &mut *frame_allocator()) };
+    let f = f.expect("Failed to map a page.");
+
+    f.flush();
 }
 
 fn unmap_all_user_regions() {
