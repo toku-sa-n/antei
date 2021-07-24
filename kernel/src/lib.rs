@@ -3,6 +3,7 @@
 
 extern crate rlibc as _;
 
+mod acpi;
 pub mod gdt;
 pub mod idt;
 pub mod mem;
