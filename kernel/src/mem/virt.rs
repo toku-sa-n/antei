@@ -116,6 +116,12 @@ fn map_multiple_pages_and_frames_to(
     }
 }
 
+fn unmap_multiple_pages(pages: impl Iterator<Item = Page>) {
+    for p in pages {
+        unmap(p);
+    }
+}
+
 fn map_to(page: Page, frame: PhysFrame) {
     let f = unsafe { mapper().map_to(page, frame, KERNEL_PAGE_FLAGS, &mut *frame_allocator()) };
     let f = f.expect("Failed to map a page.");
