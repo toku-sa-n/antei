@@ -3,6 +3,8 @@ mod virt;
 
 use uefi_wrapper::service::boot::MemoryDescriptor;
 
+pub(crate) use virt::map_frames_to_region;
+
 /// # Safety
 ///
 /// When and after calling this function,

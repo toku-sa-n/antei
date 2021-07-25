@@ -36,6 +36,22 @@ pub(super) unsafe fn init() {
     tests::main();
 }
 
+pub(crate) fn map_frames_to_region(p: PhysAddr, n: NumOfPages, r: &Region) -> VirtAddr {
+    assert!(
+        p.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    let frames = to_frames(p, n);
+
+    let start_v = find_unmapped_pages_from_region(n, r);
+    let pages = to_pages(start_v, n);
+
+    map_multiple_pages_and_frames_to(pages, frames);
+
+    start_v
+}
+
 /// # Safety
 ///
 /// Hereafter, the virtual address `0xff7f_bfdf_e000` must point to the current working PML4.
@@ -51,22 +67,6 @@ unsafe fn init_static() {
 
     let r = PML4.try_init_once(|| Spinlock::new(working_pml4));
     r.expect("Failed to initialize a reference to PML4.");
-}
-
-fn map_frames_to_region(p: PhysAddr, n: NumOfPages, r: &Region) -> VirtAddr {
-    assert!(
-        p.is_aligned(Size4KiB::SIZE),
-        "The address is not page-aligned."
-    );
-
-    let frames = to_frames(p, n);
-
-    let start_v = find_unmapped_pages_from_region(n, r);
-    let pages = to_pages(start_v, n);
-
-    map_multiple_pages_and_frames_to(pages, frames);
-
-    start_v
 }
 
 fn to_frames(start: PhysAddr, n: NumOfPages) -> impl Iterator<Item = PhysFrame> + Clone {
