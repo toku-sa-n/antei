@@ -11,7 +11,7 @@ use {
             Mapper, Page, PageSize, PageTable, PageTableFlags, PhysFrame, RecursivePageTable,
             Size4KiB, Translate,
         },
-        VirtAddr,
+        PhysAddr, VirtAddr,
     },
 };
 
@@ -51,6 +51,23 @@ unsafe fn init_static() {
 
     let r = PML4.try_init_once(|| Spinlock::new(working_pml4));
     r.expect("Failed to initialize a reference to PML4.");
+}
+
+fn to_pages(start: VirtAddr, n: NumOfPages) -> impl Iterator<Item = Page> {
+    assert!(
+        start.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    let end = start + n.as_bytes();
+    assert!(
+        end.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    (start.as_u64()..end.as_u64())
+        .step_by(Size4KiB::SIZE.try_into().unwrap())
+        .map(|a| Page::from_start_address(VirtAddr::new(a)).unwrap())
 }
 
 fn map_multiple_pages_and_frames_to(pages: &[Page], frames: &[PhysFrame]) {
