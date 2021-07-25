@@ -53,6 +53,21 @@ unsafe fn init_static() {
     r.expect("Failed to initialize a reference to PML4.");
 }
 
+fn to_frames(start: PhysAddr, n: NumOfPages) -> impl Iterator<Item = PhysFrame> {
+    assert!(
+        start.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    let end = start + n.as_bytes();
+    assert!(
+        end.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    (start.as_u64()..end.as_u64()).map(|a| PhysFrame::from_start_address(PhysAddr::new(a)).unwrap())
+}
+
 fn to_pages(start: VirtAddr, n: NumOfPages) -> impl Iterator<Item = Page> {
     assert!(
         start.is_aligned(Size4KiB::SIZE),
