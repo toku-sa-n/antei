@@ -102,7 +102,14 @@ fn try_find_unmapped_pages_from_region(n: NumOfPages, r: &Region) -> Option<Virt
     let addrs = (start..end).step_by(Size4KiB::SIZE.try_into().unwrap());
     let addrs = addrs.map(VirtAddr::new);
 
-    find_consecutive_satisfying_elements(addrs, is_available, n.as_usize())
+    let v = find_consecutive_satisfying_elements(addrs, is_available, n.as_usize())?;
+
+    assert!(
+        v.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    Some(v)
 }
 
 fn find_consecutive_satisfying_elements<T>(
