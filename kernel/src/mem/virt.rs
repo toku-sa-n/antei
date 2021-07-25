@@ -52,6 +52,15 @@ pub(crate) fn map_frames_to_region(p: PhysAddr, n: NumOfPages, r: &Region) -> Vi
     start_v
 }
 
+pub(crate) fn unmap_memory(v: VirtAddr, n: NumOfPages) {
+    assert!(
+        v.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    unmap_multiple_pages(to_pages(v, n));
+}
+
 /// # Safety
 ///
 /// Hereafter, the virtual address `0xff7f_bfdf_e000` must point to the current working PML4.
