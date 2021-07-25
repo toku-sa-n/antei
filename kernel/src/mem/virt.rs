@@ -53,7 +53,23 @@ unsafe fn init_static() {
     r.expect("Failed to initialize a reference to PML4.");
 }
 
-fn to_frames(start: PhysAddr, n: NumOfPages) -> impl Iterator<Item = PhysFrame> {
+fn map_frames_to_region(p: PhysAddr, n: NumOfPages, r: &Region) -> VirtAddr {
+    assert!(
+        p.is_aligned(Size4KiB::SIZE),
+        "The address is not page-aligned."
+    );
+
+    let frames = to_frames(p, n);
+
+    let start_v = find_unmapped_pages_from_region(n, r);
+    let pages = to_pages(start_v, n);
+
+    map_multiple_pages_and_frames_to(pages, frames);
+
+    start_v
+}
+
+fn to_frames(start: PhysAddr, n: NumOfPages) -> impl Iterator<Item = PhysFrame> + Clone {
     assert!(
         start.is_aligned(Size4KiB::SIZE),
         "The address is not page-aligned."
@@ -68,7 +84,7 @@ fn to_frames(start: PhysAddr, n: NumOfPages) -> impl Iterator<Item = PhysFrame> 
     (start.as_u64()..end.as_u64()).map(|a| PhysFrame::from_start_address(PhysAddr::new(a)).unwrap())
 }
 
-fn to_pages(start: VirtAddr, n: NumOfPages) -> impl Iterator<Item = Page> {
+fn to_pages(start: VirtAddr, n: NumOfPages) -> impl Iterator<Item = Page> + Clone {
     assert!(
         start.is_aligned(Size4KiB::SIZE),
         "The address is not page-aligned."
@@ -85,10 +101,17 @@ fn to_pages(start: VirtAddr, n: NumOfPages) -> impl Iterator<Item = Page> {
         .map(|a| Page::from_start_address(VirtAddr::new(a)).unwrap())
 }
 
-fn map_multiple_pages_and_frames_to(pages: &[Page], frames: &[PhysFrame]) {
-    assert_eq!(pages.len(), frames.len(), "Slice lengths are not same.");
+fn map_multiple_pages_and_frames_to(
+    pages: impl Iterator<Item = Page> + Clone,
+    frames: impl Iterator<Item = PhysFrame> + Clone,
+) {
+    assert_eq!(
+        pages.clone().count(),
+        frames.clone().count(),
+        "Slice lengths are not same."
+    );
 
-    for (&p, &f) in pages.iter().zip(frames.iter()) {
+    for (p, f) in pages.zip(frames) {
         map_to(p, f);
     }
 }
