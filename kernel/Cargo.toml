@@ -20,6 +20,7 @@ aligned_ptr = "0.1.0"
 boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
 frame_allocator = { path = "../libs/frame_allocator" }
+kernel_mmap = { path = "../libs/kernel_mmap" }
 os_units = "0.4.2"
 qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { version = "0.1.0", features = ["stable"], default-features = false }
