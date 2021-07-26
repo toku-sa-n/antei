@@ -64,7 +64,7 @@ pub const FOR_TESTING: Region =
 
 const_assert!(!KERNEL.overlaps_with(&STACK));
 const_assert!(!STACK.overlaps_with(&KERNEL_DMA));
-const_assert!(!FOR_TESTING.overlaps_with(&STACK));
+const_assert!(!KERNEL_DMA.overlaps_with(&FOR_TESTING));
 
 #[cfg(test)]
 mod tests {
