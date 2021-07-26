@@ -90,7 +90,6 @@ fn unmap(page: Page) {
 mod tests {
     use {
         super::{map, mapper, phys, pml4, unmap},
-        crate::NumOfPages,
         kernel_mmap::FOR_TESTING,
         x86_64::{
             registers::control::Cr3,
