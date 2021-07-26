@@ -1,3 +1,8 @@
+#[cfg(test_on_qemu)]
+use {
+    super::phys,
+    x86_64::structures::paging::{Mapper, Page, PageTableFlags, PhysFrame},
+};
 use {
     aligned_ptr::ptr,
     conquer_once::spin::OnceCell,
@@ -63,15 +68,41 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 }
 
 #[cfg(test_on_qemu)]
+unsafe fn map(page: Page, frame: PhysFrame) {
+    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+
+    let f = unsafe { mapper().map_to(page, frame, flags, &mut *phys::frame_allocator()) };
+    let f = f.expect("Failed to map a page.");
+
+    f.flush();
+}
+
+#[cfg(test_on_qemu)]
+fn unmap(page: Page) {
+    let r = mapper().unmap(page);
+
+    let (_, f) = r.expect("Failed to unmap a page.");
+
+    f.flush();
+}
+
+#[cfg(test_on_qemu)]
 mod tests {
     use {
-        super::{mapper, pml4},
-        x86_64::{registers::control::Cr3, structures::paging::Translate, VirtAddr},
+        super::{map, mapper, phys, pml4, unmap},
+        crate::NumOfPages,
+        kernel_mmap::FOR_TESTING,
+        x86_64::{
+            registers::control::Cr3,
+            structures::paging::{FrameAllocator, Page, Translate},
+            VirtAddr,
+        },
     };
 
     pub(super) fn main() {
         user_region_is_not_mapped();
         cr3_indicates_correct_pml4();
+        map_and_unmap();
     }
 
     fn user_region_is_not_mapped() {
@@ -92,5 +123,23 @@ mod tests {
         let expected_pml4_addr = mapper.translate_addr(expected_pml4_addr).unwrap();
 
         assert_eq!(current_pml4_addr, expected_pml4_addr);
+    }
+
+    fn map_and_unmap() {
+        let frame = phys::frame_allocator().allocate_frame().unwrap();
+
+        let page = FOR_TESTING.start();
+        let page = Page::from_start_address(page).unwrap();
+
+        unsafe { map(page, frame) };
+
+        assert_eq!(
+            mapper().translate_addr(page.start_address()),
+            Some(frame.start_address())
+        );
+
+        unmap(page);
+
+        assert_eq!(mapper().translate_addr(page.start_address()), None);
     }
 }
