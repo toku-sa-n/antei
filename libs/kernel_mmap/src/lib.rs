@@ -58,8 +58,13 @@ pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(4 * Size4KiB::SIZE
 #[allow(clippy::cast_possible_truncation)]
 pub const KERNEL_DMA: Region = Region::next_to(&STACK, Bytes::new(64 * Size4KiB::SIZE as usize));
 
+#[allow(clippy::cast_possible_truncation)]
+pub const FOR_TESTING: Region =
+    Region::next_to(&KERNEL_DMA, Bytes::new(16 * Size4KiB::SIZE as usize));
+
 const_assert!(!KERNEL.overlaps_with(&STACK));
 const_assert!(!STACK.overlaps_with(&KERNEL_DMA));
+const_assert!(!FOR_TESTING.overlaps_with(&STACK));
 
 #[cfg(test)]
 mod tests {
