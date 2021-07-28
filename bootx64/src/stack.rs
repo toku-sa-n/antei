@@ -1,6 +1,5 @@
 use {
     crate::{Allocator, Mapper},
-    kernel_mmap::STACK,
     uefi_wrapper::service::boot::MemoryDescriptor,
     x86_64::structures::paging::PageTableFlags,
 };
@@ -20,6 +19,6 @@ pub unsafe fn allocate(mmap: &mut [MemoryDescriptor]) {
     // SAFETY: The stack region is so high that nothing point to the region. There is no need to
     // worry about creating multiple mutable references.
     unsafe {
-        mapper.map_range_to_unused(STACK.start(), STACK.bytes().as_num_of_pages(), flags);
+        mapper.map_range_to_unused(kernel_mmap::stack(), flags);
     }
 }

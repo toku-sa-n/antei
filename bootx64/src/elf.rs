@@ -1,18 +1,18 @@
-use crate::allocator::Allocator;
-use crate::paging;
-use crate::Mapper;
-use aligned_ptr::ptr;
-use core::convert::TryInto;
-use elfloader::ElfBinary;
-use elfloader::ElfLoader;
-use elfloader::ElfLoaderErr;
-use elfloader::LoadableHeaders;
-use elfloader::ProgramHeader;
-use elfloader::VAddr;
-use os_units::Bytes;
-use uefi_wrapper::service::boot::MemoryDescriptor;
-use x86_64::structures::paging::PageTableFlags;
-use x86_64::VirtAddr;
+use {
+    crate::{allocator::Allocator, paging, Mapper},
+    aligned_ptr::ptr,
+    core::convert::{TryFrom, TryInto},
+    elfloader::{ElfBinary, ElfLoader, ElfLoaderErr, LoadableHeaders, ProgramHeader, VAddr},
+    os_units::{Bytes, NumOfPages},
+    uefi_wrapper::service::boot::MemoryDescriptor,
+    x86_64::{
+        structures::paging::{
+            page::{AddressNotAligned, PageRange},
+            Page, PageSize, PageTableFlags,
+        },
+        VirtAddr,
+    },
+};
 
 /// # Safety
 ///
@@ -63,14 +63,14 @@ impl<'a> Loader<'a> {
 
         let bytes = Bytes::new(h.mem_size().try_into().unwrap());
 
+        let range = page_range_from_start_and_num(v, bytes.as_num_of_pages());
+        let range = range.expect("The address is not page-aligned.");
+
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
         // SAFETY: The page will be used to load the ELF file. The memory does not have to be
         // initialized.
-        unsafe {
-            self.mapper
-                .map_range_to_unused(v, bytes.as_num_of_pages(), flags)
-        };
+        unsafe { self.mapper.map_range_to_unused(range, flags) };
 
         // SAFETY: `bytes` from `v` are allocated by `map_range_to_unused`.
         unsafe { write_zeros(v.as_mut_ptr(), bytes) }
@@ -128,4 +128,15 @@ impl ElfLoader for Loader<'_> {
 /// `start` must be valid for writes of `bytes`.
 unsafe fn write_zeros(start: *mut u8, bytes: Bytes) {
     unsafe { ptr::write_bytes(start, 0, bytes.as_usize()) }
+}
+
+fn page_range_from_start_and_num<S: PageSize>(
+    v: VirtAddr,
+    n: NumOfPages<S>,
+) -> Result<PageRange<S>, AddressNotAligned> {
+    let start = Page::from_start_address(v)?;
+
+    let end = start + u64::try_from(n.as_usize()).unwrap();
+
+    Ok(PageRange { start, end })
 }

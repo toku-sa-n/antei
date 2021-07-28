@@ -1,7 +1,6 @@
 use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
-    kernel_mmap::STACK,
     uefi_wrapper::service::boot::MemoryDescriptor,
     x86_64::{PhysAddr, VirtAddr},
 };
@@ -51,5 +50,11 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
     let mut boot_info = BootInfo::new(mmap, rsdp);
 
     // SAFETY: Correct arguments.
-    unsafe { switch_stack_and_call_kernel_code(&mut boot_info, entry, STACK.end()) };
+    unsafe {
+        switch_stack_and_call_kernel_code(
+            &mut boot_info,
+            entry,
+            kernel_mmap::stack().end.start_address(),
+        )
+    };
 }
