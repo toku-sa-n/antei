@@ -132,6 +132,11 @@ impl<S: PageSize> FrameDeallocator<S> for FrameAllocator<S> {
         self.dealloc(addr);
     }
 }
+impl<S: PageSize> Default for FrameAllocator<S> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[derive(PartialEq, Eq)]
 struct FrameDescriptor<S: PageSize> {
