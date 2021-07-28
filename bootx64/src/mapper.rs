@@ -3,8 +3,8 @@ use {
     aligned_ptr::ptr,
     x86_64::{
         structures::paging::{
-            FrameAllocator, Mapper as MapperTrait, Page, PageTableFlags, PhysFrame,
-            RecursivePageTable, Size4KiB,
+            page::PageRange, FrameAllocator, Mapper as MapperTrait, Page, PageTableFlags,
+            PhysFrame, RecursivePageTable, Size4KiB,
         },
         VirtAddr,
     },
@@ -35,19 +35,9 @@ impl<'a> Mapper<'a> {
     /// # Safety
     ///
     /// See [`x86_64::structures::paging::Mapper`].
-    pub(crate) unsafe fn map_range_to_unused(
-        &mut self,
-        v: VirtAddr,
-        n: NumOfPages,
-        flags: PageTableFlags,
-    ) {
-        for i in 0..n.as_usize() {
-            let i = NumOfPages::<Size4KiB>::new(i);
-
-            let page = Page::from_start_address(v + i.as_bytes().as_usize());
-            let page = page.expect("The address is not page-aligned.");
-
-            self.map_to_unused(page, flags);
+    pub(crate) unsafe fn map_range_to_unused(&mut self, range: PageRange, flags: PageTableFlags) {
+        for p in range {
+            self.map_to_unused(p, flags);
         }
     }
 

@@ -90,10 +90,9 @@ fn unmap(page: Page) {
 mod tests {
     use {
         super::{map, mapper, phys, pml4, unmap},
-        kernel_mmap::FOR_TESTING,
         x86_64::{
             registers::control::Cr3,
-            structures::paging::{FrameAllocator, Page, Translate},
+            structures::paging::{FrameAllocator, Translate},
             VirtAddr,
         },
     };
@@ -127,8 +126,7 @@ mod tests {
     fn map_and_unmap() {
         let frame = phys::frame_allocator().allocate_frame().unwrap();
 
-        let page = FOR_TESTING.start();
-        let page = Page::from_start_address(page).unwrap();
+        let page = kernel_mmap::for_testing().start;
 
         unsafe { map(page, frame) };
 
