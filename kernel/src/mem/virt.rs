@@ -119,6 +119,7 @@ mod tests {
         user_region_is_not_mapped();
         cr3_indicates_correct_pml4();
         map_and_unmap();
+        map_and_unmap_range();
     }
 
     fn user_region_is_not_mapped() {
