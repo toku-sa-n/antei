@@ -6,7 +6,6 @@ members = [
     "libs/debug",
     "libs/frame_allocator",
     "libs/kernel_mmap",
-    "libs/page_range",
     "libs/qemu",
     "libs/uefi_wrapper",
 ]
