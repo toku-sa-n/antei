@@ -79,16 +79,16 @@ impl<S: PageSize> FrameAllocator<S> {
     }
 
     fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<S>) {
-        let new_frames_start = self.0[i].range.start + u64::try_from(requested.as_usize()).unwrap();
-        let new_frames_num = self.0[i].num_of_pages() - requested;
-        let new_frames_end = new_frames_start + u64::try_from(new_frames_num.as_usize()).unwrap();
+        let requested: u64 = requested.as_usize().try_into().unwrap();
+
+        let new_frames_start = self.0[i].range.start + requested;
         let new_frames_range = PhysFrameRange {
             start: new_frames_start,
-            end: new_frames_end,
+            end: self.0[i].range.end,
         };
         let new_frames = FrameDescriptor::new_for_available(new_frames_range);
 
-        self.0[i].range.end = self.0[i].range.start + u64::try_from(requested.as_usize()).unwrap();
+        self.0[i].range.end = new_frames_start;
         self.0.insert(i + 1, new_frames);
     }
 }
