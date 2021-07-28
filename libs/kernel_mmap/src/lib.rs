@@ -53,7 +53,7 @@ pub const KERNEL: Region = Region::new(
 );
 
 #[allow(clippy::cast_possible_truncation)]
-pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(4 * Size4KiB::SIZE as usize));
+pub const STACK: Region = Region::next_to(&KERNEL, Bytes::new(8 * Size4KiB::SIZE as usize));
 
 #[allow(clippy::cast_possible_truncation)]
 pub const KERNEL_DMA: Region = Region::next_to(&STACK, Bytes::new(64 * Size4KiB::SIZE as usize));
