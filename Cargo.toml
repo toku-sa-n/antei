@@ -1,13 +1,13 @@
 [workspace]
 members = [
     "bootx64",
+    "kernel",
     "libs/boot_info",
+    "libs/debug",
     "libs/frame_allocator",
     "libs/kernel_mmap",
-    "libs/uefi_wrapper",
-    "libs/debug",
     "libs/qemu",
-    "kernel",
+    "libs/uefi_wrapper",
 ]
 
 [profile.dev]
