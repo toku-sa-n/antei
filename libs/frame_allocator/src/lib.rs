@@ -7,7 +7,7 @@ use {
     uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{
-            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PageSize, PhysFrame, Size4KiB,
+            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PageSize, PhysFrame,
         },
         PhysAddr,
     },
@@ -16,10 +16,10 @@ use {
 const REASONABLE_MAX_DESCRIPTORS: usize = 128;
 
 #[derive(PartialEq, Eq, Debug)]
-pub struct FrameAllocator(ArrayVec<FrameDescriptor, REASONABLE_MAX_DESCRIPTORS>);
-impl FrameAllocator {
+pub struct FrameAllocator<S: PageSize>(ArrayVec<FrameDescriptor<S>, REASONABLE_MAX_DESCRIPTORS>);
+impl<S: PageSize> FrameAllocator<S> {
     #[must_use]
-    pub const fn new() -> Self {
+    pub fn new() -> Self {
         Self(ArrayVec::new_const())
     }
 
@@ -32,7 +32,7 @@ impl FrameAllocator {
     fn init_for_descriptor(&mut self, descriptor: &MemoryDescriptor) {
         let start = PhysAddr::new(descriptor.physical_start);
         assert!(
-            start.is_aligned(Size4KiB::SIZE),
+            start.is_aligned(S::SIZE),
             "The address is not page-aligned."
         );
 
@@ -42,8 +42,8 @@ impl FrameAllocator {
         self.0.push(frames);
     }
 }
-impl FrameAllocator {
-    pub fn alloc(&mut self, n: NumOfPages<Size4KiB>) -> Option<PhysAddr> {
+impl<S: PageSize> FrameAllocator<S> {
+    pub fn alloc(&mut self, n: NumOfPages<S>) -> Option<PhysAddr> {
         (0..self.0.len()).find_map(|i| {
             self.0[i]
                 .is_available_for_allocating(n)
@@ -51,7 +51,7 @@ impl FrameAllocator {
         })
     }
 
-    fn alloc_from_frames_at(&mut self, i: usize, n: NumOfPages<Size4KiB>) -> PhysAddr {
+    fn alloc_from_frames_at(&mut self, i: usize, n: NumOfPages<S>) -> PhysAddr {
         if self.0[i].is_splittable(n) {
             self.split_frames(i, n);
         }
@@ -60,7 +60,7 @@ impl FrameAllocator {
         self.0[i].start
     }
 
-    fn split_frames(&mut self, i: usize, num_of_pages: NumOfPages<Size4KiB>) {
+    fn split_frames(&mut self, i: usize, num_of_pages: NumOfPages<S>) {
         assert!(self.0[i].available, "Frames are not available.");
         assert!(
             self.0[i].num_of_pages > num_of_pages,
@@ -70,7 +70,7 @@ impl FrameAllocator {
         self.split_frames_unchecked(i, num_of_pages)
     }
 
-    fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<Size4KiB>) {
+    fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<S>) {
         let new_frames_start = self.0[i].start + requested.as_bytes().as_usize();
         let new_frames_num = self.0[i].num_of_pages - requested;
         let new_frames = FrameDescriptor::new_for_available(new_frames_start, new_frames_num);
@@ -79,7 +79,7 @@ impl FrameAllocator {
         self.0.insert(i + 1, new_frames);
     }
 }
-impl FrameAllocator {
+impl<S: PageSize> FrameAllocator<S> {
     pub fn dealloc(&mut self, addr: PhysAddr) {
         for i in 0..self.0.len() {
             if self.0[i].start == addr && !self.0[i].available {
@@ -120,27 +120,32 @@ impl FrameAllocator {
         self.0.remove(i + 1);
     }
 }
-unsafe impl FrameAllocatorTrait<Size4KiB> for FrameAllocator {
-    fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
+unsafe impl<S: PageSize> FrameAllocatorTrait<S> for FrameAllocator<S> {
+    fn allocate_frame(&mut self) -> Option<PhysFrame<S>> {
         self.alloc(NumOfPages::new(1))
             .map(|a| PhysFrame::from_start_address(a).unwrap())
     }
 }
-impl FrameDeallocator<Size4KiB> for FrameAllocator {
-    unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
+impl<S: PageSize> FrameDeallocator<S> for FrameAllocator<S> {
+    unsafe fn deallocate_frame(&mut self, frame: PhysFrame<S>) {
         let addr = frame.start_address();
         self.dealloc(addr);
     }
 }
+impl<S: PageSize> Default for FrameAllocator<S> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 #[derive(PartialEq, Eq)]
-struct FrameDescriptor {
+struct FrameDescriptor<S: PageSize> {
     start: PhysAddr,
-    num_of_pages: NumOfPages<Size4KiB>,
+    num_of_pages: NumOfPages<S>,
     available: bool,
 }
-impl FrameDescriptor {
-    fn new_for_available(start: PhysAddr, num_of_pages: NumOfPages<Size4KiB>) -> Self {
+impl<S: PageSize> FrameDescriptor<S> {
+    fn new_for_available(start: PhysAddr, num_of_pages: NumOfPages<S>) -> Self {
         Self {
             start,
             num_of_pages,
@@ -149,7 +154,7 @@ impl FrameDescriptor {
     }
 
     #[cfg(test)]
-    fn new_for_used(start: PhysAddr, num_of_pages: NumOfPages<Size4KiB>) -> Self {
+    fn new_for_used(start: PhysAddr, num_of_pages: NumOfPages<S>) -> Self {
         Self {
             start,
             num_of_pages,
@@ -157,11 +162,11 @@ impl FrameDescriptor {
         }
     }
 
-    fn is_splittable(&self, requested: NumOfPages<Size4KiB>) -> bool {
+    fn is_splittable(&self, requested: NumOfPages<S>) -> bool {
         self.num_of_pages > requested
     }
 
-    fn is_available_for_allocating(&self, request_num_of_pages: NumOfPages<Size4KiB>) -> bool {
+    fn is_available_for_allocating(&self, request_num_of_pages: NumOfPages<S>) -> bool {
         self.num_of_pages >= request_num_of_pages && self.available
     }
 
@@ -177,7 +182,7 @@ impl FrameDescriptor {
         self.start + self.num_of_pages.as_bytes().as_usize()
     }
 }
-impl fmt::Debug for FrameDescriptor {
+impl<S: PageSize> fmt::Debug for FrameDescriptor<S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let suffix = if self.available { "Available" } else { "Used" };
         write!(
@@ -196,13 +201,15 @@ fn is_conventional(d: &MemoryDescriptor) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{FrameAllocator, FrameDescriptor};
-    use os_units::NumOfPages;
-    use x86_64::PhysAddr;
+    use {
+        super::{FrameAllocator, FrameDescriptor},
+        os_units::NumOfPages,
+        x86_64::{structures::paging::Size4KiB, PhysAddr},
+    };
 
     macro_rules! descriptor {
         (A $start:expr => $end:expr) => {
-            FrameDescriptor::new_for_available(
+            FrameDescriptor::<Size4KiB>::new_for_available(
                 PhysAddr::new($start),
                 os_units::Bytes::new($end - $start).as_num_of_pages(),
             )
@@ -222,7 +229,7 @@ mod tests {
                 $(
                     v.push($elem);
                 )*
-                v
+                    v
             }
         };
     }
