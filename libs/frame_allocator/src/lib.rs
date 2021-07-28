@@ -273,6 +273,15 @@ mod tests {
         };
     }
 
+    macro_rules! phys_frame_range {
+        ($start:expr => $end:expr) => {
+            PhysFrameRange {
+                start: PhysFrame::from_start_address(PhysAddr::new($start)).unwrap(),
+                end: PhysFrame::from_start_address(PhysAddr::new($end)).unwrap(),
+            }
+        };
+    }
+
     #[test]
     fn fail_to_allocate() {
         let mut f = allocator!(
@@ -297,12 +306,7 @@ mod tests {
 
         let a = f.alloc(NumOfPages::new(3));
 
-        let expected = PhysFrameRange {
-            start: PhysFrame::from_start_address(PhysAddr::new(0x2000)).unwrap(),
-            end: PhysFrame::from_start_address(PhysAddr::new(0x5000)).unwrap(),
-        };
-
-        assert_eq!(a, Some(expected));
+        assert_eq!(a, Some(phys_frame_range!(0x2000 => 0x5000)));
         assert_eq!(
             f,
             allocator!(
@@ -319,12 +323,7 @@ mod tests {
         let mut f = allocator!(A 0 => 0x3000);
         let a = f.alloc(NumOfPages::new(3));
 
-        let expected = PhysFrameRange {
-            start: PhysFrame::from_start_address(PhysAddr::zero()).unwrap(),
-            end: PhysFrame::from_start_address(PhysAddr::new(0x3000)).unwrap(),
-        };
-
-        assert_eq!(a, Some(expected));
+        assert_eq!(a, Some(phys_frame_range!(0 => 0x3000)));
         assert_eq!(f, allocator!(U 0 => 0x3000));
     }
 
