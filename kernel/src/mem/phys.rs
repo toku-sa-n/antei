@@ -24,7 +24,11 @@ pub(super) fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator<Size4KiB
 
 #[cfg(test_on_qemu)]
 mod tests {
-    use {super::frame_allocator, crate::NumOfPages, x86_64::PhysAddr};
+    use {
+        super::frame_allocator,
+        crate::NumOfPages,
+        x86_64::structures::paging::frame::{PhysFrame, PhysFrameRange},
+    };
 
     pub(super) fn main() {
         allocate_single_page_and_dealloc();
@@ -34,15 +38,15 @@ mod tests {
         let p = alloc(NumOfPages::new(1));
         let p = p.expect("Failed to allocate a page.");
 
-        dealloc(p);
+        dealloc(p.start);
     }
 
     #[must_use]
-    fn alloc(n: NumOfPages) -> Option<PhysAddr> {
+    fn alloc(n: NumOfPages) -> Option<PhysFrameRange> {
         frame_allocator().alloc(n)
     }
 
-    fn dealloc(a: PhysAddr) {
-        frame_allocator().dealloc(a)
+    fn dealloc(f: PhysFrame) {
+        frame_allocator().dealloc(f)
     }
 }

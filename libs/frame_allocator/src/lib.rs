@@ -2,12 +2,16 @@
 
 use {
     arrayvec::ArrayVec,
-    core::{convert::TryInto, fmt},
+    core::{
+        convert::{TryFrom, TryInto},
+        fmt,
+    },
     os_units::NumOfPages,
     uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{
-            FrameAllocator as FrameAllocatorTrait, FrameDeallocator, PageSize, PhysFrame,
+            frame::PhysFrameRange, page::AddressNotAligned, FrameAllocator as FrameAllocatorTrait,
+            FrameDeallocator, PageSize, PhysFrame,
         },
         PhysAddr,
     },
@@ -37,13 +41,17 @@ impl<S: PageSize> FrameAllocator<S> {
         );
 
         let num = NumOfPages::new(descriptor.number_of_pages.try_into().unwrap());
-        let frames = FrameDescriptor::new_for_available(start, num);
+
+        let range = phys_frame_range_from_start_and_num(start, num);
+        let range = range.expect("The address is not aligned.");
+
+        let frames = FrameDescriptor::new_for_available(range);
 
         self.0.push(frames);
     }
 }
 impl<S: PageSize> FrameAllocator<S> {
-    pub fn alloc(&mut self, n: NumOfPages<S>) -> Option<PhysAddr> {
+    pub fn alloc(&mut self, n: NumOfPages<S>) -> Option<PhysFrameRange<S>> {
         (0..self.0.len()).find_map(|i| {
             self.0[i]
                 .is_available_for_allocating(n)
@@ -51,19 +59,19 @@ impl<S: PageSize> FrameAllocator<S> {
         })
     }
 
-    fn alloc_from_frames_at(&mut self, i: usize, n: NumOfPages<S>) -> PhysAddr {
+    fn alloc_from_frames_at(&mut self, i: usize, n: NumOfPages<S>) -> PhysFrameRange<S> {
         if self.0[i].is_splittable(n) {
             self.split_frames(i, n);
         }
 
         self.0[i].available = false;
-        self.0[i].start
+        self.0[i].range
     }
 
     fn split_frames(&mut self, i: usize, num_of_pages: NumOfPages<S>) {
         assert!(self.0[i].available, "Frames are not available.");
         assert!(
-            self.0[i].num_of_pages > num_of_pages,
+            self.0[i].num_of_pages() > num_of_pages,
             "Insufficient number of frames."
         );
 
@@ -71,18 +79,23 @@ impl<S: PageSize> FrameAllocator<S> {
     }
 
     fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<S>) {
-        let new_frames_start = self.0[i].start + requested.as_bytes().as_usize();
-        let new_frames_num = self.0[i].num_of_pages - requested;
-        let new_frames = FrameDescriptor::new_for_available(new_frames_start, new_frames_num);
+        let new_frames_start = self.0[i].range.start + u64::try_from(requested.as_usize()).unwrap();
+        let new_frames_num = self.0[i].num_of_pages() - requested;
+        let new_frames_end = new_frames_start + u64::try_from(new_frames_num.as_usize()).unwrap();
+        let new_frames_range = PhysFrameRange {
+            start: new_frames_start,
+            end: new_frames_end,
+        };
+        let new_frames = FrameDescriptor::new_for_available(new_frames_range);
 
-        self.0[i].num_of_pages = requested;
+        self.0[i].range.end = self.0[i].range.start + u64::try_from(requested.as_usize()).unwrap();
         self.0.insert(i + 1, new_frames);
     }
 }
 impl<S: PageSize> FrameAllocator<S> {
-    pub fn dealloc(&mut self, addr: PhysAddr) {
+    pub fn dealloc(&mut self, first_frame: PhysFrame<S>) {
         for i in 0..self.0.len() {
-            if self.0[i].start == addr && !self.0[i].available {
+            if self.0[i].range.start == first_frame && !self.0[i].available {
                 return self.free_memory_for_frames_at(i);
             }
         }
@@ -115,21 +128,23 @@ impl<S: PageSize> FrameAllocator<S> {
     }
 
     fn merge_to_next_frames(&mut self, i: usize) {
-        let n = self.0[i + 1].num_of_pages;
-        self.0[i].num_of_pages += n;
+        let n = self.0[i + 1].num_of_pages();
+        self.0[i].range.end += u64::try_from(n.as_usize()).unwrap();
         self.0.remove(i + 1);
     }
 }
 unsafe impl<S: PageSize> FrameAllocatorTrait<S> for FrameAllocator<S> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<S>> {
-        self.alloc(NumOfPages::new(1))
-            .map(|a| PhysFrame::from_start_address(a).unwrap())
+        let frames = self.alloc(NumOfPages::new(1))?;
+
+        assert_eq!(frames.start + 1, frames.end, "Too many frames.");
+
+        Some(frames.start)
     }
 }
 impl<S: PageSize> FrameDeallocator<S> for FrameAllocator<S> {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<S>) {
-        let addr = frame.start_address();
-        self.dealloc(addr);
+        self.dealloc(frame);
     }
 }
 impl<S: PageSize> Default for FrameAllocator<S> {
@@ -140,34 +155,31 @@ impl<S: PageSize> Default for FrameAllocator<S> {
 
 #[derive(PartialEq, Eq)]
 struct FrameDescriptor<S: PageSize> {
-    start: PhysAddr,
-    num_of_pages: NumOfPages<S>,
+    range: PhysFrameRange<S>,
     available: bool,
 }
 impl<S: PageSize> FrameDescriptor<S> {
-    fn new_for_available(start: PhysAddr, num_of_pages: NumOfPages<S>) -> Self {
+    fn new_for_available(range: PhysFrameRange<S>) -> Self {
         Self {
-            start,
-            num_of_pages,
+            range,
             available: true,
         }
     }
 
     #[cfg(test)]
-    fn new_for_used(start: PhysAddr, num_of_pages: NumOfPages<S>) -> Self {
+    fn new_for_used(range: PhysFrameRange<S>) -> Self {
         Self {
-            start,
-            num_of_pages,
+            range,
             available: false,
         }
     }
 
     fn is_splittable(&self, requested: NumOfPages<S>) -> bool {
-        self.num_of_pages > requested
+        self.num_of_pages() > requested
     }
 
     fn is_available_for_allocating(&self, request_num_of_pages: NumOfPages<S>) -> bool {
-        self.num_of_pages >= request_num_of_pages && self.available
+        self.num_of_pages() >= request_num_of_pages && self.available
     }
 
     fn is_mergeable(&self, other: &Self) -> bool {
@@ -175,11 +187,11 @@ impl<S: PageSize> FrameDescriptor<S> {
     }
 
     fn is_consecutive(&self, other: &Self) -> bool {
-        self.end() == other.start
+        self.range.end == other.range.start
     }
 
-    fn end(&self) -> PhysAddr {
-        self.start + self.num_of_pages.as_bytes().as_usize()
+    fn num_of_pages(&self) -> NumOfPages<S> {
+        NumOfPages::new((self.range.end - self.range.start).try_into().unwrap())
     }
 }
 impl<S: PageSize> fmt::Debug for FrameDescriptor<S> {
@@ -188,9 +200,7 @@ impl<S: PageSize> fmt::Debug for FrameDescriptor<S> {
         write!(
             f,
             "Frames::<{}>({:?} .. {:?})",
-            suffix,
-            self.start,
-            self.end()
+            suffix, self.range.start, self.range.end,
         )
     }
 }
@@ -199,25 +209,45 @@ fn is_conventional(d: &MemoryDescriptor) -> bool {
     d.r#type == CONVENTIONAL_MEMORY
 }
 
+fn phys_frame_range_from_start_and_num<S: PageSize>(
+    p: PhysAddr,
+    n: NumOfPages<S>,
+) -> Result<PhysFrameRange<S>, AddressNotAligned> {
+    let start = PhysFrame::from_start_address(p)?;
+
+    let end = start + u64::try_from(n.as_usize()).unwrap();
+
+    Ok(PhysFrameRange { start, end })
+}
+
 #[cfg(test)]
 mod tests {
     use {
-        super::{FrameAllocator, FrameDescriptor},
+        super::{phys_frame_range_from_start_and_num, FrameAllocator, FrameDescriptor},
         os_units::NumOfPages,
-        x86_64::{structures::paging::Size4KiB, PhysAddr},
+        x86_64::{
+            structures::paging::{frame::PhysFrameRange, PhysFrame, Size4KiB},
+            PhysAddr,
+        },
     };
 
     macro_rules! descriptor {
         (A $start:expr => $end:expr) => {
             FrameDescriptor::<Size4KiB>::new_for_available(
-                PhysAddr::new($start),
-                os_units::Bytes::new($end - $start).as_num_of_pages(),
+                phys_frame_range_from_start_and_num(
+                    PhysAddr::new($start),
+                    os_units::Bytes::new($end - $start).as_num_of_pages(),
+                )
+                .unwrap(),
             )
         };
         (U $start:expr => $end:expr) => {
             FrameDescriptor::new_for_used(
-                PhysAddr::new($start),
-                os_units::Bytes::new($end - $start).as_num_of_pages(),
+                phys_frame_range_from_start_and_num(
+                    PhysAddr::new($start),
+                    os_units::Bytes::new($end - $start).as_num_of_pages(),
+                )
+                .unwrap(),
             )
         };
     }
@@ -267,7 +297,12 @@ mod tests {
 
         let a = f.alloc(NumOfPages::new(3));
 
-        assert_eq!(a, Some(PhysAddr::new(0x2000)));
+        let expected = PhysFrameRange {
+            start: PhysFrame::from_start_address(PhysAddr::new(0x2000)).unwrap(),
+            end: PhysFrame::from_start_address(PhysAddr::new(0x5000)).unwrap(),
+        };
+
+        assert_eq!(a, Some(expected));
         assert_eq!(
             f,
             allocator!(
@@ -284,14 +319,22 @@ mod tests {
         let mut f = allocator!(A 0 => 0x3000);
         let a = f.alloc(NumOfPages::new(3));
 
-        assert_eq!(a, Some(PhysAddr::zero()));
+        let expected = PhysFrameRange {
+            start: PhysFrame::from_start_address(PhysAddr::zero()).unwrap(),
+            end: PhysFrame::from_start_address(PhysAddr::new(0x3000)).unwrap(),
+        };
+
+        assert_eq!(a, Some(expected));
         assert_eq!(f, allocator!(U 0 => 0x3000));
     }
 
     #[test]
     fn free_single_frames() {
         let mut f = allocator!(U 0 => 0x3000);
-        f.dealloc(PhysAddr::zero());
+
+        let frame = PhysFrame::from_start_address(PhysAddr::zero()).unwrap();
+
+        f.dealloc(frame);
 
         assert_eq!(f, allocator!(A 0 => 0x3000));
     }
@@ -304,7 +347,9 @@ mod tests {
             U 0xc000 => 0x10000,
         );
 
-        f.dealloc(PhysAddr::new(0xc000));
+        let frame = PhysFrame::from_start_address(PhysAddr::new(0xc000)).unwrap();
+
+        f.dealloc(frame);
 
         assert_eq!(
             f,
@@ -322,7 +367,9 @@ mod tests {
             A 0x3000 => 0x5000,
         );
 
-        f.dealloc(PhysAddr::zero());
+        let frame = PhysFrame::from_start_address(PhysAddr::zero()).unwrap();
+
+        f.dealloc(frame);
 
         assert_eq!(
             f,
@@ -340,7 +387,9 @@ mod tests {
             A 0x5000 => 0x10000,
         );
 
-        f.dealloc(PhysAddr::new(0x3000));
+        let frame = PhysFrame::from_start_address(PhysAddr::new(0x3000)).unwrap();
+
+        f.dealloc(frame);
 
         assert_eq!(f, allocator!(A 0 => 0x10000))
     }
