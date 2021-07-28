@@ -1,10 +1,13 @@
 use {
+    conquer_once::spin::Lazy,
     frame_allocator::FrameAllocator,
-    spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
+    spinning_top::{Spinlock, SpinlockGuard},
     uefi_wrapper::service::boot::MemoryDescriptor,
+    x86_64::structures::paging::Size4KiB,
 };
 
-static FRAME_ALLOCATOR: Spinlock<FrameAllocator> = const_spinlock(FrameAllocator::new());
+static FRAME_ALLOCATOR: Lazy<Spinlock<FrameAllocator<Size4KiB>>> =
+    Lazy::new(|| Spinlock::new(FrameAllocator::new()));
 
 pub(super) fn init(mmap: &[MemoryDescriptor]) {
     frame_allocator().init(mmap);
@@ -13,7 +16,7 @@ pub(super) fn init(mmap: &[MemoryDescriptor]) {
     tests::main();
 }
 
-pub(super) fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator> {
+pub(super) fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator<Size4KiB>> {
     let f = FRAME_ALLOCATOR.try_lock();
 
     f.expect("Failed to acquire the lock of the frame allocator.")
