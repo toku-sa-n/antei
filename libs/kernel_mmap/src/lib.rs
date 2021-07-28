@@ -2,8 +2,7 @@
 
 use {
     core::convert::TryFrom,
-    os_units::Bytes,
-    os_units::NumOfPages,
+    os_units::{Bytes, NumOfPages},
     x86_64::{
         structures::paging::{page::PageRange, Page, PageSize},
         VirtAddr,
