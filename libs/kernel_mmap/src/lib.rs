@@ -10,6 +10,8 @@ use {
     },
 };
 
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
 pub fn kernel() -> PageRange {
     let start = VirtAddr::new(0xffff_ffff_8000_0000);
 
@@ -24,14 +26,17 @@ pub fn kernel() -> PageRange {
     PageRange { start, end }
 }
 
+#[must_use]
 pub fn stack() -> PageRange {
     next_to(kernel(), NumOfPages::new(8))
 }
 
+#[must_use]
 pub fn kernel_dma() -> PageRange {
     next_to(stack(), NumOfPages::new(64))
 }
 
+#[must_use]
 pub fn for_testing() -> PageRange {
     next_to(kernel_dma(), NumOfPages::new(16))
 }
