@@ -6,7 +6,9 @@ use {
     x86_64::structures::paging::Size4KiB,
 };
 
-static FRAME_ALLOCATOR: Lazy<Spinlock<FrameAllocator<Size4KiB>>> =
+const REASONABLE_NUM_DESCRIPTORS: usize = 256;
+
+static FRAME_ALLOCATOR: Lazy<Spinlock<FrameAllocator<Size4KiB, REASONABLE_NUM_DESCRIPTORS>>> =
     Lazy::new(|| Spinlock::new(FrameAllocator::new()));
 
 pub(super) fn init(mmap: &[MemoryDescriptor]) {
@@ -16,7 +18,8 @@ pub(super) fn init(mmap: &[MemoryDescriptor]) {
     tests::main();
 }
 
-pub(super) fn frame_allocator<'a>() -> SpinlockGuard<'a, FrameAllocator<Size4KiB>> {
+pub(super) fn frame_allocator<'a>(
+) -> SpinlockGuard<'a, FrameAllocator<Size4KiB, REASONABLE_NUM_DESCRIPTORS>> {
     let f = FRAME_ALLOCATOR.try_lock();
 
     f.expect("Failed to acquire the lock of the frame allocator.")
