@@ -1,7 +1,9 @@
 #[cfg(test_on_qemu)]
 use {
     super::phys,
-    x86_64::structures::paging::{Mapper, Page, PageTableFlags, PhysFrame},
+    x86_64::structures::paging::{
+        frame::PhysFrameRange, page::PageRange, Mapper, Page, PageTableFlags, PhysFrame,
+    },
 };
 use {
     aligned_ptr::ptr,
@@ -68,6 +70,20 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 }
 
 #[cfg(test_on_qemu)]
+unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
+    for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
+        unsafe { map(p, f) };
+    }
+}
+
+#[cfg(test_on_qemu)]
+fn unmap_range(page_range: PageRange) {
+    for p in page_range {
+        unmap(p);
+    }
+}
+
+#[cfg(test_on_qemu)]
 unsafe fn map(page: Page, frame: PhysFrame) {
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
@@ -89,7 +105,9 @@ fn unmap(page: Page) {
 #[cfg(test_on_qemu)]
 mod tests {
     use {
-        super::{map, mapper, phys, pml4, unmap},
+        super::{map, map_range, mapper, phys, pml4, unmap, unmap_range},
+        core::convert::TryInto,
+        os_units::NumOfPages,
         x86_64::{
             registers::control::Cr3,
             structures::paging::{FrameAllocator, Translate},
@@ -101,6 +119,7 @@ mod tests {
         user_region_is_not_mapped();
         cr3_indicates_correct_pml4();
         map_and_unmap();
+        map_and_unmap_range();
     }
 
     fn user_region_is_not_mapped() {
@@ -138,5 +157,31 @@ mod tests {
         unmap(page);
 
         assert_eq!(mapper().translate_addr(page.start_address()), None);
+    }
+
+    fn map_and_unmap_range() {
+        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start;
+        let num = NumOfPages::new(num.try_into().unwrap());
+
+        let frames = phys::frame_allocator().alloc(num).unwrap();
+
+        let pages = kernel_mmap::for_testing();
+
+        unsafe {
+            map_range(pages, frames);
+        }
+
+        for (p, f) in pages.into_iter().zip(frames.into_iter()) {
+            assert_eq!(
+                mapper().translate_addr(p.start_address()),
+                Some(f.start_address())
+            );
+        }
+
+        unmap_range(pages);
+
+        for p in pages {
+            assert_eq!(mapper().translate_addr(p.start_address()), None);
+        }
     }
 }
