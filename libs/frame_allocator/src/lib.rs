@@ -17,7 +17,7 @@ use {
     },
 };
 
-const REASONABLE_MAX_DESCRIPTORS: usize = 128;
+const REASONABLE_MAX_DESCRIPTORS: usize = 256;
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct FrameAllocator<S: PageSize>(ArrayVec<FrameDescriptor<S>, REASONABLE_MAX_DESCRIPTORS>);
