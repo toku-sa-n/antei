@@ -17,11 +17,9 @@ use {
     },
 };
 
-const REASONABLE_MAX_DESCRIPTORS: usize = 256;
-
 #[derive(PartialEq, Eq, Debug)]
-pub struct FrameAllocator<S: PageSize>(ArrayVec<FrameDescriptor<S>, REASONABLE_MAX_DESCRIPTORS>);
-impl<S: PageSize> FrameAllocator<S> {
+pub struct FrameAllocator<S: PageSize, const N: usize>(ArrayVec<FrameDescriptor<S>, N>);
+impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
     #[must_use]
     pub fn new() -> Self {
         Self(ArrayVec::new_const())
@@ -50,7 +48,7 @@ impl<S: PageSize> FrameAllocator<S> {
         self.0.push(frames);
     }
 }
-impl<S: PageSize> FrameAllocator<S> {
+impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
     pub fn alloc(&mut self, n: NumOfPages<S>) -> Option<PhysFrameRange<S>> {
         (0..self.0.len()).find_map(|i| {
             self.0[i]
@@ -92,7 +90,7 @@ impl<S: PageSize> FrameAllocator<S> {
         self.0.insert(i + 1, new_frames);
     }
 }
-impl<S: PageSize> FrameAllocator<S> {
+impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
     pub fn dealloc(&mut self, first_frame: PhysFrame<S>) {
         for i in 0..self.0.len() {
             if self.0[i].range.start == first_frame && !self.0[i].available {
@@ -133,7 +131,7 @@ impl<S: PageSize> FrameAllocator<S> {
         self.0.remove(i + 1);
     }
 }
-unsafe impl<S: PageSize> FrameAllocatorTrait<S> for FrameAllocator<S> {
+unsafe impl<S: PageSize, const N: usize> FrameAllocatorTrait<S> for FrameAllocator<S, N> {
     fn allocate_frame(&mut self) -> Option<PhysFrame<S>> {
         let frames = self.alloc(NumOfPages::new(1))?;
 
@@ -142,12 +140,12 @@ unsafe impl<S: PageSize> FrameAllocatorTrait<S> for FrameAllocator<S> {
         Some(frames.start)
     }
 }
-impl<S: PageSize> FrameDeallocator<S> for FrameAllocator<S> {
+impl<S: PageSize, const N: usize> FrameDeallocator<S> for FrameAllocator<S, N> {
     unsafe fn deallocate_frame(&mut self, frame: PhysFrame<S>) {
         self.dealloc(frame);
     }
 }
-impl<S: PageSize> Default for FrameAllocator<S> {
+impl<S: PageSize, const N: usize> Default for FrameAllocator<S, N> {
     fn default() -> Self {
         Self::new()
     }
@@ -266,7 +264,7 @@ mod tests {
 
     macro_rules! allocator {
         ($($is_available:ident $start:expr => $end:expr),*$(,)*) => {
-            FrameAllocator(arrayvec![
+            FrameAllocator::<_,8>(arrayvec![
                 $(descriptor!($is_available $start => $end)),*
             ]
             )
