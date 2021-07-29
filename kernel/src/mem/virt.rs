@@ -78,9 +78,7 @@ unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
 
 #[cfg(test_on_qemu)]
 fn unmap_range(page_range: PageRange) {
-    for p in page_range {
-        unmap(p);
-    }
+    page_range.into_iter().for_each(unmap);
 }
 
 #[cfg(test_on_qemu)]
