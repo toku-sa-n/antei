@@ -43,7 +43,7 @@ pub fn for_testing() -> PageRange {
 fn next_to<S: PageSize>(range: PageRange<S>, n: NumOfPages<S>) -> PageRange<S> {
     let start = range.end;
 
-    let end = start + u64::try_from(n.as_usize()).unwrap() * S::SIZE;
+    let end = start + u64::try_from(n.as_usize()).unwrap();
 
     PageRange { start, end }
 }
