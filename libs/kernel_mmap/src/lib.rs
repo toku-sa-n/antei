@@ -27,7 +27,7 @@ pub fn kernel() -> PageRange {
 
 #[must_use]
 pub fn stack() -> PageRange {
-    next_to(kernel(), NumOfPages::new(8))
+    next_to(kernel(), NumOfPages::new(16))
 }
 
 #[must_use]
