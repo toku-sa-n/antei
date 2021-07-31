@@ -22,8 +22,7 @@ mod tests {
     }
 
     fn assert_idt_address_is_correct() {
-        let idt = idt();
-        let expected_addr = VirtAddr::from_ptr(idt);
+        let expected_addr = VirtAddr::from_ptr(idt());
 
         let descriptor_table_ptr = tables::sidt();
         let actual_base = descriptor_table_ptr.base;
