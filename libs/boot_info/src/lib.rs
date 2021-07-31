@@ -44,6 +44,7 @@ impl BootInfo {
         self.mmap.vaildate();
     }
 
+    #[must_use]
     pub fn mmap(&self) -> &Mmap {
         &self.mmap
     }
