@@ -6,5 +6,4 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 os_units = "0.4.2"
-static_assertions = "1.1.0"
 x86_64 = { version = "0.14.4", default-features = false }
