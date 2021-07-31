@@ -1,8 +1,10 @@
 #[cfg(test_on_qemu)]
 use {
     super::phys,
+    crate::NumOfPages,
+    core::convert::{TryFrom, TryInto},
     x86_64::structures::paging::{
-        frame::PhysFrameRange, page::PageRange, Mapper, Page, PageTableFlags, PhysFrame,
+        frame::PhysFrameRange, page::PageRange, Mapper, Page, PageTableFlags, PhysFrame, Translate,
     },
 };
 use {
@@ -70,6 +72,31 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 }
 
 #[cfg(test_on_qemu)]
+unsafe fn map_frame_range_from_page_range(
+    page_range: PageRange,
+    frame_range: PhysFrameRange,
+) -> PageRange {
+    unsafe {
+        try_map_frame_range_from_page_range(page_range, frame_range)
+            .expect("Failed to map the physical frame range.")
+    }
+}
+
+#[cfg(test_on_qemu)]
+unsafe fn try_map_frame_range_from_page_range(
+    page_range: PageRange,
+    frame_range: PhysFrameRange,
+) -> Option<PageRange> {
+    let n = frame_range.end - frame_range.start;
+    let n = NumOfPages::new(n.try_into().unwrap());
+
+    find_unused_page_range_from_range(n, page_range).map(|page_range| {
+        unsafe { map_range(page_range, frame_range) };
+        page_range
+    })
+}
+
+#[cfg(test_on_qemu)]
 unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
     for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
         unsafe { map(p, f) };
@@ -101,11 +128,53 @@ fn unmap(page: Page) {
 }
 
 #[cfg(test_on_qemu)]
+fn find_unused_page_range_from_range(n: NumOfPages, range: PageRange) -> Option<PageRange> {
+    let mut cnt = 0;
+    let mut start = None;
+
+    for p in range {
+        if page_available(p) {
+            if start.is_none() {
+                start = Some(p);
+            }
+
+            cnt += 1;
+
+            if cnt == n.as_usize() {
+                return start.map(|start| {
+                    let end = start + u64::try_from(cnt).unwrap();
+
+                    PageRange { start, end }
+                });
+            }
+        } else {
+            cnt = 0;
+            start = None;
+        }
+    }
+
+    None
+}
+
+#[cfg(test_on_qemu)]
+fn page_available(p: Page) -> bool {
+    addr_available(p.start_address())
+}
+
+#[cfg(test_on_qemu)]
+fn addr_available(a: VirtAddr) -> bool {
+    mapper().translate_addr(a).is_none() && !a.is_null()
+}
+
+#[cfg(test_on_qemu)]
 mod tests {
     use {
-        super::{map, map_range, mapper, phys, pml4, unmap, unmap_range},
+        super::{
+            map, map_frame_range_from_page_range, map_range, mapper, phys, pml4,
+            try_map_frame_range_from_page_range, unmap, unmap_range,
+        },
+        crate::NumOfPages,
         core::convert::TryInto,
-        os_units::NumOfPages,
         x86_64::{
             registers::control::Cr3,
             structures::paging::{FrameAllocator, Translate},
@@ -118,6 +187,8 @@ mod tests {
         cr3_indicates_correct_pml4();
         map_and_unmap();
         map_and_unmap_range();
+        map_frame_range_from_page_range_and_unmap();
+        map_frame_range_from_page_range_fail();
     }
 
     fn user_region_is_not_mapped() {
@@ -181,5 +252,38 @@ mod tests {
         for p in pages {
             assert_eq!(mapper().translate_addr(p.start_address()), None);
         }
+    }
+
+    fn map_frame_range_from_page_range_and_unmap() {
+        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start;
+        let num = NumOfPages::new(num.try_into().unwrap());
+
+        let frames = phys::frame_allocator().alloc(num).unwrap();
+
+        let pages = kernel_mmap::for_testing();
+
+        let allocated_pages = unsafe { map_frame_range_from_page_range(pages, frames) };
+
+        assert_eq!(allocated_pages, pages);
+
+        for (p, f) in pages.into_iter().zip(frames.into_iter()) {
+            assert_eq!(
+                mapper().translate_addr(p.start_address()),
+                Some(f.start_address())
+            );
+        }
+
+        unmap_range(pages);
+    }
+
+    fn map_frame_range_from_page_range_fail() {
+        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start + 1;
+        let num = NumOfPages::new(num.try_into().unwrap());
+
+        let frames = phys::frame_allocator().alloc(num).unwrap();
+
+        let pages = kernel_mmap::for_testing();
+
+        assert!(unsafe { try_map_frame_range_from_page_range(pages, frames).is_none() });
     }
 }
