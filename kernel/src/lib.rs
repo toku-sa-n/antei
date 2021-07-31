@@ -9,9 +9,7 @@ pub mod mem;
 
 #[cfg(test_on_qemu)]
 use x86_64::structures::paging::Size4KiB;
-use {
-    aligned_ptr::ptr, boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println,
-};
+use {aligned_ptr::ptr, boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 
 #[cfg(test_on_qemu)]
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
