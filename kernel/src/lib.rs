@@ -14,7 +14,7 @@ use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 #[cfg(test_on_qemu)]
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
-pub fn init(mut boot_info: BootInfo) {
+pub fn init(boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
     boot_info.validate();
 
