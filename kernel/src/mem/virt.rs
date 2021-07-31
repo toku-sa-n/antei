@@ -90,7 +90,7 @@ unsafe fn try_map_frame_range_from_page_range(
     let n = frame_range.end - frame_range.start;
     let n = NumOfPages::new(n.try_into().unwrap());
 
-    find_unused_page_range_from_range(n, page_range).map_or(None, |page_range| {
+    find_unused_page_range_from_range(n, page_range).and_then(|page_range| {
         unsafe { map_range(page_range, frame_range) };
         Some(page_range)
     })
