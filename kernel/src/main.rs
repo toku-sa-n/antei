@@ -16,7 +16,7 @@ use {
 #[no_mangle]
 unsafe extern "sysv64" fn main(boot_info: *mut BootInfo) {
     // SAFETY: `boot_info` must be dereferenceable.
-    init(unsafe { ptr::as_mut(boot_info) });
+    init(unsafe { ptr::get(boot_info) });
 
     fini();
 }

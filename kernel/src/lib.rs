@@ -9,14 +9,13 @@ pub mod mem;
 
 #[cfg(test_on_qemu)]
 use x86_64::structures::paging::Size4KiB;
-use {aligned_ptr::ptr, boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
+use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 
 #[cfg(test_on_qemu)]
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
-pub fn init(boot_info: &mut BootInfo) {
+pub fn init(mut boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
-    let mut boot_info = unsafe { ptr::get(boot_info) };
     boot_info.validate();
 
     // SAFETY: The recursive address is accessible and there are no references to the current
