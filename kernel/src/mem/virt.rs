@@ -229,12 +229,12 @@ mod tests {
     }
 
     fn map_and_unmap_range() {
-        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start;
+        let pages = kernel_mmap::for_testing();
+
+        let num = pages.end - pages.start;
         let num = NumOfPages::new(num.try_into().unwrap());
 
         let frames = phys::frame_allocator().alloc(num).unwrap();
-
-        let pages = kernel_mmap::for_testing();
 
         unsafe {
             map_range(pages, frames);
@@ -255,12 +255,12 @@ mod tests {
     }
 
     fn map_frame_range_from_page_range_and_unmap() {
-        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start;
+        let pages = kernel_mmap::for_testing();
+
+        let num = pages.end - pages.start;
         let num = NumOfPages::new(num.try_into().unwrap());
 
         let frames = phys::frame_allocator().alloc(num).unwrap();
-
-        let pages = kernel_mmap::for_testing();
 
         let allocated_pages = unsafe { map_frame_range_from_page_range(pages, frames) };
 
@@ -277,12 +277,12 @@ mod tests {
     }
 
     fn map_frame_range_from_page_range_fail() {
-        let num = kernel_mmap::for_testing().end - kernel_mmap::for_testing().start + 1;
+        let pages = kernel_mmap::for_testing();
+
+        let num = pages.end - pages.start + 1;
         let num = NumOfPages::new(num.try_into().unwrap());
 
         let frames = phys::frame_allocator().alloc(num).unwrap();
-
-        let pages = kernel_mmap::for_testing();
 
         assert!(unsafe { try_map_frame_range_from_page_range(pages, frames).is_none() });
     }
