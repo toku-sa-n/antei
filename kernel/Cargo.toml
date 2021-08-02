@@ -16,6 +16,7 @@ test = false
 test = false
 
 [dependencies]
+accessor = "0.3.0"
 aligned_ptr = "0.1.0"
 boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
