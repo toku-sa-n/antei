@@ -224,7 +224,7 @@ mod tests {
         super::{phys_frame_range_from_start_and_num, FrameAllocator, FrameDescriptor},
         os_units::NumOfPages,
         x86_64::{
-            structures::paging::{frame::PhysFrameRange, PhysFrame, Size4KiB},
+            structures::paging::{frame::PhysFrameRange, PageSize, PhysFrame, Size4KiB},
             PhysAddr,
         },
     };
@@ -329,9 +329,7 @@ mod tests {
     fn free_single_frames() {
         let mut f = allocator!(U 0 => 0x3000);
 
-        let frame = PhysFrame::from_start_address(PhysAddr::zero()).unwrap();
-
-        f.dealloc(frame);
+        f.dealloc(frame(0));
 
         assert_eq!(f, allocator!(A 0 => 0x3000));
     }
@@ -344,9 +342,7 @@ mod tests {
             U 0xc000 => 0x10000,
         );
 
-        let frame = PhysFrame::from_start_address(PhysAddr::new(0xc000)).unwrap();
-
-        f.dealloc(frame);
+        f.dealloc(frame(0xc000));
 
         assert_eq!(
             f,
@@ -364,9 +360,7 @@ mod tests {
             A 0x3000 => 0x5000,
         );
 
-        let frame = PhysFrame::from_start_address(PhysAddr::zero()).unwrap();
-
-        f.dealloc(frame);
+        f.dealloc(frame(0));
 
         assert_eq!(
             f,
@@ -384,9 +378,7 @@ mod tests {
             A 0x5000 => 0x10000,
         );
 
-        let frame = PhysFrame::from_start_address(PhysAddr::new(0x3000)).unwrap();
-
-        f.dealloc(frame);
+        f.dealloc(frame(0x3000));
 
         assert_eq!(f, allocator!(A 0 => 0x10000))
     }
@@ -397,5 +389,9 @@ mod tests {
         let f2 = descriptor!(A 0xc000 => 0x10000);
 
         assert!(f1.is_mergeable(&f2));
+    }
+
+    fn frame<S: PageSize>(start: u64) -> PhysFrame<S> {
+        PhysFrame::from_start_address(PhysAddr::new(start)).unwrap()
     }
 }
