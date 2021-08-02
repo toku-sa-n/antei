@@ -2,7 +2,7 @@ use {
     conquer_once::spin::Lazy,
     frame_allocator::FrameAllocator,
     spinning_top::{Spinlock, SpinlockGuard},
-    uefi_wrapper::service::boot::MemoryDescriptor,
+    uefi::service::boot::MemoryDescriptor,
     x86_64::structures::paging::Size4KiB,
 };
 

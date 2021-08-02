@@ -4,7 +4,7 @@ use {
     core::convert::{TryFrom, TryInto},
     elfloader::{ElfBinary, ElfLoader, ElfLoaderErr, LoadableHeaders, ProgramHeader, VAddr},
     os_units::{Bytes, NumOfPages},
-    uefi_wrapper::service::boot::MemoryDescriptor,
+    uefi::service::boot::MemoryDescriptor,
     x86_64::{
         structures::paging::{
             page::{AddressNotAligned, PageRange},

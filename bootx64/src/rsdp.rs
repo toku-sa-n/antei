@@ -1,6 +1,6 @@
 use {
     crate::SystemTable,
-    uefi_wrapper::system_table::{ConfigurationTable, EFI_ACPI_TABLE_GUID},
+    uefi::system_table::{ConfigurationTable, EFI_ACPI_TABLE_GUID},
     x86_64::PhysAddr,
 };
 
