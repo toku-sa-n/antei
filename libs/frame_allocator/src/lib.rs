@@ -7,7 +7,7 @@ use {
         fmt,
     },
     os_units::NumOfPages,
-    uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
+    uefi::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{
             frame::PhysFrameRange, page::AddressNotAligned, FrameAllocator as FrameAllocatorTrait,

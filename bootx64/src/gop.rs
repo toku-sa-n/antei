@@ -1,7 +1,7 @@
 use crate::uefi_panic;
-use uefi_wrapper::protocols::console::edid;
-use uefi_wrapper::protocols::console::graphics_output;
-use uefi_wrapper::{protocols::console, service::boot::WithProtocol};
+use uefi::protocols::console::edid;
+use uefi::protocols::console::graphics_output;
+use uefi::{protocols::console, service::boot::WithProtocol};
 
 /// # Panics
 ///
@@ -14,7 +14,7 @@ pub fn set_preferred_resolution(st: &mut crate::SystemTable) -> graphics_output:
 
 fn try_set_preferred_resolution(
     st: &mut crate::SystemTable,
-) -> uefi_wrapper::Result<graphics_output::ModeInformation> {
+) -> uefi::Result<graphics_output::ModeInformation> {
     let resolution = resolution_to_use(st);
 
     let gop = try_get_gop(st)?.protocol;
@@ -39,7 +39,7 @@ fn try_set_preferred_resolution(
 
 fn try_get_gop(
     st: &mut crate::SystemTable,
-) -> uefi_wrapper::Result<WithProtocol<'_, console::GraphicsOutput>> {
+) -> uefi::Result<WithProtocol<'_, console::GraphicsOutput>> {
     let bs = st.boot_services();
 
     bs.locate_protocol_without_registration::<console::GraphicsOutput>()

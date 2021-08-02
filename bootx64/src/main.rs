@@ -5,7 +5,7 @@
 use bootx64::{kernel, paging, rsdp, stack};
 
 #[no_mangle]
-extern "win64" fn efi_main(h: uefi_wrapper::Handle, mut st: bootx64::SystemTable) -> ! {
+extern "win64" fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
     let binary = kernel::locate(&mut st);
 
     let rsdp = rsdp::get(&st);

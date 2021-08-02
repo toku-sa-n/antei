@@ -1,7 +1,7 @@
 use {
     crate::uefi_panic,
     core::fmt,
-    uefi_wrapper::{
+    uefi::{
         protocols::console,
         service::{self, boot},
         system_table::ConfigurationTable,
@@ -10,7 +10,7 @@ use {
 
 #[repr(transparent)]
 #[derive(Debug)]
-pub struct SystemTable(uefi_wrapper::SystemTable);
+pub struct SystemTable(uefi::SystemTable);
 impl SystemTable {
     pub fn boot_services(&mut self) -> service::Boot<'_> {
         self.0.boot_services()
@@ -39,9 +39,9 @@ impl SystemTable {
 
     pub(crate) fn exit_boot_services(
         self,
-        image_handler: uefi_wrapper::Handle,
+        image_handler: uefi::Handle,
         map_key: boot::MapKey,
-    ) -> uefi_wrapper::Result<(), (Self, uefi_wrapper::Handle)> {
+    ) -> uefi::Result<(), (Self, uefi::Handle)> {
         let r = self.0.exit_boot_services(image_handler, map_key);
 
         r.map_err(|e| e.map_value(|(st, h)| (Self(st), h)))
