@@ -1,6 +1,6 @@
 use {
     crate::{Allocator, Mapper},
-    uefi_wrapper::service::boot::MemoryDescriptor,
+    uefi::service::boot::MemoryDescriptor,
     x86_64::structures::paging::PageTableFlags,
 };
 

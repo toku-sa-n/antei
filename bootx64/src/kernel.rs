@@ -1,7 +1,7 @@
 use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
-    uefi_wrapper::service::boot::MemoryDescriptor,
+    uefi::service::boot::MemoryDescriptor,
     x86_64::{PhysAddr, VirtAddr},
 };
 

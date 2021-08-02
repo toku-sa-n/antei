@@ -1,7 +1,7 @@
 mod phys;
 mod virt;
 
-use uefi_wrapper::service::boot::MemoryDescriptor;
+use uefi::service::boot::MemoryDescriptor;
 
 /// # Safety
 ///

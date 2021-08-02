@@ -1,7 +1,7 @@
 use {
     crate::NumOfPages,
     core::convert::{TryFrom, TryInto},
-    uefi_wrapper::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
+    uefi::service::boot::{MemoryDescriptor, CONVENTIONAL_MEMORY},
     x86_64::{
         structures::paging::{FrameAllocator, PhysFrame, Size4KiB},
         PhysAddr,

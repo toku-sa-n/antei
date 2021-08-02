@@ -1,7 +1,7 @@
 use core::convert::TryInto;
 use core::slice;
-use uefi_wrapper::protocols::media;
-use uefi_wrapper::service;
+use uefi::protocols::media;
+use uefi::service;
 
 #[must_use]
 pub fn locate<'a>(st: &mut crate::SystemTable, path: &str) -> &'a [u8] {
@@ -9,7 +9,7 @@ pub fn locate<'a>(st: &mut crate::SystemTable, path: &str) -> &'a [u8] {
     st.expect_ok(r, "Failed to locate a file.")
 }
 
-fn try_locate<'a>(st: &mut crate::SystemTable, path: &str) -> uefi_wrapper::Result<&'a [u8]> {
+fn try_locate<'a>(st: &mut crate::SystemTable, path: &str) -> uefi::Result<&'a [u8]> {
     let bs = st.boot_services();
 
     let mut fs = bs.locate_protocol_without_registration::<media::SimpleFileSystem>()?;
@@ -28,7 +28,7 @@ fn try_locate<'a>(st: &mut crate::SystemTable, path: &str) -> uefi_wrapper::Resu
 fn try_allocate<'a, 'b>(
     f: &'a mut media::File<'_>,
     bs: &'a mut service::Boot<'_>,
-) -> uefi_wrapper::Result<&'b mut [u8]> {
+) -> uefi::Result<&'b mut [u8]> {
     let sz = try_get_filesize(f)?;
     let sz: usize = sz.try_into().unwrap();
 
@@ -40,7 +40,7 @@ fn try_allocate<'a, 'b>(
     Ok(unsafe { slice::from_raw_parts_mut(buf, sz) })
 }
 
-fn try_get_filesize(f: &mut media::File<'_>) -> uefi_wrapper::Result<u64> {
+fn try_get_filesize(f: &mut media::File<'_>) -> uefi::Result<u64> {
     const END_OF_FILE: u64 = !0;
 
     f.set_position(END_OF_FILE)?;

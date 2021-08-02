@@ -2,7 +2,7 @@ use crate::SystemTable;
 use aligned_ptr::ptr;
 use aligned_ptr::slice;
 use boot::MemoryDescriptor;
-use uefi_wrapper::{
+use uefi::{
     service::{self, boot},
     Handle, Result,
 };
