@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use {
     super::virt,
     crate::NumOfPages,
