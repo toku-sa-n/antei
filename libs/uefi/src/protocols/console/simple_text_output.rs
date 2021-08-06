@@ -65,7 +65,7 @@ impl<'a, 'b> Writer<'a, 'b> {
 
     fn push_char(&mut self, c: u16) -> Result<()> {
         if is_newline(c) {
-            self.push_u16(b'\r'.into())?
+            self.push_u16(b'\r'.into())?;
         }
 
         self.push_u16(c)
