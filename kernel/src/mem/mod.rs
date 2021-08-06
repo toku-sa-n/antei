@@ -12,5 +12,7 @@ pub unsafe fn init(mmap: &[MemoryDescriptor]) {
     phys::init(mmap);
 
     // SAFETY: The caller must uphold the safety requirements.
-    unsafe { virt::init() };
+    unsafe {
+        virt::init();
+    }
 }

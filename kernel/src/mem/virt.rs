@@ -26,7 +26,9 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 /// - There must not exist any references that point to the current working PML4.
 pub(super) unsafe fn init() {
     // SAFETY: The caller must uphold the safety requirement.
-    unsafe { init_static() };
+    unsafe {
+        init_static();
+    }
 
     unmap_all_user_regions();
 

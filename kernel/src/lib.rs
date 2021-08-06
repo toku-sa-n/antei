@@ -20,7 +20,9 @@ pub fn init(boot_info: BootInfo) {
 
     // SAFETY: The recursive address is accessible and there are no references to the current
     // working PML4.
-    unsafe { mem::init(boot_info.mmap().as_slice()) };
+    unsafe {
+        mem::init(boot_info.mmap().as_slice());
+    }
 
     gdt::init();
     idt::init();
