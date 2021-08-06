@@ -21,7 +21,11 @@ use {
 /// - There is no reference to one of the all working page tables.
 pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     // SAFETY: The all rules are satisfied.
-    paging::edit_page_tables(|| unsafe { load_without_disabling_page_table_protects(binary, mmap) })
+    paging::edit_page_tables(|| unsafe {
+        let _ = &binary;
+
+        load_without_disabling_page_table_protects(binary, mmap)
+    })
 }
 
 /// # Safety
