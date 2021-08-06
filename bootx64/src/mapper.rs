@@ -50,7 +50,9 @@ impl<'a> Mapper<'a> {
         for i in 0..n.as_usize() {
             let i = NumOfPages::<Size4KiB>::new(i);
 
-            unsafe { self.update_flags_for_address(v + i.as_bytes().as_usize(), flags) };
+            unsafe {
+                self.update_flags_for_address(v + i.as_bytes().as_usize(), flags);
+            }
         }
     }
 
@@ -59,7 +61,9 @@ impl<'a> Mapper<'a> {
         let frame = frame.expect("Physical frame is not available.");
 
         // SAFETY: The physical memory is not used by anyone.
-        unsafe { self.map(page, frame, flags) };
+        unsafe {
+            self.map(page, frame, flags);
+        }
     }
 
     /// # Safety
@@ -76,7 +80,9 @@ impl<'a> Mapper<'a> {
         let page = Page::from_start_address(addr);
         let page = page.expect("The address is not page-aligned.");
 
-        unsafe { self.update_flags(page, flags) };
+        unsafe {
+            self.update_flags(page, flags);
+        }
     }
 
     unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {

@@ -23,7 +23,7 @@ pub unsafe fn enable_recursive_paging() {
     // same value.
     edit_page_tables(|| unsafe {
         set_recursive_entry();
-    })
+    });
 }
 
 pub(crate) fn pml4_addr() -> PhysAddr {
@@ -55,5 +55,7 @@ fn enable_write_protect() {
 
 fn disable_write_protect() {
     // SAFETY: Disabling the write protection does not affect the memory safety.
-    unsafe { Cr0::update(|cr0| cr0.remove(Cr0Flags::WRITE_PROTECT)) }
+    unsafe {
+        Cr0::update(|cr0| cr0.remove(Cr0Flags::WRITE_PROTECT));
+    }
 }
