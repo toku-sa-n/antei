@@ -21,7 +21,11 @@ use {
 /// - There is no reference to one of the all working page tables.
 pub unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     // SAFETY: The all rules are satisfied.
-    paging::edit_page_tables(|| unsafe { load_without_disabling_page_table_protects(binary, mmap) })
+    paging::edit_page_tables(|| unsafe {
+        let _ = &binary;
+
+        load_without_disabling_page_table_protects(binary, mmap)
+    })
 }
 
 /// # Safety
@@ -70,10 +74,14 @@ impl<'a> Loader<'a> {
 
         // SAFETY: The page will be used to load the ELF file. The memory does not have to be
         // initialized.
-        unsafe { self.mapper.map_range_to_unused(range, flags) };
+        unsafe {
+            self.mapper.map_range_to_unused(range, flags);
+        }
 
         // SAFETY: `bytes` from `v` are allocated by `map_range_to_unused`.
-        unsafe { write_zeros(v.as_mut_ptr(), bytes) }
+        unsafe {
+            write_zeros(v.as_mut_ptr(), bytes);
+        }
     }
 }
 impl ElfLoader for Loader<'_> {
@@ -94,7 +102,9 @@ impl ElfLoader for Loader<'_> {
         let base = VirtAddr::new(base);
 
         // SAFETY: Memory is allocated by the previous `allocate` call.
-        unsafe { ptr::copy(region.as_ptr(), base.as_mut_ptr(), region.len()) };
+        unsafe {
+            ptr::copy(region.as_ptr(), base.as_mut_ptr(), region.len());
+        }
 
         if !flags.is_write() {
             let r = self.make_readonly(base.as_u64(), region.len());
@@ -117,7 +127,7 @@ impl ElfLoader for Loader<'_> {
 
         unsafe {
             self.mapper
-                .update_flags_for_range(base, n, PageTableFlags::PRESENT)
+                .update_flags_for_range(base, n, PageTableFlags::PRESENT);
         }
         Ok(())
     }
@@ -127,7 +137,9 @@ impl ElfLoader for Loader<'_> {
 ///
 /// `start` must be valid for writes of `bytes`.
 unsafe fn write_zeros(start: *mut u8, bytes: Bytes) {
-    unsafe { ptr::write_bytes(start, 0, bytes.as_usize()) }
+    unsafe {
+        ptr::write_bytes(start, 0, bytes.as_usize());
+    }
 }
 
 fn page_range_from_start_and_num<S: PageSize>(

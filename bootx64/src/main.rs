@@ -13,12 +13,18 @@ extern "win64" fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
     let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
 
     // SAFETY: Yes, the addresses are the same.
-    unsafe { paging::enable_recursive_paging() };
+    unsafe {
+        paging::enable_recursive_paging();
+    }
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to one of all
     // working page tables.
-    unsafe { stack::allocate(mmap) };
+    unsafe {
+        stack::allocate(mmap);
+    }
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
-    unsafe { kernel::load_and_jump(binary, mmap, rsdp) };
+    unsafe {
+        kernel::load_and_jump(binary, mmap, rsdp);
+    }
 }

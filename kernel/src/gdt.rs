@@ -54,7 +54,7 @@ fn init_gdt() {
 
 fn init_selectors(selectors: Selectors) {
     let r = SELECTORS.try_init_once(|| selectors);
-    r.expect("Failed to initialize `SELECTORS`.")
+    r.expect("Failed to initialize `SELECTORS`.");
 }
 
 fn lgdt() {

@@ -26,9 +26,10 @@ impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
     }
 
     pub fn init(&mut self, mmap: &[MemoryDescriptor]) {
-        mmap.iter()
-            .filter(|d| is_conventional(d))
-            .for_each(|d| self.init_for_descriptor(d))
+        mmap.iter().filter(|d| is_conventional(d)).for_each(|d| {
+            let _ = &self;
+            self.init_for_descriptor(d);
+        });
     }
 
     fn init_for_descriptor(&mut self, descriptor: &MemoryDescriptor) {
@@ -51,9 +52,10 @@ impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
 impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
     pub fn alloc(&mut self, n: NumOfPages<S>) -> Option<PhysFrameRange<S>> {
         (0..self.0.len()).find_map(|i| {
-            self.0[i]
-                .is_available_for_allocating(n)
-                .then(|| self.alloc_from_frames_at(i, n))
+            self.0[i].is_available_for_allocating(n).then(|| {
+                let _ = &self;
+                self.alloc_from_frames_at(i, n)
+            })
         })
     }
 
@@ -73,7 +75,7 @@ impl<S: PageSize, const N: usize> FrameAllocator<S, N> {
             "Insufficient number of frames."
         );
 
-        self.split_frames_unchecked(i, num_of_pages)
+        self.split_frames_unchecked(i, num_of_pages);
     }
 
     fn split_frames_unchecked(&mut self, i: usize, requested: NumOfPages<S>) {

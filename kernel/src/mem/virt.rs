@@ -26,7 +26,9 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 /// - There must not exist any references that point to the current working PML4.
 pub(super) unsafe fn init() {
     // SAFETY: The caller must uphold the safety requirement.
-    unsafe { init_static() };
+    unsafe {
+        init_static();
+    }
 
     unmap_all_user_regions();
 
@@ -91,7 +93,9 @@ unsafe fn try_map_frame_range_from_page_range(
     let n = NumOfPages::new(n.try_into().unwrap());
 
     find_unused_page_range_from_range(n, page_range).map(|page_range| {
-        unsafe { map_range(page_range, frame_range) };
+        unsafe {
+            map_range(page_range, frame_range);
+        }
         page_range
     })
 }
@@ -99,7 +103,9 @@ unsafe fn try_map_frame_range_from_page_range(
 #[cfg(test_on_qemu)]
 unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
     for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
-        unsafe { map(p, f) };
+        unsafe {
+            map(p, f);
+        }
     }
 }
 
@@ -216,7 +222,9 @@ mod tests {
 
         let page = kernel_mmap::for_testing().start;
 
-        unsafe { map(page, frame) };
+        unsafe {
+            map(page, frame);
+        }
 
         assert_eq!(
             mapper().translate_addr(page.start_address()),
