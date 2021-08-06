@@ -33,7 +33,9 @@ fn try_exit_with_code(code: Code) {
     let code = (code as u16) >> 1;
 
     // SAFETY: `IO_BASE` must be the correct one.
-    unsafe { port.write(code) }
+    unsafe {
+        port.write(code);
+    }
 }
 
 fn halt_and_loop() -> ! {
