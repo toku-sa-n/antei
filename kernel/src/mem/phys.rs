@@ -50,6 +50,6 @@ mod tests {
     }
 
     fn dealloc(f: PhysFrame) {
-        frame_allocator().dealloc(f)
+        frame_allocator().dealloc(f);
     }
 }
