@@ -1,3 +1,4 @@
+pub(crate) mod array;
 pub(crate) mod single;
 
 use {
