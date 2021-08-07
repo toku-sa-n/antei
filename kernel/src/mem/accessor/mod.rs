@@ -17,25 +17,6 @@ use {
     },
 };
 
-pub(crate) type Single<T> = accessor::Single<T, Mapper>;
-pub(crate) type Array<T> = accessor::Array<T, Mapper>;
-
-/// # Safety
-///
-/// Refer to [`accessor::Single::new`].
-pub(crate) unsafe fn single<T: Copy>(p: PhysAddr) -> Single<T> {
-    // SAFETY: The caller must uphold the safety requirements of the `new` method.
-    unsafe { accessor::Single::new(p.as_u64().try_into().unwrap(), Mapper) }
-}
-
-/// # Safety
-///
-/// Refer to [`accessor::Array::new`].
-pub(crate) unsafe fn array<T: Copy>(p: PhysAddr, len: usize) -> Array<T> {
-    // SAFETY: The caller must uphold the safety requirements of the `new` method.
-    unsafe { accessor::Array::new(p.as_u64().try_into().unwrap(), len, Mapper) }
-}
-
 pub(crate) struct Mapper;
 impl Mapper {
     fn map_from_phys_addr_and_bytes(&self, p: PhysAddr, b: Bytes) -> VirtAddr {
