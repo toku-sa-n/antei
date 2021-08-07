@@ -385,14 +385,6 @@ mod tests {
         assert_eq!(f, allocator!(A 0 => 0x10000))
     }
 
-    #[test]
-    fn mergable_two_frmaes() {
-        let f1 = descriptor!(A 0x2000 => 0xc000);
-        let f2 = descriptor!(A 0xc000 => 0x10000);
-
-        assert!(f1.is_mergeable(&f2));
-    }
-
     fn frame<S: PageSize>(start: u64) -> PhysFrame<S> {
         PhysFrame::from_start_address(PhysAddr::new(start)).unwrap()
     }
