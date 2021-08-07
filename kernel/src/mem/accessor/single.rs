@@ -1,6 +1,7 @@
 use {super::Mapper, accessor::marker, core::convert::TryInto, x86_64::PhysAddr};
 
-pub(crate) type Generic<T, A> = accessor::single::Generic<T, Mapper, A>;
+type Generic<T, A> = accessor::single::Generic<T, Mapper, A>;
+
 pub(crate) type ReadWrite<T> = Generic<T, marker::ReadWrite>;
 pub(crate) type ReadOnly<T> = Generic<T, marker::ReadOnly>;
 pub(crate) type WriteOnly<T> = Generic<T, marker::WriteOnly>;
