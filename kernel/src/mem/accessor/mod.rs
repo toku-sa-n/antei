@@ -1,4 +1,4 @@
-mod single;
+pub(crate) mod single;
 
 use {
     super::virt,
