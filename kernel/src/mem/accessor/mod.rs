@@ -1,3 +1,5 @@
+mod single;
+
 use {
     super::virt,
     crate::NumOfPages,
