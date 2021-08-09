@@ -7,11 +7,11 @@ pub mod gdt;
 pub mod idt;
 pub mod mem;
 
-#[cfg(test_on_qemu)]
-use x86_64::structures::paging::Size4KiB;
-use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
+use {
+    boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println,
+    x86_64::structures::paging::Size4KiB,
+};
 
-#[cfg(test_on_qemu)]
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
 pub fn init(boot_info: BootInfo) {

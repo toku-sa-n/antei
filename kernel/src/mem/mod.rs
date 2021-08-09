@@ -1,3 +1,5 @@
+#[allow(unused)]
+mod accessor;
 mod phys;
 mod virt;
 
