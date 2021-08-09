@@ -47,6 +47,7 @@ pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap);
 }
 
+#[allow(unused)]
 pub(super) fn translate(v: VirtAddr) -> Option<PhysAddr> {
     mapper().translate_addr(v)
 }
