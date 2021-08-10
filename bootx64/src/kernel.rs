@@ -54,7 +54,7 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
         switch_stack_and_call_kernel_code(
             &mut boot_info,
             entry,
-            kernel_mmap::stack().end.start_address(),
+            predefined_mmap::stack().end.start_address(),
         )
     };
 }

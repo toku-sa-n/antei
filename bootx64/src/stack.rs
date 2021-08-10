@@ -19,6 +19,6 @@ pub unsafe fn allocate(mmap: &mut [MemoryDescriptor]) {
     // SAFETY: The stack region is so high that nothing point to the region. There is no need to
     // worry about creating multiple mutable references.
     unsafe {
-        mapper.map_range_to_unused(kernel_mmap::stack(), flags);
+        mapper.map_range_to_unused(predefined_mmap::stack(), flags);
     }
 }
