@@ -5,6 +5,7 @@ members = [
     "libs/boot_info",
     "libs/debug",
     "libs/frame_allocator",
+    "libs/kernel_mem",
     "libs/predefined_mmap",
     "libs/qemu",
     "libs/uefi",

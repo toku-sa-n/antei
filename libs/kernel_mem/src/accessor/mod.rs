@@ -1,5 +1,5 @@
-pub(crate) mod array;
-pub(crate) mod single;
+pub mod array;
+pub mod single;
 
 use {
     super::virt,
@@ -17,7 +17,8 @@ use {
     },
 };
 
-pub(crate) struct Mapper;
+#[derive(Copy, Clone, Debug)]
+pub struct Mapper;
 impl accessor::Mapper for Mapper {
     unsafe fn map(&mut self, phys_start: usize, bytes: usize) -> NonZeroUsize {
         let p = PhysAddr::new(phys_start.try_into().unwrap());

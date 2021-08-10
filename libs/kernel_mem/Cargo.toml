@@ -1,0 +1,16 @@
+[package]
+name = "kernel_mem"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+accessor = "0.3.2"
+aligned_ptr = "0.1.0"
+conquer-once = { version = "0.3.2", default-features = false }
+frame_allocator = { path = "../frame_allocator" }
+os_units = "0.4.2"
+predefined_mmap = { path = "../predefined_mmap" }
+spinning_top = "0.2.4"
+uefi = { path = "../uefi" }
+x86_64 = { version = "0.14.4", default-features = false, features = ["instructions", "external_asm"] }
