@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
+[features]
+test_on_qemu = []
+
 [dependencies]
 accessor = "0.3.2"
 aligned_ptr = "0.1.0"
@@ -14,3 +17,6 @@ predefined_mmap = { path = "../predefined_mmap" }
 spinning_top = "0.2.4"
 uefi = { path = "../uefi" }
 x86_64 = { version = "0.14.4", default-features = false, features = ["instructions", "external_asm"] }
+
+[build-dependencies]
+cfg_aliases = "0.1.1"
