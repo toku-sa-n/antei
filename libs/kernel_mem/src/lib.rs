@@ -1,9 +1,13 @@
-#[allow(unused)]
-mod accessor;
+#![no_std]
+#![deny(unsafe_op_in_unsafe_fn)]
+
+pub mod accessor;
 mod phys;
 mod virt;
 
-use uefi::service::boot::MemoryDescriptor;
+use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};
+
+pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
 /// # Safety
 ///
