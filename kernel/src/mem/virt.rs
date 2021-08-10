@@ -213,7 +213,7 @@ mod tests {
     fn map_and_unmap() {
         let frame = phys::frame_allocator().allocate_frame().unwrap();
 
-        let page = kernel_mmap::for_testing().start;
+        let page = predefined_mmap::for_testing().start;
 
         unsafe {
             map(page, frame);
@@ -230,7 +230,7 @@ mod tests {
     }
 
     fn map_and_unmap_range() {
-        let pages = kernel_mmap::for_testing();
+        let pages = predefined_mmap::for_testing();
 
         let num = pages.end - pages.start;
         let num = NumOfPages::new(num.try_into().unwrap());
@@ -256,7 +256,7 @@ mod tests {
     }
 
     fn map_frame_range_from_page_range_and_unmap() {
-        let pages = kernel_mmap::for_testing();
+        let pages = predefined_mmap::for_testing();
 
         let num = pages.end - pages.start;
         let num = NumOfPages::new(num.try_into().unwrap());
@@ -278,7 +278,7 @@ mod tests {
     }
 
     fn map_frame_range_from_page_range_fail() {
-        let pages = kernel_mmap::for_testing();
+        let pages = predefined_mmap::for_testing();
 
         let num = pages.end - pages.start + 1;
         let num = NumOfPages::new(num.try_into().unwrap());

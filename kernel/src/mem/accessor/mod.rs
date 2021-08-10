@@ -40,8 +40,9 @@ impl accessor::Mapper for Mapper {
 fn map_from_phys_addr_and_bytes(p: PhysAddr, b: Bytes) -> VirtAddr {
     let frame_range = to_frame_range(p, b.as_num_of_pages());
 
-    let page_range =
-        unsafe { virt::map_frame_range_from_page_range(kernel_mmap::kernel_dma(), frame_range) };
+    let page_range = unsafe {
+        virt::map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range)
+    };
 
     page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
 }
