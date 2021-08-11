@@ -27,7 +27,7 @@ impl Selectors {
     }
 }
 
-pub fn init() {
+pub(super) fn init() {
     init_gdt();
     lgdt();
     load_segments();

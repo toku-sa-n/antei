@@ -3,8 +3,8 @@
 
 extern crate rlibc as _;
 
-pub mod gdt;
-pub mod idt;
+mod gdt;
+mod idt;
 
 use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 
@@ -42,12 +42,12 @@ fn panic(i: &PanicInfo<'_>) -> ! {
 }
 
 #[cfg(test_on_qemu)]
-pub fn exit_panic() -> ! {
+fn exit_panic() -> ! {
     qemu::exit_failure();
 }
 
 #[cfg(not(test_on_qemu))]
-pub fn exit_panic() -> ! {
+fn exit_panic() -> ! {
     loop {
         x86_64::instructions::hlt();
     }
