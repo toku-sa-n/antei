@@ -1,14 +1,10 @@
-use conquer_once::spin::OnceCell;
-use x86_64::instructions::segmentation::Segment;
-use x86_64::instructions::segmentation::CS;
-use x86_64::instructions::segmentation::DS;
-use x86_64::instructions::segmentation::ES;
-use x86_64::instructions::segmentation::FS;
-use x86_64::instructions::segmentation::GS;
-use x86_64::instructions::segmentation::SS;
-use x86_64::structures::gdt::Descriptor;
-use x86_64::structures::gdt::GlobalDescriptorTable;
-use x86_64::structures::gdt::SegmentSelector;
+use {
+    conquer_once::spin::OnceCell,
+    x86_64::{
+        instructions::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+        structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
+    },
+};
 
 static GDT: OnceCell<GlobalDescriptorTable> = OnceCell::uninit();
 
