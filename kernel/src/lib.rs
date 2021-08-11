@@ -5,12 +5,15 @@ extern crate rlibc as _;
 
 mod gdt;
 mod idt;
+mod log;
 
 use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 
 pub fn init(boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
     boot_info.validate();
+
+    log::init();
 
     // SAFETY: The recursive address is accessible and there are no references to the current
     // working PML4.
