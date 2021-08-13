@@ -6,6 +6,7 @@ extern crate rlibc as _;
 mod gdt;
 mod idt;
 mod log;
+mod timer;
 
 use {boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println};
 
@@ -23,6 +24,12 @@ pub fn init(boot_info: BootInfo) {
 
     gdt::init();
     idt::init();
+
+    // SAFETY: `boot_info.rsdp()` returns the address of RSDP that is fetched from the
+    // configuration table of UEFI's system table.
+    unsafe {
+        timer::init(boot_info.rsdp());
+    }
 }
 
 #[cfg(test_on_qemu)]

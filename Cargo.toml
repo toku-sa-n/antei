@@ -2,12 +2,15 @@
 members = [
     "bootx64",
     "kernel",
+    "libs/acpi",
+    "libs/apic",
     "libs/boot_info",
     "libs/debug",
     "libs/frame_allocator",
     "libs/kernel_mem",
     "libs/predefined_mmap",
     "libs/qemu",
+    "libs/r_acpi",
     "libs/uefi",
 ]
 

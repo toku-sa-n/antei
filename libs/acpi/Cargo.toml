@@ -1,0 +1,12 @@
+[package]
+name = "acpi"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+accessor = "0.3.0"
+bit_field = "0.10.1"
+log = "0.4.14"
+r_acpi = { path = "../r_acpi" }
+x86_64 = { version = "0.14.4", default-features = false }

@@ -49,6 +49,11 @@ impl BootInfo {
         &self.mmap
     }
 
+    #[must_use]
+    pub fn rsdp(&self) -> PhysAddr {
+        self.rsdp
+    }
+
     fn check_header_and_footer(&self) {
         self.check_header();
         self.check_footer();

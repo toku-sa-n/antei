@@ -17,6 +17,7 @@ test = false
 
 [dependencies]
 accessor = "0.3.0"
+acpi = { path = "../libs/acpi" }
 aligned_ptr = "0.1.0"
 boot_info = { path = "../libs/boot_info" }
 conquer-once = { version = "0.3.2", default-features = false }
@@ -31,6 +32,7 @@ uefi = { path = "../libs/uefi" }
 x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
 kernel_mem = { path = "../libs/kernel_mem" }
 log = "0.4.14"
+apic = { path = "../libs/apic" }
 
 [build-dependencies]
 cfg_aliases = "0.1.1"
