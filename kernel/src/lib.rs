@@ -25,6 +25,8 @@ pub fn init(boot_info: BootInfo) {
     gdt::init();
     idt::init();
 
+    pic::init();
+
     // SAFETY: `boot_info.rsdp()` returns the address of RSDP that is fetched from the
     // configuration table of UEFI's system table.
     unsafe {
