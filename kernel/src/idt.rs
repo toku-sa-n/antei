@@ -1,6 +1,26 @@
-use {conquer_once::spin::Lazy, x86_64::structures::idt::InterruptDescriptorTable};
+use core::convert::TryInto;
 
-static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(InterruptDescriptorTable::new);
+use {
+    conquer_once::spin::Lazy,
+    x86_64::{structures::idt::InterruptDescriptorTable, VirtAddr},
+};
+
+static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
+    extern "sysv64" {
+        fn asm_interrupt_handler_0x20();
+    }
+
+    let mut idt = InterruptDescriptorTable::new();
+
+    // SAFETY: The address is correct.
+    unsafe {
+        idt[0x20].set_handler_addr(VirtAddr::new(
+            (asm_interrupt_handler_0x20 as usize).try_into().unwrap(),
+        ));
+    }
+
+    idt
+});
 
 pub(super) fn init() {
     IDT.load();
