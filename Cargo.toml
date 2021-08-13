@@ -8,6 +8,7 @@ members = [
     "libs/debug",
     "libs/frame_allocator",
     "libs/kernel_mem",
+    "libs/pic",
     "libs/predefined_mmap",
     "libs/qemu",
     "libs/r_acpi",

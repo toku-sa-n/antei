@@ -33,6 +33,7 @@ x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], defa
 kernel_mem = { path = "../libs/kernel_mem" }
 log = "0.4.14"
 apic = { path = "../libs/apic" }
+pic = { path = "../libs/pic" }
 
 [build-dependencies]
 cfg_aliases = "0.1.1"
