@@ -6,4 +6,6 @@ fn main() {
             feature = "test_on_qemu"
         },
     }
+
+    cc::Build::new().file("src/asm.s").compile("asm");
 }
