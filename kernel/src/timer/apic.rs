@@ -7,7 +7,7 @@ use {
         CURRENT_COUNT, DIVIDE_CONFIGURATION, INITIAL_COUNT, LVT_TIMER,
     },
     core::convert::TryInto,
-    kernel_mem::accessor::single::{read_only, write_only},
+    vm::accessor::single::{read_only, write_only},
     x86_64::PhysAddr,
 };
 

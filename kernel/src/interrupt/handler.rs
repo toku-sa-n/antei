@@ -1,4 +1,4 @@
-use {apic::local::EOI, kernel_mem::accessor::single::write_only, log::info};
+use {apic::local::EOI, log::info, vm::accessor::single::write_only};
 
 #[no_mangle]
 fn interrupt_handler_0x20() {

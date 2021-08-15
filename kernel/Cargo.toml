@@ -6,7 +6,7 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [features]
-test_on_qemu = ["qemu", "kernel_mem/test_on_qemu"]
+test_on_qemu = ["qemu", "vm/test_on_qemu"]
 
 [[bin]]
 name = "kernel"
@@ -30,7 +30,7 @@ rlibc = "1.0.0"
 spinning_top = "0.2.4"
 uefi = { path = "../libs/uefi" }
 x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
-kernel_mem = { path = "../libs/kernel_mem" }
+vm = { path = "../libs/vm" }
 log = "0.4.14"
 apic = { path = "../libs/apic" }
 pic = { path = "../libs/pic" }
