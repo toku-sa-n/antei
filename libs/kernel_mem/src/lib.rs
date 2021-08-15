@@ -2,10 +2,12 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
 pub mod accessor;
+mod map;
 mod phys;
-mod virt;
 
 use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};
+
+pub use map::{map, unmap};
 
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
@@ -19,6 +21,6 @@ pub unsafe fn init(mmap: &[MemoryDescriptor]) {
 
     // SAFETY: The caller must uphold the safety requirements.
     unsafe {
-        virt::init();
+        map::init();
     }
 }

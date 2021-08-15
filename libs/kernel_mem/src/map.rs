@@ -4,17 +4,34 @@ use {
     aligned_ptr::ptr,
     conquer_once::spin::OnceCell,
     core::convert::{TryFrom, TryInto},
+    os_units::Bytes,
     spinning_top::{MappedSpinlockGuard, Spinlock, SpinlockGuard},
     x86_64::{
         structures::paging::{
-            frame::PhysFrameRange, page::PageRange, Mapper, Page, PageTable, PageTableFlags,
-            PhysFrame, RecursivePageTable, Translate,
+            frame::PhysFrameRange, page::PageRange, Mapper, Page, PageSize, PageTable,
+            PageTableFlags, PhysFrame, RecursivePageTable, Size4KiB, Translate,
         },
-        VirtAddr,
+        PhysAddr, VirtAddr,
     },
 };
 
 static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
+
+#[must_use]
+/// # Safety
+///
+/// Refer to [`Mapper::map_to`].
+pub unsafe fn map(p: PhysAddr, b: Bytes) -> VirtAddr {
+    let frame_range = to_frame_range(p, b.as_num_of_pages());
+
+    let page_range = unsafe { map_frame_range(frame_range) };
+
+    page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
+}
+
+pub fn unmap(v: VirtAddr, b: Bytes) {
+    unmap_range(to_page_range(v, b.as_num_of_pages()));
+}
 
 /// # Safety
 ///
@@ -33,7 +50,15 @@ pub(super) unsafe fn init() {
     tests::main();
 }
 
-pub(super) unsafe fn map_frame_range_from_page_range(
+pub(super) unsafe fn map_frame_range(frame_range: PhysFrameRange) -> PageRange {
+    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range) }
+}
+
+pub(super) fn unmap_range(page_range: PageRange) {
+    page_range.into_iter().for_each(unmap_page);
+}
+
+unsafe fn map_frame_range_from_page_range(
     page_range: PageRange,
     frame_range: PhysFrameRange,
 ) -> PageRange {
@@ -41,10 +66,6 @@ pub(super) unsafe fn map_frame_range_from_page_range(
         try_map_frame_range_from_page_range(page_range, frame_range)
             .expect("Failed to map the physical frame range.")
     }
-}
-
-pub(super) fn unmap_range(page_range: PageRange) {
-    page_range.into_iter().for_each(unmap);
 }
 
 /// # Safety
@@ -102,12 +123,12 @@ unsafe fn try_map_frame_range_from_page_range(
 unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
     for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
         unsafe {
-            map(p, f);
+            map_page(p, f);
         }
     }
 }
 
-unsafe fn map(page: Page, frame: PhysFrame) {
+unsafe fn map_page(page: Page, frame: PhysFrame) {
     let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
     let f = unsafe { mapper().map_to(page, frame, flags, &mut *phys::frame_allocator()) };
@@ -116,7 +137,7 @@ unsafe fn map(page: Page, frame: PhysFrame) {
     f.flush();
 }
 
-fn unmap(page: Page) {
+fn unmap_page(page: Page) {
     let r = mapper().unmap(page);
 
     let (_, f) = r.expect("Failed to unmap a page.");
@@ -152,6 +173,26 @@ fn find_unused_page_range_from_range(n: NumOfPages, range: PageRange) -> Option<
     None
 }
 
+fn to_frame_range<S: PageSize>(p: PhysAddr, n: NumOfPages<S>) -> PhysFrameRange<S> {
+    let start = PhysFrame::containing_address(p);
+
+    let end = p + u64::try_from(n.as_bytes().as_usize()).unwrap();
+    let end = end.align_up(S::SIZE);
+    let end = PhysFrame::containing_address(end);
+
+    PhysFrameRange { start, end }
+}
+
+fn to_page_range<S: PageSize>(v: VirtAddr, n: NumOfPages<S>) -> PageRange<S> {
+    let start = Page::containing_address(v);
+
+    let end = v + u64::try_from(n.as_bytes().as_usize()).unwrap();
+    let end = end.align_up(S::SIZE);
+    let end = Page::containing_address(end);
+
+    PageRange { start, end }
+}
+
 fn page_available(p: Page) -> bool {
     addr_available(p.start_address())
 }
@@ -163,26 +204,21 @@ fn addr_available(a: VirtAddr) -> bool {
 #[cfg(test_on_qemu)]
 mod tests {
     use {
-        super::{
-            map, map_frame_range_from_page_range, map_range, mapper, phys, pml4,
-            try_map_frame_range_from_page_range, unmap, unmap_range,
-        },
+        super::{map, mapper, phys, pml4, unmap},
         crate::NumOfPages,
-        core::convert::TryInto,
+        os_units::Bytes,
         x86_64::{
             registers::control::Cr3,
-            structures::paging::{FrameAllocator, Translate},
-            VirtAddr,
+            structures::paging::{Size4KiB, Translate},
+            PhysAddr, VirtAddr,
         },
     };
 
     pub(super) fn main() {
         user_region_is_not_mapped();
         cr3_indicates_correct_pml4();
-        map_and_unmap();
-        map_and_unmap_range();
-        map_frame_range_from_page_range_and_unmap();
-        map_frame_range_from_page_range_fail();
+        map_and_unmap_page_aligned();
+        map_and_unmap_over_page_boundary();
     }
 
     fn user_region_is_not_mapped() {
@@ -205,81 +241,34 @@ mod tests {
         assert_eq!(current_pml4_addr, expected_pml4_addr);
     }
 
-    fn map_and_unmap() {
-        let frame = phys::frame_allocator().allocate_frame().unwrap();
+    fn map_and_unmap_page_aligned() {
+        test_map_and_unmap(Bytes::zero(), Bytes::new(4));
+    }
 
-        let page = predefined_mmap::for_testing().start;
-
-        unsafe {
-            map(page, frame);
-        }
-
-        assert_eq!(
-            mapper().translate_addr(page.start_address()),
-            Some(frame.start_address())
+    fn map_and_unmap_over_page_boundary() {
+        test_map_and_unmap(
+            NumOfPages::<Size4KiB>::new(1).as_bytes() - Bytes::new(4),
+            Bytes::new(8),
         );
-
-        unmap(page);
-
-        assert_eq!(mapper().translate_addr(page.start_address()), None);
     }
 
-    fn map_and_unmap_range() {
-        let pages = predefined_mmap::for_testing();
+    fn test_map_and_unmap(offset: Bytes, map_size: Bytes) {
+        let frame = phys::frame_allocator()
+            .alloc((offset + map_size).as_num_of_pages())
+            .unwrap();
 
-        let num = pages.end - pages.start;
-        let num = NumOfPages::new(num.try_into().unwrap());
+        let phys = frame.start.start_address() + offset;
 
-        let frames = phys::frame_allocator().alloc(num).unwrap();
+        let virt = unsafe { map(phys, map_size) };
 
-        unsafe {
-            map_range(pages, frames);
-        }
+        assert_eq!(translate(virt), Some(phys));
 
-        for (p, f) in pages.into_iter().zip(frames.into_iter()) {
-            assert_eq!(
-                mapper().translate_addr(p.start_address()),
-                Some(f.start_address())
-            );
-        }
+        unmap(virt, map_size);
 
-        unmap_range(pages);
-
-        for p in pages {
-            assert_eq!(mapper().translate_addr(p.start_address()), None);
-        }
+        assert_eq!(translate(virt), None);
     }
 
-    fn map_frame_range_from_page_range_and_unmap() {
-        let pages = predefined_mmap::for_testing();
-
-        let num = pages.end - pages.start;
-        let num = NumOfPages::new(num.try_into().unwrap());
-
-        let frames = phys::frame_allocator().alloc(num).unwrap();
-
-        let allocated_pages = unsafe { map_frame_range_from_page_range(pages, frames) };
-
-        assert_eq!(allocated_pages, pages);
-
-        for (p, f) in pages.into_iter().zip(frames.into_iter()) {
-            assert_eq!(
-                mapper().translate_addr(p.start_address()),
-                Some(f.start_address())
-            );
-        }
-
-        unmap_range(pages);
-    }
-
-    fn map_frame_range_from_page_range_fail() {
-        let pages = predefined_mmap::for_testing();
-
-        let num = pages.end - pages.start + 1;
-        let num = NumOfPages::new(num.try_into().unwrap());
-
-        let frames = phys::frame_allocator().alloc(num).unwrap();
-
-        assert!(unsafe { try_map_frame_range_from_page_range(pages, frames).is_none() });
+    fn translate(v: VirtAddr) -> Option<PhysAddr> {
+        mapper().translate_addr(v)
     }
 }
