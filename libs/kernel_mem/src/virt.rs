@@ -10,7 +10,7 @@ use {
             frame::PhysFrameRange, page::PageRange, Mapper, Page, PageTable, PageTableFlags,
             PhysFrame, RecursivePageTable, Translate,
         },
-        PhysAddr, VirtAddr,
+        VirtAddr,
     },
 };
 
@@ -45,11 +45,6 @@ pub(super) unsafe fn map_frame_range_from_page_range(
 
 pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap);
-}
-
-#[allow(unused)]
-pub(super) fn translate(v: VirtAddr) -> Option<PhysAddr> {
-    mapper().translate_addr(v)
 }
 
 /// # Safety
