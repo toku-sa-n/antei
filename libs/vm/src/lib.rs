@@ -2,6 +2,7 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
 pub mod accessor;
+mod heap;
 mod map;
 mod phys;
 
@@ -23,4 +24,6 @@ pub unsafe fn init(mmap: &[MemoryDescriptor]) {
     unsafe {
         map::init();
     }
+
+    heap::init();
 }
