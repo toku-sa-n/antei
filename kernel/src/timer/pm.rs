@@ -2,7 +2,7 @@ use {
     super::GenericAddressStructure,
     acpi::fadt::PmTimer,
     core::convert::TryInto,
-    kernel_mem::accessor::{
+    vm::accessor::{
         single::{read_only, ReadOnly},
         Mapper,
     },

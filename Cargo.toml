@@ -7,12 +7,12 @@ members = [
     "libs/boot_info",
     "libs/debug",
     "libs/frame_allocator",
-    "libs/kernel_mem",
     "libs/pic",
     "libs/predefined_mmap",
     "libs/qemu",
     "libs/r_acpi",
     "libs/uefi",
+    "libs/vm",
 ]
 
 [profile.dev]
