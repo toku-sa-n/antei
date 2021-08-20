@@ -7,13 +7,17 @@ use {
 
 static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     extern "sysv64" {
+        fn asm_interrupt_handler_0x0e();
         fn asm_interrupt_handler_0x20();
     }
 
     let mut idt = InterruptDescriptorTable::new();
 
-    // SAFETY: The address is correct.
+    // SAFETY: The addresses are correct.
     unsafe {
+        idt.page_fault.set_handler_addr(VirtAddr::new(
+            (asm_interrupt_handler_0x0e as usize).try_into().unwrap(),
+        ));
         idt[0x20].set_handler_addr(VirtAddr::new(
             (asm_interrupt_handler_0x20 as usize).try_into().unwrap(),
         ));
