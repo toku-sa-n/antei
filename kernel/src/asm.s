@@ -73,4 +73,5 @@ asm_interrupt_handler_\vector:
     iretq
 .endm
 
+    handler 0x0e
     handler 0x20
