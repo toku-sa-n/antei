@@ -2,10 +2,11 @@
     .code64
     .intel_syntax noprefix
 
-    .extern interrupt_handler_0x20
 
-    .global asm_interrupt_handler_0x20
-asm_interrupt_handler_0x20:
+    .macro handler vector
+    .extern interrupt_handler_\vector
+    .global asm_interrupt_handler_\vector
+asm_interrupt_handler_\vector:
     push rbp
     mov rbp, rsp
 
@@ -37,7 +38,7 @@ asm_interrupt_handler_0x20:
     movdqu [rsp+16*14], xmm14
     movdqu [rsp+16*15], xmm15
 
-    call interrupt_handler_0x20
+    call interrupt_handler_\vector
 
     movdqu xmm15, [rsp+16*15]
     movdqu xmm14, [rsp+16*14]
@@ -70,3 +71,6 @@ asm_interrupt_handler_0x20:
     pop rbp
 
     iretq
+.endm
+
+    handler 0x20
