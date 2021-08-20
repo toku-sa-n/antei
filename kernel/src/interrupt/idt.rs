@@ -22,7 +22,7 @@ static IDT: Lazy<InterruptDescriptorTable> = Lazy::new(|| {
     idt
 });
 
-pub(super) fn init() {
+pub(crate) fn init() {
     IDT.load();
 
     #[cfg(test_on_qemu)]

@@ -4,13 +4,12 @@
 extern crate rlibc as _;
 
 mod gdt;
-mod idt;
 mod interrupt;
 mod log;
 mod timer;
 
 use {
-    boot_info::BootInfo, core::panic::PanicInfo, qemu_print::qemu_println,
+    boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt, qemu_print::qemu_println,
     x86_64::instructions::interrupts,
 };
 
