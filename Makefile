@@ -28,6 +28,17 @@ KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
+VM_SERVER_DIR	=	servers/vm_server
+VM_SERVER_SRCS	=	$(shell find $(VM_SERVER_DIR) -name *.rs)
+VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/Cargo.toml
+VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/.cargo/config.toml
+VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/vm_server.ld
+VM_SERVER_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/vm_server
+VM_SERVER	=	$(BUILD_DIR)/vm_server
+
+INITRD_CONTENTS	=	vm_server
+INITRD	=	$(BUILD_DIR)/initrd.cpio
+
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
 QEMU	=	qemu-system-x86_64
@@ -42,12 +53,13 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 
 all: $(ISO_FILE)
 
-$(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
+$(ISO_FILE): $(KERNEL) $(INITRD) $(BOOTX64)|$(BUILD_DIR)
 	dd if=/dev/zero of=$@ count=65536
 	mformat -i $@ -h 200 -t 500 -s 144::
 	mmd -i $@ ::/efi
 	mmd -i $@ ::/efi/boot
 	mcopy -i $@ $(KERNEL) ::/
+	mcopy -i $@ $(INITRD) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
 # Do not add a target like $(KERNEL_IN_TARGET).
@@ -61,6 +73,13 @@ $(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
 $(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
+
+$(INITRD): $(VM_SERVER)|$(BUILD_DIR)
+	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
+
+$(VM_SERVER): $(VM_SERVER_SRCS)|$(BUILD_DIR)
+	(cd $(VM_SERVER_DIR) && cargo build $(RUSTFLAGS))
+	cp $(VM_SERVER_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@
