@@ -125,9 +125,12 @@ impl ElfLoader for Loader<'_> {
 
         let n = bytes.as_num_of_pages();
 
+        let range = page_range_from_start_and_num(base, n);
+        let range = range.expect("Address is not aligned.");
+
         unsafe {
             self.mapper
-                .update_flags_for_range(base, n, PageTableFlags::PRESENT);
+                .update_flags_for_range(range, PageTableFlags::PRESENT);
         }
         Ok(())
     }
