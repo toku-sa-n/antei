@@ -40,6 +40,11 @@ pub fn for_testing() -> PageRange {
     next_to(kernel_dma(), NumOfPages::new(16))
 }
 
+#[must_use]
+pub fn initrd() -> PageRange {
+    next_to(for_testing(), NumOfPages::new(4))
+}
+
 fn next_to<S: PageSize>(range: PageRange<S>, n: NumOfPages<S>) -> PageRange<S> {
     let start = range.end;
 
