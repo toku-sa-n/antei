@@ -21,10 +21,10 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 ///
 /// Refer to [`Mapper::map_to`].
 #[must_use]
-pub unsafe fn map(p: PhysAddr, b: Bytes) -> VirtAddr {
+pub unsafe fn map(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
     let frame_range = to_frame_range(p, b.as_num_of_pages());
 
-    let page_range = unsafe { map_frame_range(frame_range) };
+    let page_range = unsafe { map_frame_range(frame_range, flags) };
 
     page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
 }
@@ -50,8 +50,11 @@ pub(super) unsafe fn init() {
     tests::main();
 }
 
-pub(super) unsafe fn map_frame_range(frame_range: PhysFrameRange) -> PageRange {
-    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range) }
+pub(super) unsafe fn map_frame_range(
+    frame_range: PhysFrameRange,
+    flags: PageTableFlags,
+) -> PageRange {
+    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range, flags) }
 }
 
 pub(super) fn unmap_range(page_range: PageRange) {
@@ -61,9 +64,10 @@ pub(super) fn unmap_range(page_range: PageRange) {
 unsafe fn map_frame_range_from_page_range(
     page_range: PageRange,
     frame_range: PhysFrameRange,
+    flags: PageTableFlags,
 ) -> PageRange {
     unsafe {
-        try_map_frame_range_from_page_range(page_range, frame_range)
+        try_map_frame_range_from_page_range(page_range, frame_range, flags)
             .expect("Failed to map the physical frame range.")
     }
 }
@@ -108,29 +112,28 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 unsafe fn try_map_frame_range_from_page_range(
     page_range: PageRange,
     frame_range: PhysFrameRange,
+    flags: PageTableFlags,
 ) -> Option<PageRange> {
     let n = frame_range.end - frame_range.start;
     let n = NumOfPages::new(n.try_into().unwrap());
 
     find_unused_page_range_from_range(n, page_range).map(|page_range| {
         unsafe {
-            map_range(page_range, frame_range);
+            map_range(page_range, frame_range, flags);
         }
         page_range
     })
 }
 
-unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
+unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange, flags: PageTableFlags) {
     for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
         unsafe {
-            map_page(p, f);
+            map_page(p, f, flags);
         }
     }
 }
 
-unsafe fn map_page(page: Page, frame: PhysFrame) {
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
+unsafe fn map_page(page: Page, frame: PhysFrame, flags: PageTableFlags) {
     let f = unsafe { mapper().map_to(page, frame, flags, &mut *phys::frame_allocator()) };
     let f = f.expect("Failed to map a page.");
 
@@ -209,7 +212,7 @@ mod tests {
         os_units::Bytes,
         x86_64::{
             registers::control::Cr3,
-            structures::paging::{Size4KiB, Translate},
+            structures::paging::{PageTableFlags, Size4KiB, Translate},
             PhysAddr, VirtAddr,
         },
     };
@@ -259,7 +262,9 @@ mod tests {
 
         let phys = frame.start.start_address() + offset;
 
-        let virt = unsafe { map(phys, map_size) };
+        let flags = PageTableFlags::PRESENT;
+
+        let virt = unsafe { map(phys, map_size, flags) };
 
         assert_eq!(translate(virt), Some(phys));
 
