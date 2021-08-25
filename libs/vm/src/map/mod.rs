@@ -15,6 +15,8 @@ use {
     },
 };
 
+pub(super) mod elf;
+
 static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 
 /// # Safety
@@ -59,6 +61,23 @@ pub(super) unsafe fn map_frame_range(
 
 pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap_page);
+}
+
+unsafe fn map_page_range_to_unused_frame_range(page_range: PageRange, flags: PageTableFlags) {
+    let frame_range = phys::frame_allocator().alloc(num_of_page_in_range(page_range));
+    let frame_range = frame_range.expect("Frame not available.");
+
+    unsafe {
+        map_range(page_range, frame_range, flags);
+    }
+}
+
+unsafe fn update_flags_for_range(page_range: PageRange, flags: PageTableFlags) {
+    for page in page_range {
+        unsafe {
+            update_flags(page, flags);
+        }
+    }
 }
 
 unsafe fn map_frame_range_from_page_range(
@@ -148,6 +167,13 @@ fn unmap_page(page: Page) {
     f.flush();
 }
 
+unsafe fn update_flags(page: Page, flags: PageTableFlags) {
+    let f = unsafe { mapper().update_flags(page, flags) };
+    let f = f.expect("Failed to update page table flags.");
+
+    f.flush();
+}
+
 fn find_unused_page_range_from_range(n: NumOfPages, range: PageRange) -> Option<PageRange> {
     let mut cnt = 0;
     let mut start = None;
@@ -202,6 +228,12 @@ fn page_available(p: Page) -> bool {
 
 fn addr_available(a: VirtAddr) -> bool {
     mapper().translate_addr(a).is_none() && !a.is_null()
+}
+
+fn num_of_page_in_range<S: PageSize>(page_range: PageRange<S>) -> NumOfPages<S> {
+    let n = page_range.end - page_range.start;
+
+    NumOfPages::new(n.try_into().unwrap())
 }
 
 #[cfg(test_on_qemu)]
