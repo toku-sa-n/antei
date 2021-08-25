@@ -1,4 +1,5 @@
 [build]
 rustflags = [
     "-C", "link-args=-T servers/init/init.ld",
+    "-C", "relocation-model=static",
 ]
