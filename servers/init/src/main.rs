@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-extern crate vm_server as _;
+extern crate init as _;
 
 #[no_mangle]
 fn main() -> ! {
