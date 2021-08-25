@@ -5,7 +5,7 @@ use {
     super::{map, unmap},
     core::{convert::TryInto, num::NonZeroUsize},
     os_units::Bytes,
-    x86_64::{PhysAddr, VirtAddr},
+    x86_64::{structures::paging::PageTableFlags, PhysAddr, VirtAddr},
 };
 
 #[derive(Copy, Clone, Debug)]
@@ -16,7 +16,9 @@ impl accessor::Mapper for Mapper {
 
         let b = Bytes::new(bytes);
 
-        let v = unsafe { map(p, b) };
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+
+        let v = unsafe { map(p, b, flags) };
 
         NonZeroUsize::new(v.as_u64().try_into().unwrap()).unwrap()
     }
