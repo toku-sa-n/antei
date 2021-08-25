@@ -13,8 +13,8 @@ use {
     x86_64::{PhysAddr, VirtAddr},
 };
 
-const MAGIC_HEADER: u64 = 0x0114_0514_1919_0810;
-const MAGIC_FOOTER: u64 = 0x0334_0072_dead_cafe;
+const MAGIC_HEADER: u64 = 0x616e_6465_7374_6572;
+const MAGIC_FOOTER: u64 = 0x6d65_6e79_616e_7961;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
