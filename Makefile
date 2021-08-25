@@ -28,15 +28,15 @@ KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
-VM_SERVER_DIR	=	servers/vm_server
-VM_SERVER_SRCS	=	$(shell find $(VM_SERVER_DIR) -name *.rs)
-VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/Cargo.toml
-VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/.cargo/config.toml
-VM_SERVER_SRCS	+=	$(VM_SERVER_DIR)/vm_server.ld
-VM_SERVER_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/vm_server
-VM_SERVER	=	$(BUILD_DIR)/vm_server
+INIT_DIR	=	servers/init
+INIT_SRCS	=	$(shell find $(INIT_DIR) -name *.rs)
+INIT_SRCS	+=	$(INIT_DIR)/Cargo.toml
+INIT_SRCS	+=	$(INIT_DIR)/.cargo/config.toml
+INIT_SRCS	+=	$(INIT_DIR)/init.ld
+INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
+INIT	=	$(BUILD_DIR)/init
 
-INITRD_CONTENTS	=	vm_server
+INITRD_CONTENTS	=	init
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
@@ -74,12 +74,12 @@ $(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
-$(INITRD): $(VM_SERVER)|$(BUILD_DIR)
+$(INITRD): $(INIT)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
 
-$(VM_SERVER): $(VM_SERVER_SRCS)|$(BUILD_DIR)
-	(cd $(VM_SERVER_DIR) && cargo build $(RUSTFLAGS))
-	cp $(VM_SERVER_IN_TARGET) $@
+$(INIT): $(INIT_SRCS)|$(BUILD_DIR)
+	(cd $(INIT_DIR) && cargo build $(RUSTFLAGS))
+	cp $(INIT_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@
