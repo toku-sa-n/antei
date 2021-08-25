@@ -17,10 +17,10 @@ use {
 
 static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 
-#[must_use]
 /// # Safety
 ///
 /// Refer to [`Mapper::map_to`].
+#[must_use]
 pub unsafe fn map(p: PhysAddr, b: Bytes) -> VirtAddr {
     let frame_range = to_frame_range(p, b.as_num_of_pages());
 
