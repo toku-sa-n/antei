@@ -3,22 +3,7 @@
     .intel_syntax noprefix
 
 
-    .macro handler vector
-    .extern interrupt_handler_\vector
-    .global asm_interrupt_handler_\vector
-asm_interrupt_handler_\vector:
-    push rbp
-    mov rbp, rsp
-
-    push rax
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
+    .macro pushxmm
 
     sub rsp, 16*16
     movdqu [rsp+16*0], xmm0
@@ -38,7 +23,9 @@ asm_interrupt_handler_\vector:
     movdqu [rsp+16*14], xmm14
     movdqu [rsp+16*15], xmm15
 
-    call interrupt_handler_\vector
+    .endm
+
+    .macro popxmm
 
     movdqu xmm15, [rsp+16*15]
     movdqu xmm14, [rsp+16*14]
@@ -57,6 +44,31 @@ asm_interrupt_handler_\vector:
     movdqu xmm1, [rsp+16*1]
     movdqu xmm0, [rsp+16*0]
     add rsp, 16*16
+
+    .endm
+
+    .macro handler vector
+    .extern interrupt_handler_\vector
+    .global asm_interrupt_handler_\vector
+asm_interrupt_handler_\vector:
+    push rbp
+    mov rbp, rsp
+
+    push rax
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+
+    pushxmm
+
+    call interrupt_handler_\vector
+
+    popxmm
 
     pop r11
     pop r10
