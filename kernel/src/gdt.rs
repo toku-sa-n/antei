@@ -10,15 +10,32 @@ static GDT: OnceCell<GlobalDescriptorTable> = OnceCell::uninit();
 
 static SELECTORS: OnceCell<Selectors> = OnceCell::uninit();
 
+pub(crate) fn user_code() -> SegmentSelector {
+    selectors().user_code
+}
+
+pub(crate) fn user_data() -> SegmentSelector {
+    selectors().user_data
+}
+
 struct Selectors {
     kernel_code: SegmentSelector,
     kernel_data: SegmentSelector,
+    user_code: SegmentSelector,
+    user_data: SegmentSelector,
 }
 impl Selectors {
-    fn new(kernel_code: SegmentSelector, kernel_data: SegmentSelector) -> Self {
+    fn new(
+        kernel_code: SegmentSelector,
+        kernel_data: SegmentSelector,
+        user_code: SegmentSelector,
+        user_data: SegmentSelector,
+    ) -> Self {
         Self {
             kernel_code,
             kernel_data,
+            user_code,
+            user_data,
         }
     }
 }
@@ -38,10 +55,15 @@ fn init_gdt() {
 
         let kernel_code = gdt.add_entry(Descriptor::kernel_code_segment());
         let kernel_data = gdt.add_entry(Descriptor::kernel_data_segment());
-        gdt.add_entry(Descriptor::user_data_segment());
-        gdt.add_entry(Descriptor::user_code_segment());
+        let user_data = gdt.add_entry(Descriptor::user_data_segment());
+        let user_code = gdt.add_entry(Descriptor::user_code_segment());
 
-        init_selectors(Selectors::new(kernel_code, kernel_data));
+        init_selectors(Selectors::new(
+            kernel_code,
+            kernel_data,
+            user_code,
+            user_data,
+        ));
 
         gdt
     });

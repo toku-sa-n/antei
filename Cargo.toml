@@ -21,3 +21,6 @@ panic = "abort"
 
 [profile.release]
 panic = "abort"
+
+[patch.crates-io]
+x86_64 = { git = "https://github.com/toku-sa-n/x86_64", branch = "flush_new" }

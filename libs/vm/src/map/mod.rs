@@ -35,6 +35,19 @@ pub fn unmap(v: VirtAddr, b: Bytes) {
     unmap_range(to_page_range(v, b.as_num_of_pages()));
 }
 
+pub fn copy_current_pml4() -> PageTable {
+    pml4().clone()
+}
+
+pub unsafe fn map_page_range_to_unused_frame_range(page_range: PageRange, flags: PageTableFlags) {
+    let frame_range = phys::frame_allocator().alloc(num_of_page_in_range(page_range));
+    let frame_range = frame_range.expect("Frame not available.");
+
+    unsafe {
+        map_range(page_range, frame_range, flags);
+    }
+}
+
 /// # Safety
 ///
 /// Hereafter,
@@ -61,15 +74,6 @@ pub(super) unsafe fn map_frame_range(
 
 pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap_page);
-}
-
-unsafe fn map_page_range_to_unused_frame_range(page_range: PageRange, flags: PageTableFlags) {
-    let frame_range = phys::frame_allocator().alloc(num_of_page_in_range(page_range));
-    let frame_range = frame_range.expect("Frame not available.");
-
-    unsafe {
-        map_range(page_range, frame_range, flags);
-    }
 }
 
 unsafe fn update_flags_for_range(page_range: PageRange, flags: PageTableFlags) {

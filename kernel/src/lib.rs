@@ -4,8 +4,10 @@
 extern crate rlibc as _;
 
 mod gdt;
+mod initrd;
 mod interrupt;
 mod log;
+mod process;
 mod timer;
 
 use {
