@@ -21,7 +21,7 @@ asm_interrupt_handler_\vector:
     push r11
 
     sub rsp, 16*16
-    movdqu [rsp+16], xmm0
+    movdqu [rsp+16*0], xmm0
     movdqu [rsp+16*1], xmm1
     movdqu [rsp+16*2], xmm2
     movdqu [rsp+16*3], xmm3
@@ -55,7 +55,8 @@ asm_interrupt_handler_\vector:
     movdqu xmm3, [rsp+16*3]
     movdqu xmm2, [rsp+16*2]
     movdqu xmm1, [rsp+16*1]
-    movdqu xmm0, [rsp+16]
+    movdqu xmm0, [rsp+16*0]
+    add rsp, 16*16
 
     pop r11
     pop r10
