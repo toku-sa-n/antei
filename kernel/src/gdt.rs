@@ -1,7 +1,11 @@
 use {
+    crate::tss,
     conquer_once::spin::OnceCell,
     x86_64::{
-        instructions::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+        instructions::{
+            segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+            tables::load_tss,
+        },
         structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
     },
 };
@@ -13,19 +17,22 @@ static SELECTORS: OnceCell<Selectors> = OnceCell::uninit();
 struct Selectors {
     kernel_code: SegmentSelector,
     kernel_data: SegmentSelector,
+    user_code: SegmentSelector,
+    user_data: SegmentSelector,
+    tss: SegmentSelector,
 }
-impl Selectors {
-    fn new(kernel_code: SegmentSelector, kernel_data: SegmentSelector) -> Self {
-        Self {
-            kernel_code,
-            kernel_data,
-        }
-    }
+
+pub(super) fn user_code_selector() -> SegmentSelector {
+    selectors().user_code
+}
+
+pub(super) fn user_data_selector() -> SegmentSelector {
+    selectors().user_data
 }
 
 pub(super) fn init() {
     init_gdt();
-    lgdt();
+    load();
     load_segments();
 
     #[cfg(test_on_qemu)]
@@ -38,10 +45,17 @@ fn init_gdt() {
 
         let kernel_code = gdt.add_entry(Descriptor::kernel_code_segment());
         let kernel_data = gdt.add_entry(Descriptor::kernel_data_segment());
-        gdt.add_entry(Descriptor::user_data_segment());
-        gdt.add_entry(Descriptor::user_code_segment());
+        let user_data = gdt.add_entry(Descriptor::user_data_segment());
+        let user_code = gdt.add_entry(Descriptor::user_code_segment());
+        let tss = gdt.add_entry(Descriptor::tss_segment(unsafe { tss::as_ref() }));
 
-        init_selectors(Selectors::new(kernel_code, kernel_data));
+        init_selectors(Selectors {
+            kernel_code,
+            kernel_data,
+            user_code,
+            user_data,
+            tss,
+        });
 
         gdt
     });
@@ -53,8 +67,12 @@ fn init_selectors(selectors: Selectors) {
     r.expect("Failed to initialize `SELECTORS`.");
 }
 
-fn lgdt() {
+fn load() {
     gdt().load();
+
+    unsafe {
+        load_tss(selectors().tss);
+    }
 }
 
 fn load_segments() {

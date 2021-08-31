@@ -35,6 +35,29 @@ pub fn unmap(v: VirtAddr, b: Bytes) {
     unmap_range(to_page_range(v, b.as_num_of_pages()));
 }
 
+#[must_use]
+pub fn alloc_pages(n: NumOfPages, flags: PageTableFlags) -> Option<PageRange> {
+    let all_range = PageRange {
+        start: Page::containing_address(VirtAddr::zero()),
+        end: predefined_mmap::kernel().start,
+    };
+
+    let page_range = find_unused_page_range_from_range(n, all_range)?;
+
+    let frame_range = phys::frame_allocator().alloc(n)?;
+
+    unsafe {
+        map_range(page_range, frame_range, flags);
+    }
+
+    Some(page_range)
+}
+
+#[must_use]
+pub fn current_pml4() -> PageTable {
+    pml4().clone()
+}
+
 /// # Safety
 ///
 /// Hereafter,

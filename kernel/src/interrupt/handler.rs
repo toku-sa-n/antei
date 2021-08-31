@@ -1,4 +1,4 @@
-use {apic::local::EOI, log::info, vm::accessor::single::write_only};
+use {crate::process, apic::local::EOI, vm::accessor::single::write_only};
 
 #[no_mangle]
 fn interrupt_handler_0x0e() {
@@ -13,5 +13,5 @@ fn interrupt_handler_0x20() {
         write_only(EOI).write_volatile(0_u32);
     };
 
-    info!("Timer");
+    process::switch();
 }
