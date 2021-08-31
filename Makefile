@@ -36,7 +36,14 @@ INIT_SRCS	+=	$(INIT_DIR)/init.ld
 INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
 INIT	=	$(BUILD_DIR)/init
 
-INITRD_CONTENTS	=	init
+PM_DIR	=	servers/pm
+PM_SRCS	=	$(shell find $(PM_DIR) -name *.rs)
+PM_SRCS	+=	$(PM_DIR)/Cargo.toml
+PM_SRCS	+=	$(PM_DIR)/.cargo/config.toml
+PM_SRCS	+=	$(PM_DIR)/pm.ld
+PM_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/pm
+PM	=	$(BUILD_DIR)/pm
+
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
@@ -74,12 +81,16 @@ $(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
-$(INITRD): $(INIT)|$(BUILD_DIR)
-	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
+$(INITRD): $(INIT) $(PM)|$(BUILD_DIR)
+	cd $(BUILD_DIR) && (echo $(notdir $(INIT));echo $(notdir $(PM)))|cpio -o > $(notdir $@)
 
 $(INIT): $(INIT_SRCS)|$(BUILD_DIR)
 	(cd $(INIT_DIR) && cargo build $(RUSTFLAGS))
 	cp $(INIT_IN_TARGET) $@
+
+$(PM): $(PM_SRCS)|$(BUILD_DIR)
+	(cd $(PM_DIR) && cargo build $(RUSTFLAGS))
+	cp $(PM_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@

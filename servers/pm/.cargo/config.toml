@@ -1,0 +1,5 @@
+[build]
+rustflags = [
+    "-C", "link-args=-T servers/pm/pm.ld",
+    "-C", "relocation-model=static",
+]
