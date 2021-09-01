@@ -1,5 +1,9 @@
 ARCH	=	x86_64
 
+define cargo_project_src
+	$(shell find $1|grep -v $1/target)
+endef
+
 ifeq ($(RELEASE), 1)
 	RELEASE_OR_DEBUG	=	release
 	RUSTFLAGS	=	--release
@@ -14,25 +18,17 @@ else
 endif
 
 BOOTX64_DIR	=	bootx64
-BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
-BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
-BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
+BOOTX64_SRCS	=	$(call cargo_project_src, $(BOOTX64_DIR))
 BOOTX64_IN_TARGET	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 KERNEL_DIR	=	kernel
-KERNEL_SRCS	=	$(shell find $(KERNEL_DIR) -name *.rs)
-KERNEL_SRCS	+=	$(KERNEL_DIR)/Cargo.toml
-KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
-KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
+KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
 INIT_DIR	=	servers/init
-INIT_SRCS	=	$(shell find $(INIT_DIR) -name *.rs)
-INIT_SRCS	+=	$(INIT_DIR)/Cargo.toml
-INIT_SRCS	+=	$(INIT_DIR)/.cargo/config.toml
-INIT_SRCS	+=	$(INIT_DIR)/init.ld
+INIT_SRCS	=	$(call cargo_project_src, $(INIT_DIR))
 INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
 INIT	=	$(BUILD_DIR)/init
 
