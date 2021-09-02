@@ -36,8 +36,13 @@ pub fn kernel_dma() -> PageRange {
 }
 
 #[must_use]
+pub fn heap() -> PageRange {
+    next_to(kernel_dma(), NumOfPages::new(64))
+}
+
+#[must_use]
 pub fn for_testing() -> PageRange {
-    next_to(kernel_dma(), NumOfPages::new(16))
+    next_to(heap(), NumOfPages::new(16))
 }
 
 #[must_use]

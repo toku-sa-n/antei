@@ -2,15 +2,16 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
 pub mod accessor;
+mod heap;
 mod map;
 mod phys;
 
-use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};
-
 pub use {
+    heap::{alloc, dealloc},
     map::{alloc_pages, current_pml4, elf::map_elf, map, unmap},
     phys::frame_allocator,
 };
+use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};
 
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 
@@ -26,4 +27,6 @@ pub unsafe fn init(mmap: &[MemoryDescriptor]) {
     unsafe {
         map::init();
     }
+
+    heap::init();
 }

@@ -86,7 +86,10 @@ pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap_page);
 }
 
-unsafe fn map_page_range_to_unused_frame_range(page_range: PageRange, flags: PageTableFlags) {
+pub(super) unsafe fn map_page_range_to_unused_frame_range(
+    page_range: PageRange,
+    flags: PageTableFlags,
+) {
     let frame_range = phys::frame_allocator().alloc(num_of_page_in_range(page_range));
     let frame_range = frame_range.expect("Frame not available.");
 
