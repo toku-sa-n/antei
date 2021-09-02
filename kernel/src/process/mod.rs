@@ -4,7 +4,7 @@ use {
     core::{cell::UnsafeCell, convert::TryInto},
     os_units::NumOfPages,
     pid::Pid,
-    vm::accessor::single::write_only,
+    vm::{accessor::single::write_only, Kbox},
     x86_64::{
         registers::control::Cr3,
         structures::paging::{FrameAllocator, PageTableFlags, PhysFrame, Size4KiB},
@@ -31,14 +31,14 @@ pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
 
-    kernel_stack: UnsafeCell<[u8; 4096]>,
+    kernel_stack: Kbox<UnsafeCell<[u8; 4096]>>,
 }
 impl Process {
     fn idle() -> Self {
         Self {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
-            kernel_stack: UnsafeCell::new([0; 4096]),
+            kernel_stack: Kbox::new(UnsafeCell::new([0; 4096])),
         }
     }
 
@@ -74,7 +74,7 @@ impl Process {
                 Some(Self {
                     pid,
                     context,
-                    kernel_stack: UnsafeCell::new([0; 4096]),
+                    kernel_stack: Kbox::new(UnsafeCell::new([0; 4096])),
                 })
             })
         }
