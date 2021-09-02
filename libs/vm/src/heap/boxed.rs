@@ -1,5 +1,6 @@
 use core::{
     alloc::Layout,
+    fmt,
     ops::{Deref, DerefMut},
 };
 
@@ -28,6 +29,11 @@ impl<T> DerefMut for Kbox<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         // SAFETY: The pointer points to the allocated, and initialized value.
         unsafe { &mut *self.0 }
+    }
+}
+impl<T: fmt::Debug> fmt::Debug for Kbox<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&**self, f)
     }
 }
 impl<T> Drop for Kbox<T> {
