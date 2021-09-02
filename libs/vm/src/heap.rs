@@ -15,6 +15,10 @@ static HEAP: Heap = Heap(Lazy::new(|| {
     Spinlock::new(linked_list_allocator::Heap::empty())
 }));
 
+/// # Panics
+///
+/// This method panics if `layout.size() == 0`.
+#[must_use]
 pub fn alloc(layout: Layout) -> *mut u8 {
     assert_ne!(layout.size(), 0, "Size is 0.");
 
