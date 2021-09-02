@@ -5,13 +5,13 @@ extern crate rlibc as _;
 
 mod gdt;
 mod interrupt;
+mod libc;
 mod log;
+mod process;
 mod timer;
+mod tss;
 
-use {
-    boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt, qemu_print::qemu_println,
-    x86_64::instructions::interrupts,
-};
+use {boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt, qemu_print::qemu_println};
 
 pub fn init(boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
@@ -36,7 +36,7 @@ pub fn init(boot_info: BootInfo) {
         timer::init(boot_info.rsdp());
     }
 
-    interrupts::enable_and_hlt();
+    process::init();
 }
 
 #[cfg(test_on_qemu)]
@@ -47,7 +47,7 @@ pub fn fini() -> ! {
 #[cfg(not(test_on_qemu))]
 pub fn fini() -> ! {
     loop {
-        x86_64::instructions::hlt();
+        x86_64::instructions::interrupts::enable_and_hlt();
     }
 }
 
