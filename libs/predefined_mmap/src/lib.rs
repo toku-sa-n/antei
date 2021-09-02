@@ -27,7 +27,7 @@ pub fn kernel() -> PageRange {
 
 #[must_use]
 pub fn stack() -> PageRange {
-    next_to(kernel(), NumOfPages::new(16))
+    next_to(kernel(), NumOfPages::new(32))
 }
 
 #[must_use]
@@ -43,6 +43,11 @@ pub fn heap() -> PageRange {
 #[must_use]
 pub fn for_testing() -> PageRange {
     next_to(heap(), NumOfPages::new(16))
+}
+
+#[must_use]
+pub fn initrd() -> PageRange {
+    next_to(for_testing(), NumOfPages::new(4))
 }
 
 fn next_to<S: PageSize>(range: PageRange<S>, n: NumOfPages<S>) -> PageRange<S> {

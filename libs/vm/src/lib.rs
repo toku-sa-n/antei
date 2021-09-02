@@ -8,7 +8,10 @@ mod phys;
 
 use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};
 
-pub use map::{map, unmap};
+pub use {
+    map::{alloc_pages, current_pml4, elf::map_elf, map, unmap},
+    phys::frame_allocator,
+};
 
 pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 

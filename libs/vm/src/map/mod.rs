@@ -15,22 +15,47 @@ use {
     },
 };
 
+pub(super) mod elf;
+
 static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 
-#[must_use]
 /// # Safety
 ///
 /// Refer to [`Mapper::map_to`].
-pub unsafe fn map(p: PhysAddr, b: Bytes) -> VirtAddr {
+#[must_use]
+pub unsafe fn map(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
     let frame_range = to_frame_range(p, b.as_num_of_pages());
 
-    let page_range = unsafe { map_frame_range(frame_range) };
+    let page_range = unsafe { map_frame_range(frame_range, flags) };
 
     page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
 }
 
 pub fn unmap(v: VirtAddr, b: Bytes) {
     unmap_range(to_page_range(v, b.as_num_of_pages()));
+}
+
+#[must_use]
+pub fn alloc_pages(n: NumOfPages, flags: PageTableFlags) -> Option<PageRange> {
+    let all_range = PageRange {
+        start: Page::containing_address(VirtAddr::zero()),
+        end: predefined_mmap::kernel().start,
+    };
+
+    let page_range = find_unused_page_range_from_range(n, all_range)?;
+
+    let frame_range = phys::frame_allocator().alloc(n)?;
+
+    unsafe {
+        map_range(page_range, frame_range, flags);
+    }
+
+    Some(page_range)
+}
+
+#[must_use]
+pub fn current_pml4() -> PageTable {
+    pml4().clone()
 }
 
 /// # Safety
@@ -50,20 +75,41 @@ pub(super) unsafe fn init() {
     tests::main();
 }
 
-pub(super) unsafe fn map_frame_range(frame_range: PhysFrameRange) -> PageRange {
-    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range) }
+pub(super) unsafe fn map_frame_range(
+    frame_range: PhysFrameRange,
+    flags: PageTableFlags,
+) -> PageRange {
+    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range, flags) }
 }
 
 pub(super) fn unmap_range(page_range: PageRange) {
     page_range.into_iter().for_each(unmap_page);
 }
 
+unsafe fn map_page_range_to_unused_frame_range(page_range: PageRange, flags: PageTableFlags) {
+    let frame_range = phys::frame_allocator().alloc(num_of_page_in_range(page_range));
+    let frame_range = frame_range.expect("Frame not available.");
+
+    unsafe {
+        map_range(page_range, frame_range, flags);
+    }
+}
+
+unsafe fn update_flags_for_range(page_range: PageRange, flags: PageTableFlags) {
+    for page in page_range {
+        unsafe {
+            update_flags(page, flags);
+        }
+    }
+}
+
 unsafe fn map_frame_range_from_page_range(
     page_range: PageRange,
     frame_range: PhysFrameRange,
+    flags: PageTableFlags,
 ) -> PageRange {
     unsafe {
-        try_map_frame_range_from_page_range(page_range, frame_range)
+        try_map_frame_range_from_page_range(page_range, frame_range, flags)
             .expect("Failed to map the physical frame range.")
     }
 }
@@ -108,29 +154,28 @@ fn mapper<'a>() -> SpinlockGuard<'a, RecursivePageTable<'static>> {
 unsafe fn try_map_frame_range_from_page_range(
     page_range: PageRange,
     frame_range: PhysFrameRange,
+    flags: PageTableFlags,
 ) -> Option<PageRange> {
     let n = frame_range.end - frame_range.start;
     let n = NumOfPages::new(n.try_into().unwrap());
 
     find_unused_page_range_from_range(n, page_range).map(|page_range| {
         unsafe {
-            map_range(page_range, frame_range);
+            map_range(page_range, frame_range, flags);
         }
         page_range
     })
 }
 
-unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange) {
+unsafe fn map_range(page_range: PageRange, frame_range: PhysFrameRange, flags: PageTableFlags) {
     for (p, f) in page_range.into_iter().zip(frame_range.into_iter()) {
         unsafe {
-            map_page(p, f);
+            map_page(p, f, flags);
         }
     }
 }
 
-unsafe fn map_page(page: Page, frame: PhysFrame) {
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
+unsafe fn map_page(page: Page, frame: PhysFrame, flags: PageTableFlags) {
     let f = unsafe { mapper().map_to(page, frame, flags, &mut *phys::frame_allocator()) };
     let f = f.expect("Failed to map a page.");
 
@@ -141,6 +186,13 @@ fn unmap_page(page: Page) {
     let r = mapper().unmap(page);
 
     let (_, f) = r.expect("Failed to unmap a page.");
+
+    f.flush();
+}
+
+unsafe fn update_flags(page: Page, flags: PageTableFlags) {
+    let f = unsafe { mapper().update_flags(page, flags) };
+    let f = f.expect("Failed to update page table flags.");
 
     f.flush();
 }
@@ -201,6 +253,12 @@ fn addr_available(a: VirtAddr) -> bool {
     mapper().translate_addr(a).is_none() && !a.is_null()
 }
 
+fn num_of_page_in_range<S: PageSize>(page_range: PageRange<S>) -> NumOfPages<S> {
+    let n = page_range.end - page_range.start;
+
+    NumOfPages::new(n.try_into().unwrap())
+}
+
 #[cfg(test_on_qemu)]
 mod tests {
     use {
@@ -209,7 +267,7 @@ mod tests {
         os_units::Bytes,
         x86_64::{
             registers::control::Cr3,
-            structures::paging::{Size4KiB, Translate},
+            structures::paging::{PageTableFlags, Size4KiB, Translate},
             PhysAddr, VirtAddr,
         },
     };
@@ -259,7 +317,9 @@ mod tests {
 
         let phys = frame.start.start_address() + offset;
 
-        let virt = unsafe { map(phys, map_size) };
+        let flags = PageTableFlags::PRESENT;
+
+        let virt = unsafe { map(phys, map_size, flags) };
 
         assert_eq!(translate(virt), Some(phys));
 

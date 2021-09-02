@@ -1,5 +1,5 @@
 use {
-    crate::{Allocator, NumOfPages},
+    crate::Allocator,
     aligned_ptr::ptr,
     x86_64::{
         structures::paging::{
@@ -43,15 +43,12 @@ impl<'a> Mapper<'a> {
 
     pub(crate) unsafe fn update_flags_for_range(
         &mut self,
-        v: VirtAddr,
-        n: NumOfPages,
+        range: PageRange,
         flags: PageTableFlags,
     ) {
-        for i in 0..n.as_usize() {
-            let i = NumOfPages::<Size4KiB>::new(i);
-
+        for page in range {
             unsafe {
-                self.update_flags_for_address(v + i.as_bytes().as_usize(), flags);
+                self.update_flags(page, flags);
             }
         }
     }
@@ -74,15 +71,6 @@ impl<'a> Mapper<'a> {
         let flush = flush.expect("Failed to map a page.");
 
         flush.flush();
-    }
-
-    unsafe fn update_flags_for_address(&mut self, addr: VirtAddr, flags: PageTableFlags) {
-        let page = Page::from_start_address(addr);
-        let page = page.expect("The address is not page-aligned.");
-
-        unsafe {
-            self.update_flags(page, flags);
-        }
     }
 
     unsafe fn update_flags(&mut self, page: Page<Size4KiB>, flags: PageTableFlags) {

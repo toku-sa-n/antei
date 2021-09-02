@@ -8,6 +8,7 @@ pub mod elf;
 mod exit_boot_services;
 pub mod fs;
 pub mod gop;
+pub mod initrd;
 pub mod io;
 pub mod kernel;
 mod mapper;

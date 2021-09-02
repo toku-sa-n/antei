@@ -13,6 +13,7 @@ members = [
     "libs/r_acpi",
     "libs/uefi",
     "libs/vm",
+    "servers/init",
 ]
 
 [profile.dev]

@@ -1,5 +1,9 @@
 ARCH	=	x86_64
 
+define cargo_project_src
+	$(shell find $1|grep -v $1/target)
+endef
+
 ifeq ($(RELEASE), 1)
 	RELEASE_OR_DEBUG	=	release
 	RUSTFLAGS	=	--release
@@ -14,19 +18,22 @@ else
 endif
 
 BOOTX64_DIR	=	bootx64
-BOOTX64_SRCS	=	$(shell find $(BOOTLOADER) -name *.rs)
-BOOTX64_SRCS 	+=	$(BOOTX64_DIR)/Cargo.toml
-BOOTX64_SRCS	+=	$(BOOTX64_DIR)/.cargo/config.toml
+BOOTX64_SRCS	=	$(call cargo_project_src, $(BOOTX64_DIR))
 BOOTX64_IN_TARGET	=	target/$(ARCH)-pc-windows-gnu/$(RELEASE_OR_DEBUG)/bootx64.exe
 BOOTX64	=	$(BUILD_DIR)/bootx64.efi
 
 KERNEL_DIR	=	kernel
-KERNEL_SRCS	=	$(shell find $(KERNEL_DIR) -name *.rs)
-KERNEL_SRCS	+=	$(KERNEL_DIR)/Cargo.toml
-KERNEL_SRCS	+=	$(KERNEL_DIR)/.cargo/config.toml
-KERNEL_SRCS	+=	$(KERNEL_DIR)/kernel.ld
+KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
+
+INIT_DIR	=	servers/init
+INIT_SRCS	=	$(call cargo_project_src, $(INIT_DIR))
+INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
+INIT	=	$(BUILD_DIR)/init
+
+INITRD_CONTENTS	=	init
+INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
@@ -42,12 +49,13 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 
 all: $(ISO_FILE)
 
-$(ISO_FILE): $(KERNEL) $(BOOTX64)|$(BUILD_DIR)
+$(ISO_FILE): $(KERNEL) $(INITRD) $(BOOTX64)|$(BUILD_DIR)
 	dd if=/dev/zero of=$@ count=65536
 	mformat -i $@ -h 200 -t 500 -s 144::
 	mmd -i $@ ::/efi
 	mmd -i $@ ::/efi/boot
 	mcopy -i $@ $(KERNEL) ::/
+	mcopy -i $@ $(INITRD) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
 # Do not add a target like $(KERNEL_IN_TARGET).
@@ -61,6 +69,13 @@ $(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
 $(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
+
+$(INITRD): $(INIT)|$(BUILD_DIR)
+	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
+
+$(INIT): $(INIT_SRCS)|$(BUILD_DIR)
+	(cd $(INIT_DIR) && cargo build $(RUSTFLAGS))
+	cp $(INIT_IN_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@

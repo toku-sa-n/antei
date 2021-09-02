@@ -1,72 +1,129 @@
-    .text
-    .code64
-    .intel_syntax noprefix
+.text
+.code64
+.intel_syntax noprefix
 
-    .extern interrupt_handler_0x20
+.macro  handler vector
+.extern interrupt_handler_\vector
+.global asm_interrupt_handler_\vector
 
-    .global asm_interrupt_handler_0x20
-asm_interrupt_handler_0x20:
-    push rbp
-    mov rbp, rsp
+asm_interrupt_handler_\vector:
+	push rbp
+	mov  rbp, rsp
 
-    push rax
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
+	push rax
+	push rcx
+	push rdx
+	push rsi
+	push rdi
+	push r8
+	push r9
+	push r10
+	push r11
 
-    sub rsp, 16*16
-    movdqu [rsp+16], xmm0
-    movdqu [rsp+16*1], xmm1
-    movdqu [rsp+16*2], xmm2
-    movdqu [rsp+16*3], xmm3
-    movdqu [rsp+16*4], xmm4
-    movdqu [rsp+16*5], xmm5
-    movdqu [rsp+16*6], xmm6
-    movdqu [rsp+16*7], xmm7
-    movdqu [rsp+16*8], xmm8
-    movdqu [rsp+16*9], xmm9
-    movdqu [rsp+16*10], xmm10
-    movdqu [rsp+16*11], xmm11
-    movdqu [rsp+16*12], xmm12
-    movdqu [rsp+16*13], xmm13
-    movdqu [rsp+16*14], xmm14
-    movdqu [rsp+16*15], xmm15
+	// `fxsave` saves 512-byte data, and it requires a 16-byte aligned address.
+	// After an interrupt, `rsp mod 16` is 8, so we add `8` here.
+	// See: https://forum.osdev.org/viewtopic.php?f=1&t=22014
+	sub rsp, 512+8
 
-    call interrupt_handler_0x20
+	fxsave [rsp]
 
-    movdqu xmm15, [rsp+16*15]
-    movdqu xmm14, [rsp+16*14]
-    movdqu xmm13, [rsp+16*13]
-    movdqu xmm12, [rsp+16*12]
-    movdqu xmm11, [rsp+16*11]
-    movdqu xmm10, [rsp+16*10]
-    movdqu xmm9, [rsp+16*9]
-    movdqu xmm8, [rsp+16*8]
-    movdqu xmm7, [rsp+16*7]
-    movdqu xmm6, [rsp+16*6]
-    movdqu xmm5, [rsp+16*5]
-    movdqu xmm4, [rsp+16*4]
-    movdqu xmm3, [rsp+16*3]
-    movdqu xmm2, [rsp+16*2]
-    movdqu xmm1, [rsp+16*1]
-    movdqu xmm0, [rsp+16]
+	call interrupt_handler_\vector
 
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rax
+	fxrstor [rsp]
 
-    mov rsp, rbp
-    pop rbp
+	add rsp, 512+8
 
-    iretq
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rdx
+	pop rcx
+	pop rax
+
+	mov rsp, rbp
+	pop rbp
+
+	iretq
+	.endm
+
+	handler 0x0e
+	handler 0x20
+
+	.global asm_switch_context
+
+asm_switch_context:
+	mov [rdi+0x00], rax
+	mov [rdi+0x08], rbx
+	mov [rdi+0x10], rcx
+	mov [rdi+0x18], rdx
+
+	lea rax, [rsp+0x08]
+	mov [rdi+0x20], rax
+	mov [rdi+0x28], rbp
+	mov [rdi+0x30], rsi
+	mov [rdi+0x38], rdi
+
+	mov [rdi+0x40], r8
+	mov [rdi+0x48], r9
+	mov [rdi+0x50], r10
+	mov [rdi+0x58], r11
+
+	mov [rdi+0x60], r12
+	mov [rdi+0x68], r13
+	mov [rdi+0x70], r14
+	mov [rdi+0x78], r15
+
+	mov [rdi+0x80], cs
+	mov [rdi+0x88], ss
+	mov [rdi+0x90], fs
+	mov [rdi+0x98], gs
+
+	mov rax, cr3
+	mov [rdi+0xa0], rax
+	mov rax, [rsp]
+	mov [rdi+0xa8], rax
+	pushfq
+	pop qword ptr [rdi+0xb0]
+
+	fxsave [rdi+0xc0]
+
+	mov rax, [rsi+0x00]
+	mov rbx, [rsi+0x08]
+	mov rcx, [rsi+0x10]
+	mov rdx, [rsi+0x18]
+
+	mov rbp, [rsi+0x28]
+	mov rdi, [rsi+0x38]
+
+	mov r8, [rsi+0x40]
+	mov r9, [rsi+0x48]
+	mov r10, [rsi+0x50]
+	mov r11, [rsi+0x58]
+
+	mov r12, [rsi+0x60]
+	mov r13, [rsi+0x68]
+	mov r14, [rsi+0x70]
+	mov r15, [rsi+0x78]
+
+	mov rax, [rsi+0x90]
+	mov fs, ax
+	mov rax, [rsi+0x98]
+	mov gs, ax
+
+	mov rax, [rsi+0xa0]
+	mov cr3, rax
+
+	fxrstor [rsi+0xc0]
+
+	push qword ptr [rsi+0x88]
+	push qword ptr [rsi+0x20]
+	push qword ptr [rsi+0xb0]
+	push qword ptr [rsi+0x80]
+	push qword ptr [rsi+0xa8]
+
+	mov rsi, [rsi+0x30]
+
+	iretq

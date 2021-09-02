@@ -11,7 +11,7 @@ pub type WriteOnly<T> = Generic<T, marker::WriteOnly>;
 /// Refer to [`accessor::single::ReadWrite::new`].
 #[cfg_attr(target_pointer_width = "64", allow(clippy::missing_panics_doc))]
 #[must_use]
-pub unsafe fn read_write<T: Copy>(p: PhysAddr) -> ReadWrite<T> {
+pub unsafe fn read_write<T>(p: PhysAddr) -> ReadWrite<T> {
     // SAFETY: The caller must uphold the safety requirements.
     unsafe { ReadWrite::new(p.as_u64().try_into().unwrap(), Mapper) }
 }
@@ -21,7 +21,7 @@ pub unsafe fn read_write<T: Copy>(p: PhysAddr) -> ReadWrite<T> {
 /// Refer to [`accessor::single::ReadOnly::new`].
 #[cfg_attr(target_pointer_width = "64", allow(clippy::missing_panics_doc))]
 #[must_use]
-pub unsafe fn read_only<T: Copy>(p: PhysAddr) -> ReadOnly<T> {
+pub unsafe fn read_only<T>(p: PhysAddr) -> ReadOnly<T> {
     // SAFETY: The caller must uphold the safety requirements.
     unsafe { ReadOnly::new(p.as_u64().try_into().unwrap(), Mapper) }
 }
@@ -31,7 +31,7 @@ pub unsafe fn read_only<T: Copy>(p: PhysAddr) -> ReadOnly<T> {
 /// Refer to [`accessor::single::WriteOnly::new`].
 #[cfg_attr(target_pointer_width = "64", allow(clippy::missing_panics_doc))]
 #[must_use]
-pub unsafe fn write_only<T: Copy>(p: PhysAddr) -> WriteOnly<T> {
+pub unsafe fn write_only<T>(p: PhysAddr) -> WriteOnly<T> {
     // SAFETY: The caller must uphold the safety requirements.
     unsafe { WriteOnly::new(p.as_u64().try_into().unwrap(), Mapper) }
 }

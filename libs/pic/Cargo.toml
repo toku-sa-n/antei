@@ -5,5 +5,5 @@ edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-pic8259 = { git = "https://github.com/toku-sa-n/pic8259", branch = "stable", features = ["stable"], default-features = false }
+pic8259 = { version = "0.10.2", features = ["stable"], default-features = false }
 spinning_top = "0.2.4"
