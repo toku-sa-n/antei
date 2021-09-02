@@ -54,3 +54,5 @@ impl<T> Drop for Kbox<T> {
         }
     }
 }
+unsafe impl<T: Send> Send for Kbox<T> {}
+unsafe impl<T: Sync> Sync for Kbox<T> {}
