@@ -7,8 +7,9 @@ use {
         convert::TryInto,
         ptr::{self, NonNull},
     },
+    os_units::Bytes,
     spinning_top::Spinlock,
-    x86_64::structures::paging::PageTableFlags,
+    x86_64::structures::paging::{PageTableFlags, Size4KiB},
 };
 
 pub(super) mod boxed;
@@ -49,7 +50,7 @@ pub(super) fn init() {
     let start: usize = start.try_into().unwrap();
 
     unsafe {
-        HEAP.0.lock().init(start, size().as_usize());
+        HEAP.0.lock().init(start, bytes().as_usize());
     }
 }
 
@@ -69,8 +70,10 @@ unsafe impl GlobalAlloc for Heap {
     }
 }
 
-fn size() -> NumOfPages {
+fn bytes() -> Bytes {
     let heap = predefined_mmap::heap();
 
-    NumOfPages::new((heap.end - heap.start).try_into().unwrap())
+    let n = NumOfPages::<Size4KiB>::new((heap.end - heap.start).try_into().unwrap());
+
+    n.as_bytes()
 }
