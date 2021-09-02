@@ -11,7 +11,7 @@ use {
     x86_64::structures::paging::PageTableFlags,
 };
 
-mod boxed;
+pub(super) mod boxed;
 
 static HEAP: Heap = Heap(Lazy::new(|| {
     Spinlock::new(linked_list_allocator::Heap::empty())
