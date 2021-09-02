@@ -36,5 +36,5 @@ apic = { path = "../libs/apic" }
 pic = { path = "../libs/pic" }
 
 [build-dependencies]
-cc = "1.0.69"
+cc = "1.0.70"
 cfg_aliases = "0.1.1"
