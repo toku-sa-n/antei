@@ -57,7 +57,7 @@ unsafe impl GlobalAlloc for Heap {
         self.0
             .lock()
             .allocate_first_fit(layout)
-            .map_or(ptr::null_mut(), |p| p.as_ptr())
+            .map_or(ptr::null_mut(), NonNull::as_ptr)
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
