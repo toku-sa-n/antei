@@ -22,6 +22,9 @@ pub fn alloc(layout: Layout) -> *mut u8 {
     unsafe { HEAP.alloc(layout) }
 }
 
+/// # Safety
+///
+/// See [`core::alloc::GlobalAlloc::dealloc`].
 pub unsafe fn dealloc(ptr: *mut u8, layout: Layout) {
     unsafe {
         HEAP.dealloc(ptr, layout);
