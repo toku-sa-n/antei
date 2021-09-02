@@ -7,7 +7,7 @@ mod map;
 mod phys;
 
 pub use {
-    heap::{alloc, dealloc},
+    heap::{alloc, boxed::Kbox, dealloc},
     map::{alloc_pages, current_pml4, elf::map_elf, map, unmap},
     phys::frame_allocator,
 };
