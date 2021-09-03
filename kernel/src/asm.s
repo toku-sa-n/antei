@@ -1,3 +1,5 @@
+// vim: set filetype=asm
+
 .text
 .code64
 .intel_syntax noprefix
