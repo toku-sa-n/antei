@@ -4,7 +4,7 @@
 .code64
 .intel_syntax noprefix
 
-.macro  handler vector
+.macro  generic_handler vector fxsave_offset
 .extern interrupt_handler_\vector
 .global asm_interrupt_handler_\vector
 
@@ -25,7 +25,7 @@ asm_interrupt_handler_\vector:
 	// `fxsave` saves 512-byte data, and it requires a 16-byte aligned address.
 	// After an interrupt, `rsp mod 16` is 8, so we add `8` here.
 	// See: https://forum.osdev.org/viewtopic.php?f=1&t=22014
-	sub rsp, 512+8
+	sub rsp, 512+\fxsave_offset
 
 	fxsave [rsp]
 
@@ -33,7 +33,7 @@ asm_interrupt_handler_\vector:
 
 	fxrstor [rsp]
 
-	add rsp, 512+8
+	add rsp, 512+\fxsave_offset
 
 	pop r11
 	pop r10
@@ -51,7 +51,15 @@ asm_interrupt_handler_\vector:
 	iretq
 	.endm
 
-	handler 0x0e
+	.macro handler vector
+	generic_handler \vector 8
+	.endm
+
+	.macro handler_with_error_code vector
+	generic_handler \vector 0
+	.endm
+
+	handler_with_error_code 0x0e
 	handler 0x20
 
 	.global asm_switch_context
