@@ -23,8 +23,10 @@ asm_interrupt_handler_\vector:
 	push r11
 
 	// `fxsave` saves 512-byte data, and it requires a 16-byte aligned address.
-	// After an interrupt, `rsp mod 16` is 8, so we add `8` here.
-	// See: https://forum.osdev.org/viewtopic.php?f=1&t=22014
+	// After an interrupt or exception, if the exception pushes an error code,
+	// `rsp mod 16` is 0. If the interrupt or exception does not push an error
+	// code, `rsp mod 16` is 8, so we add `8` here.  See:
+	// https://forum.osdev.org/viewtopic.php?f=1&t=22014
 	sub rsp, 512+\fxsave_offset
 
 	fxsave [rsp]
