@@ -22,6 +22,14 @@ struct Selectors {
     tss: SegmentSelector,
 }
 
+pub(super) fn kernel_code_selector() -> SegmentSelector {
+    selectors().kernel_code
+}
+
+pub(super) fn kernel_data_selector() -> SegmentSelector {
+    selectors().kernel_data
+}
+
 pub(super) fn user_code_selector() -> SegmentSelector {
     selectors().user_code
 }

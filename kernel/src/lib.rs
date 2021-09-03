@@ -8,6 +8,7 @@ mod interrupt;
 mod libc;
 mod log;
 mod process;
+mod sysproc;
 mod timer;
 mod tss;
 

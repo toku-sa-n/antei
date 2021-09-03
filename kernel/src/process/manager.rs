@@ -111,6 +111,8 @@ impl<const N: usize> Manager<N> {
         let next_pid = self.runnable_pids.pop_front();
         let next_pid = next_pid.expect("No next process.");
 
+        log::info!("From {} to {}", self.running, next_pid);
+
         self.switch_to(next_pid)
     }
 

@@ -1,4 +1,5 @@
 use {
+    crate::sysproc,
     aligned_ptr::slice,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
@@ -24,6 +25,7 @@ pub(super) fn init() {
     manager::add_idle();
 
     manager::add(Process::from_initrd("init"));
+    manager::add(Process::from_function(sysproc::main));
 }
 
 #[derive(Debug)]
@@ -39,6 +41,37 @@ impl Process {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
             kernel_stack: Kbox::new(UnsafeCell::new([0; 4096])),
+        }
+    }
+
+    fn from_function(f: fn() -> !) -> Self {
+        Self::try_from_function(f).expect("Failed to create a process from a function.")
+    }
+
+    fn try_from_function(f: fn() -> !) -> Option<Self> {
+        let pid = Pid::generate()?;
+
+        let pml4 = Self::create_new_pml4()?;
+
+        let entry = VirtAddr::new((f as usize).try_into().unwrap());
+
+        let mut kernel_stack = Kbox::new(UnsafeCell::new([0_u8; 4096]));
+
+        let kernel_stack_len = kernel_stack.get_mut().len();
+
+        let kernel_stack_end = VirtAddr::from_ptr(kernel_stack.get()) + kernel_stack_len;
+
+        unsafe {
+            Self::switch_pml4_do(pml4, || {
+                let context = Context::kernel(entry, pml4, kernel_stack_end);
+                let context = UnsafeCell::new(context);
+
+                Some(Self {
+                    pid,
+                    context,
+                    kernel_stack,
+                })
+            })
         }
     }
 
