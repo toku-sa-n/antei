@@ -1,7 +1,7 @@
 use {
     aligned_ptr::ptr,
     x86_64::{
-        registers::control::{Cr0, Cr0Flags, Cr3},
+        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags},
         structures::paging::{PageTable, PageTableFlags},
         PhysAddr, VirtAddr,
     },
@@ -24,6 +24,13 @@ pub unsafe fn enable_recursive_paging() {
     edit_page_tables(|| unsafe {
         set_recursive_entry();
     });
+}
+
+pub fn enable_global_flag() {
+    // SAFETY: This operation does not violate memory safety.
+    unsafe {
+        Cr4::update(|cr4| cr4.insert(Cr4Flags::PAGE_GLOBAL));
+    }
 }
 
 pub(crate) fn pml4_addr() -> PhysAddr {
