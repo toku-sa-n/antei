@@ -77,7 +77,7 @@ impl Loader {
         }
     }
 
-    fn elf_flags_to_page_table_flags(flags: elfloader::Flags) -> PageTableFlags {
+    fn elf_flags_to_page_table_flags(flags: Flags) -> PageTableFlags {
         let mut page_table_flags = PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE;
 
         if flags.is_write() {
