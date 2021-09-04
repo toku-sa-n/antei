@@ -1,3 +1,5 @@
+use x86_64::structures::gdt::SegmentSelector;
+
 use {
     crate::gdt,
     core::mem::size_of,
@@ -43,31 +45,23 @@ pub(super) struct Context {
 const_assert_eq!(size_of::<Context>(), 8 * 4 * 6 + 512);
 impl Context {
     pub(super) fn kernel(entry: VirtAddr, pml4: PhysFrame, rsp: VirtAddr) -> Self {
-        Self {
-            rsp: rsp.as_u64(),
-            rip: entry.as_u64(),
-            rflags: (RFlags::INTERRUPT_FLAG | RFlags::PARITY_FLAG).bits(),
-            cr3: pml4.start_address().as_u64(),
-            cs: gdt::kernel_code_selector().0.into(),
-            ss: gdt::kernel_data_selector().0.into(),
-            fs: gdt::kernel_data_selector().0.into(),
-            gs: gdt::kernel_data_selector().0.into(),
-            ..Self::default()
-        }
+        Self::new(
+            entry,
+            pml4,
+            rsp,
+            gdt::kernel_code_selector(),
+            gdt::kernel_data_selector(),
+        )
     }
 
     pub(super) fn user(entry: VirtAddr, pml4: PhysFrame, rsp: VirtAddr) -> Self {
-        Self {
-            rsp: rsp.as_u64(),
-            rip: entry.as_u64(),
-            rflags: (RFlags::INTERRUPT_FLAG | RFlags::PARITY_FLAG).bits(),
-            cr3: pml4.start_address().as_u64(),
-            cs: gdt::user_code_selector().0.into(),
-            ss: gdt::user_data_selector().0.into(),
-            fs: gdt::user_data_selector().0.into(),
-            gs: gdt::user_data_selector().0.into(),
-            ..Self::default()
-        }
+        Self::new(
+            entry,
+            pml4,
+            rsp,
+            gdt::user_code_selector(),
+            gdt::user_data_selector(),
+        )
     }
 
     pub(super) fn switch(old: *mut Context, new: *mut Context) {
@@ -77,6 +71,26 @@ impl Context {
 
         unsafe {
             asm_switch_context(old, new);
+        }
+    }
+
+    fn new(
+        entry: VirtAddr,
+        pml4: PhysFrame,
+        rsp: VirtAddr,
+        code_segment: SegmentSelector,
+        data_segment: SegmentSelector,
+    ) -> Self {
+        Self {
+            rsp: rsp.as_u64(),
+            rip: entry.as_u64(),
+            rflags: (RFlags::INTERRUPT_FLAG | RFlags::PARITY_FLAG).bits(),
+            cr3: pml4.start_address().as_u64(),
+            cs: code_segment.0.into(),
+            ss: data_segment.0.into(),
+            fs: data_segment.0.into(),
+            gs: data_segment.0.into(),
+            ..Self::default()
         }
     }
 }
