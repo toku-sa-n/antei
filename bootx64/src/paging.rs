@@ -1,7 +1,7 @@
 use {
     aligned_ptr::ptr,
     x86_64::{
-        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags},
+        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags, Efer, EferFlags},
         structures::paging::{PageTable, PageTableFlags},
         PhysAddr, VirtAddr,
     },
@@ -30,6 +30,13 @@ pub fn enable_global_flag() {
     // SAFETY: This operation does not violate memory safety.
     unsafe {
         Cr4::update(|cr4| cr4.insert(Cr4Flags::PAGE_GLOBAL));
+    }
+}
+
+pub fn enable_no_execute_flag() {
+    // SAFETY: This operation does not violate memory safety.
+    unsafe {
+        Efer::update(|efer| efer.insert(EferFlags::NO_EXECUTE_ENABLE));
     }
 }
 
