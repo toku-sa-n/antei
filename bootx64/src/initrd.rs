@@ -42,7 +42,7 @@ fn ensure_initrd_is_small_enough(binary: &[u8]) {
 fn map_with_mapper(binary: &[u8], mapper: &mut Mapper<'_>) {
     // SAFETY: The memory region is not used by others.
     unsafe {
-        mapper.map_range_to_unused(initrd(), Flags::PRESENT | Flags::WRITABLE | Flags::GLOBAL);
+        mapper.map_range_to_unused(initrd(), Flags::PRESENT | Flags::WRITABLE);
 
         ptr::copy_nonoverlapping(
             binary.as_ptr(),
@@ -50,6 +50,6 @@ fn map_with_mapper(binary: &[u8], mapper: &mut Mapper<'_>) {
             binary.len(),
         );
 
-        mapper.update_flags_for_range(initrd(), Flags::PRESENT);
+        mapper.update_flags_for_range(initrd(), Flags::PRESENT | Flags::GLOBAL);
     }
 }
