@@ -19,6 +19,7 @@ mod manager;
 mod pid;
 
 const MAX_PROCESS: usize = 8;
+const KERNEL_STACK_BYTES: usize = 8192;
 
 pub(super) fn init() {
     manager::add_idle();
@@ -31,14 +32,14 @@ pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
 
-    kernel_stack: Kbox<UnsafeCell<[u8; 4096]>>,
+    kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
 }
 impl Process {
     fn idle() -> Self {
         Self {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
-            kernel_stack: Kbox::new(UnsafeCell::new([0; 4096])),
+            kernel_stack: Kbox::new(UnsafeCell::new([0; KERNEL_STACK_BYTES])),
         }
     }
 
@@ -74,7 +75,7 @@ impl Process {
                 Some(Self {
                     pid,
                     context,
-                    kernel_stack: Kbox::new(UnsafeCell::new([0; 4096])),
+                    kernel_stack: Kbox::new(UnsafeCell::new([0; KERNEL_STACK_BYTES])),
                 })
             })
         }
