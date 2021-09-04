@@ -70,7 +70,11 @@ unsafe fn set_recursive_entry() {
     // same value.
     let table: &mut PageTable = unsafe { ptr::as_mut(v.as_mut_ptr()) };
 
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::GLOBAL;
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::GLOBAL
+        | PageTableFlags::NO_EXECUTE;
+
     table[510].set_addr(p, flags);
 }
 
