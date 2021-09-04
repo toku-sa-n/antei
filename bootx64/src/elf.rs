@@ -70,7 +70,7 @@ impl<'a> Loader<'a> {
         let range = page_range_from_start_and_num(v, bytes.as_num_of_pages());
         let range = range.expect("The address is not page-aligned.");
 
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::GLOBAL;
 
         // SAFETY: The page will be used to load the ELF file. The memory does not have to be
         // initialized.
@@ -130,7 +130,7 @@ impl ElfLoader for Loader<'_> {
 
         unsafe {
             self.mapper
-                .update_flags_for_range(range, PageTableFlags::PRESENT);
+                .update_flags_for_range(range, PageTableFlags::PRESENT | PageTableFlags::GLOBAL);
         }
         Ok(())
     }
