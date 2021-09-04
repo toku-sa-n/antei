@@ -1,7 +1,7 @@
 use {
     aligned_ptr::ptr,
     x86_64::{
-        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags},
+        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags, Efer, EferFlags},
         structures::paging::{PageTable, PageTableFlags},
         PhysAddr, VirtAddr,
     },
@@ -17,8 +17,27 @@ pub(crate) fn edit_page_tables<T>(f: impl FnOnce() -> T) -> T {
 /// # Safety
 ///
 /// This function assumes that the physical and virtual addresses of the PML4 is the same value.
+pub unsafe fn init() {
+    // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
+    // same value.
+    unsafe {
+        enable_recursive_paging();
+    }
+
+    enable_global_flag();
+    enable_no_execute_flag();
+}
+
+pub(crate) fn pml4_addr() -> PhysAddr {
+    let f = Cr3::read().0;
+    f.start_address()
+}
+
+/// # Safety
+///
+/// This function assumes that the physical and virtual addresses of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
-pub unsafe fn enable_recursive_paging() {
+unsafe fn enable_recursive_paging() {
     // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
     // same value.
     edit_page_tables(|| unsafe {
@@ -26,16 +45,18 @@ pub unsafe fn enable_recursive_paging() {
     });
 }
 
-pub fn enable_global_flag() {
+fn enable_global_flag() {
     // SAFETY: This operation does not violate memory safety.
     unsafe {
         Cr4::update(|cr4| cr4.insert(Cr4Flags::PAGE_GLOBAL));
     }
 }
 
-pub(crate) fn pml4_addr() -> PhysAddr {
-    let f = Cr3::read().0;
-    f.start_address()
+fn enable_no_execute_flag() {
+    // SAFETY: This operation does not violate memory safety.
+    unsafe {
+        Efer::update(|efer| efer.insert(EferFlags::NO_EXECUTE_ENABLE));
+    }
 }
 
 /// # Safety
@@ -49,7 +70,11 @@ unsafe fn set_recursive_entry() {
     // same value.
     let table: &mut PageTable = unsafe { ptr::as_mut(v.as_mut_ptr()) };
 
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::GLOBAL;
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::GLOBAL
+        | PageTableFlags::NO_EXECUTE;
+
     table[510].set_addr(p, flags);
 }
 

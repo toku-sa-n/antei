@@ -92,8 +92,10 @@ impl Process {
 
         let binary = file.file();
 
-        let stack_flags =
-            PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
+        let stack_flags = PageTableFlags::PRESENT
+            | PageTableFlags::WRITABLE
+            | PageTableFlags::USER_ACCESSIBLE
+            | PageTableFlags::NO_EXECUTE;
 
         // SAFETY: `pml4` is generated in this method.
         unsafe {

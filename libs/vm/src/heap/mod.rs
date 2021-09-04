@@ -39,7 +39,11 @@ pub unsafe fn dealloc(ptr: *mut u8, layout: Layout) {
 }
 
 pub(super) fn init() {
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::GLOBAL;
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::GLOBAL
+        | PageTableFlags::NO_EXECUTE;
+
     let page_range = predefined_mmap::heap();
 
     unsafe {

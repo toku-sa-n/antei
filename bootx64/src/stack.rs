@@ -14,7 +14,10 @@ pub unsafe fn allocate(mmap: &mut [MemoryDescriptor]) {
     // SAFETY: The caller must uphold the safety requirements.
     let mut mapper = unsafe { Mapper::new(&mut allocator) };
 
-    let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::GLOBAL;
+    let flags = PageTableFlags::PRESENT
+        | PageTableFlags::WRITABLE
+        | PageTableFlags::GLOBAL
+        | PageTableFlags::NO_EXECUTE;
 
     // SAFETY: The stack region is so high that nothing point to the region. There is no need to
     // worry about creating multiple mutable references.
