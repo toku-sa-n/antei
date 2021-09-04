@@ -16,7 +16,7 @@ impl accessor::Mapper for Mapper {
 
         let b = Bytes::new(bytes);
 
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::NO_EXECUTE;
 
         let v = unsafe { map(p, b, flags) };
 
