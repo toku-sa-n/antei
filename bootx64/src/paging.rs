@@ -1,7 +1,10 @@
 use {
     aligned_ptr::ptr,
     x86_64::{
-        registers::control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags},
+        registers::{
+            control::{Cr0, Cr0Flags, Cr3, Cr4, Cr4Flags},
+            model_specific::{Efer, EferFlags},
+        },
         structures::paging::{PageTable, PageTableFlags},
         PhysAddr, VirtAddr,
     },
@@ -17,8 +20,22 @@ pub(crate) fn edit_page_tables<T>(f: impl FnOnce() -> T) -> T {
 /// # Safety
 ///
 /// This function assumes that the physical and virtual addresses of the PML4 is the same value.
+pub unsafe fn init() {
+    // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
+    // same value.
+    unsafe {
+        enable_recursive_paging();
+    }
+
+    enable_global_flag();
+    enable_no_execute_flag();
+}
+
+/// # Safety
+///
+/// This function assumes that the physical and virtual addresses of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
-pub unsafe fn enable_recursive_paging() {
+unsafe fn enable_recursive_paging() {
     // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
     // same value.
     edit_page_tables(|| unsafe {
@@ -26,10 +43,16 @@ pub unsafe fn enable_recursive_paging() {
     });
 }
 
-pub fn enable_global_flag() {
+fn enable_global_flag() {
     // SAFETY: This operation does not violate memory safety.
     unsafe {
         Cr4::update(|cr4| cr4.insert(Cr4Flags::PAGE_GLOBAL));
+    }
+}
+
+fn enable_no_execute_flag() {
+    unsafe {
+        Efer::update(|efer| efer.insert(EferFlags::NO_EXECUTE_ENABLE));
     }
 }
 

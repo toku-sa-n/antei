@@ -57,6 +57,23 @@ impl Loader {
         )
     }
 
+    fn update_flags(
+        &mut self,
+        base: VAddr,
+        bytes: usize,
+        flags: elfloader::Flags,
+    ) -> Result<(), ElfLoaderErr> {
+        let range = Self::page_range_from_vaddr_and_len(base, bytes);
+
+        let flags = page_table_flags_from_elf_flags(flags);
+
+        unsafe {
+            super::update_flags_for_range(range, flags);
+        }
+
+        Ok(())
+    }
+
     fn page_range_from_vaddr_and_len<S: PageSize>(base: VAddr, len: usize) -> PageRange<S> {
         let start = VirtAddr::new(base);
 
@@ -89,11 +106,7 @@ impl ElfLoader for Loader {
             ptr::copy_nonoverlapping(region.as_ptr(), base.as_mut_ptr(), region.len());
         }
 
-        if !flags.is_write() {
-            self.make_readonly(base.as_u64(), region.len())?;
-        }
-
-        Ok(())
+        self.update_flags(base.as_u64(), region.len(), flags)
     }
 
     fn relocate(&mut self, _entry: &Rela<P64>) -> Result<(), ElfLoaderErr> {
@@ -111,4 +124,18 @@ impl ElfLoader for Loader {
 
         Ok(())
     }
+}
+
+fn page_table_flags_from_elf_flags(flags: elfloader::Flags) -> PageTableFlags {
+    let mut page_table_flags = PageTableFlags::PRESENT | PageTableFlags::GLOBAL;
+
+    if flags.is_write() {
+        page_table_flags |= PageTableFlags::WRITABLE;
+    }
+
+    if !flags.is_execute() {
+        page_table_flags |= PageTableFlags::NO_EXECUTE;
+    }
+
+    page_table_flags
 }

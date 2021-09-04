@@ -83,6 +83,26 @@ impl<'a> Loader<'a> {
             write_zeros(v.as_mut_ptr(), bytes);
         }
     }
+
+    fn update_flags(
+        &mut self,
+        base: VirtAddr,
+        bytes: Bytes,
+        flags: elfloader::Flags,
+    ) -> Result<(), ElfLoaderErr> {
+        let n = bytes.as_num_of_pages();
+
+        let range = page_range_from_start_and_num(base, n);
+        let range = range.expect("Address is not aligned.");
+
+        let flags = page_table_flags_from_elf_flags(flags);
+
+        unsafe {
+            self.mapper.update_flags_for_range(range, flags);
+        }
+
+        Ok(())
+    }
 }
 impl ElfLoader for Loader<'_> {
     fn allocate(&mut self, load_headers: LoadableHeaders<'_, '_>) -> Result<(), ElfLoaderErr> {
@@ -106,12 +126,7 @@ impl ElfLoader for Loader<'_> {
             ptr::copy(region.as_ptr(), base.as_mut_ptr(), region.len());
         }
 
-        if !flags.is_write() {
-            let r = self.make_readonly(base.as_u64(), region.len());
-            r.expect("Failed to make a region readonly.");
-        }
-
-        Ok(())
+        self.update_flags(base, Bytes::new(region.len()), flags)
     }
 
     fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), ElfLoaderErr> {
@@ -154,4 +169,18 @@ fn page_range_from_start_and_num<S: PageSize>(
     let end = start + u64::try_from(n.as_usize()).unwrap();
 
     Ok(PageRange { start, end })
+}
+
+fn page_table_flags_from_elf_flags(flags: elfloader::Flags) -> PageTableFlags {
+    let mut page_table_flags = PageTableFlags::PRESENT | PageTableFlags::GLOBAL;
+
+    if flags.is_write() {
+        page_table_flags |= PageTableFlags::WRITABLE;
+    }
+
+    if !flags.is_execute() {
+        page_table_flags |= PageTableFlags::NO_EXECUTE;
+    }
+
+    page_table_flags
 }
