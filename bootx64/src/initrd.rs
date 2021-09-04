@@ -50,6 +50,6 @@ fn map_with_mapper(binary: &[u8], mapper: &mut Mapper<'_>) {
             binary.len(),
         );
 
-        mapper.update_flags_for_range(initrd(), Flags::PRESENT | Flags::GLOBAL);
+        mapper.update_flags_for_range(initrd(), Flags::PRESENT | Flags::GLOBAL | Flags::NO_EXECUTE);
     }
 }
