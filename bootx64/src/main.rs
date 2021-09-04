@@ -19,6 +19,8 @@ fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
         paging::enable_recursive_paging();
     }
 
+    paging::enable_global_flag();
+
     // SAFETY: Yes, the recursive paging is enabled and there are no references to one of all
     // working page tables.
     unsafe {
