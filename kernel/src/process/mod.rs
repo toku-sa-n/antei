@@ -56,7 +56,7 @@ impl Process {
 
         let entry = VirtAddr::new((f as usize).try_into().unwrap());
 
-        let mut kernel_stack = Kbox::new(UnsafeCell::new([0_u8; 4096]));
+        let mut kernel_stack = Kbox::new(UnsafeCell::new([0_u8; KERNEL_STACK_BYTES]));
 
         let kernel_stack_len = kernel_stack.get_mut().len();
 
