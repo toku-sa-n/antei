@@ -70,6 +70,26 @@ impl Loader {
 
         PageRange { start, end }
     }
+
+    unsafe fn update_flags(page_range: PageRange, flags: Flags) {
+        unsafe {
+            super::update_flags_for_range(page_range, Self::elf_flags_to_page_table_flags(flags));
+        }
+    }
+
+    fn elf_flags_to_page_table_flags(flags: elfloader::Flags) -> PageTableFlags {
+        let mut page_table_flags = PageTableFlags::PRESENT | PageTableFlags::USER_ACCESSIBLE;
+
+        if flags.is_write() {
+            page_table_flags |= PageTableFlags::WRITABLE;
+        }
+
+        if !flags.is_execute() {
+            page_table_flags |= PageTableFlags::NO_EXECUTE;
+        }
+
+        page_table_flags
+    }
 }
 impl ElfLoader for Loader {
     fn allocate(&mut self, load_headers: LoadableHeaders<'_, '_>) -> Result<(), ElfLoaderErr> {
@@ -89,8 +109,10 @@ impl ElfLoader for Loader {
             ptr::copy_nonoverlapping(region.as_ptr(), base.as_mut_ptr(), region.len());
         }
 
-        if !flags.is_write() {
-            self.make_readonly(base.as_u64(), region.len())?;
+        let page_range = Self::page_range_from_vaddr_and_len(base.as_u64(), region.len());
+
+        unsafe {
+            Self::update_flags(page_range, flags);
         }
 
         Ok(())
