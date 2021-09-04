@@ -17,8 +17,27 @@ pub(crate) fn edit_page_tables<T>(f: impl FnOnce() -> T) -> T {
 /// # Safety
 ///
 /// This function assumes that the physical and virtual addresses of the PML4 is the same value.
+pub unsafe fn init() {
+    // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
+    // same value.
+    unsafe {
+        enable_recursive_paging();
+    }
+
+    enable_global_flag();
+    enable_no_execute_flag();
+}
+
+pub(crate) fn pml4_addr() -> PhysAddr {
+    let f = Cr3::read().0;
+    f.start_address()
+}
+
+/// # Safety
+///
+/// This function assumes that the physical and virtual addresses of the PML4 is the same value.
 #[allow(clippy::module_name_repetitions)]
-pub unsafe fn enable_recursive_paging() {
+unsafe fn enable_recursive_paging() {
     // SAFETY: The caller must uphold that the physical and virtual addresses of the PML4 is the
     // same value.
     edit_page_tables(|| unsafe {
@@ -26,23 +45,18 @@ pub unsafe fn enable_recursive_paging() {
     });
 }
 
-pub fn enable_global_flag() {
+fn enable_global_flag() {
     // SAFETY: This operation does not violate memory safety.
     unsafe {
         Cr4::update(|cr4| cr4.insert(Cr4Flags::PAGE_GLOBAL));
     }
 }
 
-pub fn enable_no_execute_flag() {
+fn enable_no_execute_flag() {
     // SAFETY: This operation does not violate memory safety.
     unsafe {
         Efer::update(|efer| efer.insert(EferFlags::NO_EXECUTE_ENABLE));
     }
-}
-
-pub(crate) fn pml4_addr() -> PhysAddr {
-    let f = Cr3::read().0;
-    f.start_address()
 }
 
 /// # Safety
