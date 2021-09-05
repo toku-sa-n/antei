@@ -20,7 +20,8 @@ mod manager;
 mod pid;
 
 const MAX_PROCESS: usize = 8;
-const KERNEL_STACK_BYTES: usize = 8192;
+const GUARD_PAGE_SIZE: usize = 4096;
+const KERNEL_STACK_BYTES: usize = 12288;
 
 pub(super) fn init() {
     manager::add_idle();
@@ -37,11 +38,13 @@ pub(super) struct Process {
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
 }
 impl Process {
+    const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
+
     fn idle() -> Self {
         Self {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
-            kernel_stack: Kbox::new(UnsafeCell::new([0; KERNEL_STACK_BYTES])),
+            kernel_stack: Self::generate_kernel_stack(),
         }
     }
 
@@ -56,7 +59,7 @@ impl Process {
 
         let entry = VirtAddr::new((f as usize).try_into().unwrap());
 
-        let mut kernel_stack = Kbox::new(UnsafeCell::new([0_u8; KERNEL_STACK_BYTES]));
+        let mut kernel_stack = Self::generate_kernel_stack();
 
         let kernel_stack_len = kernel_stack.get_mut().len();
 
@@ -110,9 +113,21 @@ impl Process {
                 Some(Self {
                     pid,
                     context,
-                    kernel_stack: Kbox::new(UnsafeCell::new([0; KERNEL_STACK_BYTES])),
+                    kernel_stack: Self::generate_kernel_stack(),
                 })
             })
+        }
+    }
+
+    fn check_kernel_stack_guard(&self) {
+        // SAFETY: The borrow checker ensures that there is no mutable references to the kernel
+        // stack.
+        let stack = unsafe { &*self.kernel_stack.get() };
+
+        let magic = &stack[GUARD_PAGE_SIZE..GUARD_PAGE_SIZE + Self::KERNEL_STACK_MAGIC.len()];
+
+        if magic != Self::KERNEL_STACK_MAGIC {
+            panic!("The kernel stack is smashed.");
         }
     }
 
@@ -179,6 +194,16 @@ impl Process {
 
         // SAFETY: No references point to `kernel_stack`.
         VirtAddr::from_ptr(ptr) + unsafe { (&*ptr).len() }
+    }
+
+    fn generate_kernel_stack() -> Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>> {
+        let mut stack = Kbox::new(UnsafeCell::new([0; KERNEL_STACK_BYTES]));
+
+        for (i, c) in Self::KERNEL_STACK_MAGIC.iter().enumerate() {
+            stack.get_mut()[GUARD_PAGE_SIZE + i] = *c;
+        }
+
+        stack
     }
 }
 

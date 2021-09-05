@@ -115,6 +115,9 @@ impl<const N: usize> Manager<N> {
     }
 
     fn switch_to(&mut self, next: Pid) -> (*mut Context, *mut Context) {
+        self.check_kernel_stack_guard(self.running);
+        self.check_kernel_stack_guard(next);
+
         self.switch_kernel_stack(next);
         self.add_to_runnable_pid_queue(self.running);
 
@@ -123,6 +126,13 @@ impl<const N: usize> Manager<N> {
         self.running = next;
 
         (self.context(current), self.context(next))
+    }
+
+    fn check_kernel_stack_guard(&self, pid: Pid) {
+        let proc = self.processes[pid.as_usize()].as_ref();
+        let proc = proc.expect("No entry for the process.");
+
+        proc.check_kernel_stack_guard();
     }
 
     fn switch_kernel_stack(&self, next: Pid) {
