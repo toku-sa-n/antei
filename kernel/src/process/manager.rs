@@ -119,8 +119,6 @@ impl<const N: usize> Manager<N> {
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        self.process_as_mut(self.running).state = State::Runnable;
-
         let process = self.process_as_ref(self.running);
 
         let pid = process.pid;
@@ -134,6 +132,10 @@ impl<const N: usize> Manager<N> {
         self.check_kernel_stack_guard(next);
 
         self.switch_kernel_stack(next);
+
+        if self.process_as_ref(self.running).state == State::Running {
+            self.process_as_mut(self.running).state = State::Runnable;
+        }
 
         let current = self.running;
 
