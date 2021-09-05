@@ -19,11 +19,14 @@ mod context;
 mod manager;
 mod pid;
 
+const LEAST_PRIORITY_LEVEL: usize = 1;
 const MAX_PROCESS: usize = 8;
 const GUARD_PAGE_SIZE: usize = 4096;
 const KERNEL_STACK_BYTES: usize = 12288;
 
 pub(super) fn init() {
+    manager::init();
+
     manager::add_idle();
 
     manager::add(Process::from_initrd("init"));
@@ -34,6 +37,7 @@ pub(super) fn init() {
 pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
+    priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
     state: State,
 }
@@ -44,6 +48,7 @@ impl Process {
         Self {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
+            priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
             state: State::Running,
         }
@@ -74,6 +79,7 @@ impl Process {
                 Some(Self {
                     pid,
                     context,
+                    priority: Priority::new(0),
                     kernel_stack,
                     state: State::Runnable,
                 })
@@ -115,6 +121,7 @@ impl Process {
                 Some(Self {
                     pid,
                     context,
+                    priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
                     state: State::Runnable,
                 })
@@ -226,4 +233,18 @@ fn initrd<'a>() -> &'a [u8] {
 enum State {
     Running,
     Runnable,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct Priority(usize);
+impl Priority {
+    fn new(priority: usize) -> Self {
+        assert!(priority <= LEAST_PRIORITY_LEVEL, "Invalid priority.");
+
+        Self(priority)
+    }
+
+    fn as_usize(self) -> usize {
+        self.0
+    }
 }
