@@ -1,5 +1,5 @@
 use {
-    super::{context::Context, Pid, Process, MAX_PROCESS},
+    super::{context::Context, Pid, Process, State, MAX_PROCESS},
     crate::tss,
     heapless::Deque,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
@@ -98,18 +98,25 @@ impl<const N: usize> Manager<N> {
     // Do not switch the context inside this method. Otherwise, the lock of `MANAGER` will never be
     // unlocked during the execution of the next process, causing a deadlock.
     fn try_switch(&mut self) -> Option<(*mut Context, *mut Context)> {
-        self.next_process_exists().then(|| self.switch())
+        let next = self.update_runnable_pids_and_return_next_pid();
+
+        (self.running != next).then(|| self.switch_to(next))
     }
 
-    fn next_process_exists(&self) -> bool {
-        self.runnable_pids.front().is_some()
+    fn update_runnable_pids_and_return_next_pid(&mut self) -> Pid {
+        if self.process_as_ref(self.running).state == State::Running {
+            self.push_current_process_as_runnable();
+        }
+
+        let r = self.runnable_pids.pop_front();
+        r.expect("No runnable PID.")
     }
 
-    fn switch(&mut self) -> (*mut Context, *mut Context) {
-        let next_pid = self.runnable_pids.pop_front();
-        let next_pid = next_pid.expect("No next process.");
+    fn push_current_process_as_runnable(&mut self) {
+        self.process_as_mut(self.running).state = State::Runnable;
 
-        self.switch_to(next_pid)
+        let r = self.runnable_pids.push_back(self.running);
+        r.expect("The runnable pid queue is full.");
     }
 
     fn switch_to(&mut self, next: Pid) -> (*mut Context, *mut Context) {
@@ -117,11 +124,11 @@ impl<const N: usize> Manager<N> {
         self.check_kernel_stack_guard(next);
 
         self.switch_kernel_stack(next);
-        self.add_to_runnable_pid_queue(self.running);
 
         let current = self.running;
 
         self.running = next;
+        self.process_as_mut(next).state = State::Running;
 
         (self.context(current), self.context(next))
     }
@@ -140,6 +147,12 @@ impl<const N: usize> Manager<N> {
 
     fn process_as_ref(&self, pid: Pid) -> &Process {
         let proc = self.processes[pid.as_usize()].as_ref();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
+
+    fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
+        let proc = self.processes[pid.as_usize()].as_mut();
 
         proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
     }

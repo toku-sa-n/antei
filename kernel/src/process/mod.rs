@@ -34,8 +34,8 @@ pub(super) fn init() {
 pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
-
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
+    state: State,
 }
 impl Process {
     const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
@@ -45,6 +45,7 @@ impl Process {
             pid: Pid::new(0),
             context: UnsafeCell::default(),
             kernel_stack: Self::generate_kernel_stack(),
+            state: State::Running,
         }
     }
 
@@ -74,6 +75,7 @@ impl Process {
                     pid,
                     context,
                     kernel_stack,
+                    state: State::Runnable,
                 })
             })
         }
@@ -114,6 +116,7 @@ impl Process {
                     pid,
                     context,
                     kernel_stack: Self::generate_kernel_stack(),
+                    state: State::Runnable,
                 })
             })
         }
@@ -217,4 +220,10 @@ fn initrd<'a>() -> &'a [u8] {
 
     // SAFETY: No mutable references point to this region.
     unsafe { slice::from_raw_parts(start, num_of_pages.as_bytes().as_usize()) }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum State {
+    Running,
+    Runnable,
 }
