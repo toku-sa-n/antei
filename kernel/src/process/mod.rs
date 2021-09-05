@@ -113,7 +113,7 @@ impl Process {
             Self::switch_pml4_do(pml4, || {
                 let entry = vm::map_elf(binary);
 
-                let stack_range = vm::alloc_pages(stack_size, stack_flags).unwrap();
+                let stack_range = vm::alloc_pages(stack_size, stack_flags)?;
 
                 let context = Context::user(entry, pml4, stack_range.end.start_address());
                 let context = UnsafeCell::new(context);
