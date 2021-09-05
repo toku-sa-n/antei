@@ -35,6 +35,9 @@ INIT	=	$(BUILD_DIR)/init
 INITRD_CONTENTS	=	init
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
+LIBS_DIR	=	libs
+LIBS_SRCS	=	$(shell find $(LIBS_DIR)/)
+
 ISO_FILE	=	$(BUILD_DIR)/antei.iso
 
 QEMU	=	qemu-system-x86_64
@@ -60,20 +63,20 @@ $(ISO_FILE): $(KERNEL) $(INITRD) $(BOOTX64)|$(BUILD_DIR)
 
 # Do not add a target like $(KERNEL_IN_TARGET).
 # Otherwise `make test` may use the normal kernel binary, for example.
-$(KERNEL): $(KERNEL_SRCS)|$(BUILD_DIR)
+$(KERNEL): $(KERNEL_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(KERNEL_DIR) && cargo build $(RUSTFLAGS))
 	cp $(KERNEL_IN_TARGET) $@
 
 # Do not add a target like $(BOOTX64_IN_TARGET).
 # Otherwise `make test` may use the normal $(BOOTX64_IN_TARGET) file, for example.
-$(BOOTX64): $(BOOTX64_SRCS)|$(BUILD_DIR)
+$(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
 $(INITRD): $(INIT)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
 
-$(INIT): $(INIT_SRCS)|$(BUILD_DIR)
+$(INIT): $(INIT_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(INIT_DIR) && cargo build $(RUSTFLAGS))
 	cp $(INIT_IN_TARGET) $@
 
