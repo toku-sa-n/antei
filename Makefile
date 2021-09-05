@@ -73,7 +73,7 @@ $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
-$(INITRD): $(INIT) $(LIBS_SRCS)|$(BUILD_DIR)
+$(INITRD): $(INIT)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|cpio -o > $(notdir $@)
 
 $(INIT): $(INIT_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
