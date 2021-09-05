@@ -1,7 +1,7 @@
 use {
-    super::{context::Context, Pid, Process, State, MAX_PROCESS},
+    super::{context::Context, Pid, Priority, Process, State, LEAST_PRIORITY_LEVEL, MAX_PROCESS},
     crate::tss,
-    heapless::Deque,
+    heapless::{Deque, Vec},
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
 };
 
@@ -20,6 +20,10 @@ pub(crate) fn switch() {
 
         Context::switch(current_context, next_context);
     }
+}
+
+pub(super) fn init() {
+    lock().init();
 }
 
 pub(super) fn process_exists(pid: Pid) -> bool {
@@ -44,7 +48,7 @@ struct Manager<const N: usize> {
     processes: [Option<Process>; N],
 
     // The running PID is not contained.
-    runnable_pids: Deque<Pid, N>,
+    runnable_pids: RunnablePids<{ LEAST_PRIORITY_LEVEL + 1 }>,
 
     running: Pid,
 }
@@ -54,9 +58,13 @@ impl<const N: usize> Manager<N> {
 
         Self {
             processes: [UNUSED_PROCESS_ENTRY; N],
-            runnable_pids: Deque::new(),
+            runnable_pids: RunnablePids::new(),
             running: Pid::new(0),
         }
+    }
+
+    fn init(&mut self) {
+        self.runnable_pids.init();
     }
 
     fn add_idle(&mut self) {
@@ -70,13 +78,12 @@ impl<const N: usize> Manager<N> {
     }
 
     fn add(&mut self, p: Process) {
-        self.add_to_runnable_pid_queue(p.pid);
+        self.add_to_runnable_pid_queue(&p);
         self.add_to_process_collection(p);
     }
 
-    fn add_to_runnable_pid_queue(&mut self, pid: Pid) {
-        let r = self.runnable_pids.push_back(pid);
-        r.expect("Too many runnable pids.");
+    fn add_to_runnable_pid_queue(&mut self, process: &Process) {
+        self.runnable_pids.push(process.pid, process.priority);
     }
 
     fn add_to_process_collection(&mut self, p: Process) {
@@ -108,15 +115,16 @@ impl<const N: usize> Manager<N> {
             self.push_current_process_as_runnable();
         }
 
-        let r = self.runnable_pids.pop_front();
-        r.expect("No runnable PID.")
+        self.runnable_pids.pop()
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        self.process_as_mut(self.running).state = State::Runnable;
+        let process = self.process_as_ref(self.running);
 
-        let r = self.runnable_pids.push_back(self.running);
-        r.expect("The runnable pid queue is full.");
+        let pid = process.pid;
+        let priority = process.priority;
+
+        self.runnable_pids.push(pid, priority);
     }
 
     fn switch_to(&mut self, next: Pid) -> (*mut Context, *mut Context) {
@@ -124,6 +132,10 @@ impl<const N: usize> Manager<N> {
         self.check_kernel_stack_guard(next);
 
         self.switch_kernel_stack(next);
+
+        if self.process_as_ref(self.running).state == State::Running {
+            self.process_as_mut(self.running).state = State::Runnable;
+        }
 
         let current = self.running;
 
@@ -155,5 +167,37 @@ impl<const N: usize> Manager<N> {
         let proc = self.processes[pid.as_usize()].as_mut();
 
         proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
+}
+
+// `Deque` is non-Copyable, so we cannot do `[Deque::new(); NUM_LEVEL]`. This is why we use the
+// `Vec`, instead of an array.
+struct RunnablePids<const NUM_LEVEL: usize>(Vec<Deque<Pid, MAX_PROCESS>, NUM_LEVEL>);
+impl<const NUM_LEVEL: usize> RunnablePids<NUM_LEVEL> {
+    const fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    fn init(&mut self) {
+        for _ in 0..NUM_LEVEL {
+            let r = self.0.push(Deque::new());
+
+            // TODO: Use `expect`. Currently it is impossible because `Deque` does not implement
+            // `Debug`.
+            r.unwrap_or_else(|_| panic!("Failed to initialize the running pids queue."));
+        }
+    }
+
+    fn push(&mut self, pid: Pid, priority: Priority) {
+        let r = self.0[priority.as_usize()].push_back(pid);
+
+        r.expect("The binary heap is full.");
+    }
+
+    fn pop(&mut self) -> Pid {
+        self.0
+            .iter_mut()
+            .find_map(Deque::pop_front)
+            .expect("No runnable PID.")
     }
 }
