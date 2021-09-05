@@ -1,11 +1,9 @@
 use {
-    super::{context::Context, Pid, Process},
+    super::{context::Context, Pid, Process, MAX_PROCESS},
     crate::tss,
     heapless::Deque,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
 };
-
-const MAX_PROCESS: usize = 8;
 
 static MANAGER: Spinlock<Manager<MAX_PROCESS>> = const_spinlock(Manager::new());
 
