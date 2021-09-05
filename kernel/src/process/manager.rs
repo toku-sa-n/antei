@@ -129,23 +129,20 @@ impl<const N: usize> Manager<N> {
     }
 
     fn check_kernel_stack_guard(&self, pid: Pid) {
-        let proc = self.processes[pid.as_usize()].as_ref();
-        let proc = proc.expect("No entry for the process.");
-
-        proc.check_kernel_stack_guard();
+        self.process_as_ref(pid).check_kernel_stack_guard();
     }
 
     fn switch_kernel_stack(&self, next: Pid) {
-        let next_process = self.processes[next.as_usize()].as_ref();
-        let next_process = next_process.expect("No entry for the next process.");
-
-        tss::set_kernel_stack_addr(next_process.kernel_stack_bottom_addr());
+        tss::set_kernel_stack_addr(self.process_as_ref(next).kernel_stack_bottom_addr());
     }
 
     fn context(&self, pid: Pid) -> *mut Context {
-        let proc = self.processes[pid.as_usize()].as_ref();
-        let proc = proc.expect("No entry for the process.");
+        self.process_as_ref(pid).context.get()
+    }
 
-        proc.context.get()
+    fn process_as_ref(&self, pid: Pid) -> &Process {
+        let proc = self.processes[pid.as_usize()].as_ref();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
     }
 }
