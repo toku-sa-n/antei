@@ -356,10 +356,12 @@ impl<'a, const N: usize> Receiver<'a, N> {
     }
 
     fn is_sender_sending(&self) -> bool {
-        let receiver = self.manager.process_as_ref(self.manager.running);
-
         match self.from {
-            ReceiveFrom::Any => !receiver.sending_to_this.is_empty(),
+            ReceiveFrom::Any => {
+                let receiver = self.manager.process_as_ref(self.manager.running);
+
+                !receiver.sending_to_this.is_empty()
+            }
             ReceiveFrom::Pid(sender) => {
                 let sender = self.manager.process_as_ref(sender);
 
