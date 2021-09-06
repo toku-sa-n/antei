@@ -7,17 +7,19 @@ use {
 };
 
 pub(crate) fn main() -> ! {
-    loop {
-        log::info!("The test process is sending a message.");
-        send(Pid::new(2), Message::new(Pid::default(), 0x334));
-        log::info!("The test process sent a message.");
+    ipc();
 
-        log::info!("The test process is receiving a message.");
-        let mut m = MaybeUninit::uninit();
-        receive(ReceiveFrom::Pid(Pid::new(2)), m.as_mut_ptr());
+    qemu::exit_success();
+}
 
-        unsafe {
-            log::info!("The test process received a message: {:?}", m.assume_init());
-        }
-    }
+fn ipc() {
+    send(Pid::new(2), Message::new(Pid::default(), 0x334));
+
+    let mut m = MaybeUninit::uninit();
+    receive(ReceiveFrom::Pid(Pid::new(2)), m.as_mut_ptr());
+
+    // SAFETY: `receive` receives a message.
+    let m = unsafe { m.assume_init() };
+
+    assert_eq!(m.body, 0x0114_0514, "Wrong message body.");
 }
