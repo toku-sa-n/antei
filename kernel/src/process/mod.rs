@@ -15,6 +15,8 @@ use {
 
 pub(crate) use manager::switch;
 
+type Message = usize;
+
 mod context;
 mod manager;
 mod pid;
