@@ -105,41 +105,48 @@ impl<const N: usize> Manager<N> {
     // Do not switch the context inside this method. Otherwise, the lock of `MANAGER` will never be
     // unlocked during the execution of the next process, causing a deadlock.
     fn try_switch(&mut self) -> Option<(*mut Context, *mut Context)> {
+        Switcher::from(self).try_switch()
+    }
+}
+
+struct Switcher<'a, const N: usize>(&'a mut Manager<N>);
+impl<'a, const N: usize> Switcher<'a, N> {
+    fn try_switch(mut self) -> Option<(*mut Context, *mut Context)> {
         let next = self.update_runnable_pids_and_return_next_pid();
 
-        (self.running != next).then(|| self.switch_to(next))
+        (self.0.running != next).then(|| self.switch_to(next))
     }
 
     fn update_runnable_pids_and_return_next_pid(&mut self) -> Pid {
-        if self.process_as_ref(self.running).state == State::Running {
+        if self.process_as_ref(self.0.running).state == State::Running {
             self.push_current_process_as_runnable();
         }
 
-        self.runnable_pids.pop()
+        self.0.runnable_pids.pop()
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        let process = self.process_as_ref(self.running);
+        let process = self.process_as_ref(self.0.running);
 
         let pid = process.pid;
         let priority = process.priority;
 
-        self.runnable_pids.push(pid, priority);
+        self.0.runnable_pids.push(pid, priority);
     }
 
     fn switch_to(&mut self, next: Pid) -> (*mut Context, *mut Context) {
-        self.check_kernel_stack_guard(self.running);
+        self.check_kernel_stack_guard(self.0.running);
         self.check_kernel_stack_guard(next);
 
         self.switch_kernel_stack(next);
 
-        if self.process_as_ref(self.running).state == State::Running {
-            self.process_as_mut(self.running).state = State::Runnable;
+        if self.process_as_ref(self.0.running).state == State::Running {
+            self.process_as_mut(self.0.running).state = State::Runnable;
         }
 
-        let current = self.running;
+        let current = self.0.running;
 
-        self.running = next;
+        self.0.running = next;
         self.process_as_mut(next).state = State::Running;
 
         (self.context(current), self.context(next))
@@ -158,15 +165,20 @@ impl<const N: usize> Manager<N> {
     }
 
     fn process_as_ref(&self, pid: Pid) -> &Process {
-        let proc = self.processes[pid.as_usize()].as_ref();
+        let proc = self.0.processes[pid.as_usize()].as_ref();
 
         proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
     }
 
     fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
-        let proc = self.processes[pid.as_usize()].as_mut();
+        let proc = self.0.processes[pid.as_usize()].as_mut();
 
         proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
+}
+impl<'a, const N: usize> From<&'a mut Manager<N>> for Switcher<'a, N> {
+    fn from(manager: &'a mut Manager<N>) -> Self {
+        Self(manager)
     }
 }
 
