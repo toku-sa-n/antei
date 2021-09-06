@@ -42,6 +42,7 @@ pub(super) struct Process {
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
     state: State,
+    received_message: Option<Message>,
 }
 impl Process {
     const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
@@ -53,6 +54,7 @@ impl Process {
             priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
             state: State::Running,
+            received_message: None,
         }
     }
 
@@ -84,6 +86,7 @@ impl Process {
                     priority: Priority::new(0),
                     kernel_stack,
                     state: State::Runnable,
+                    received_message: None,
                 })
             })
         }
@@ -126,6 +129,7 @@ impl Process {
                     priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
                     state: State::Runnable,
+                    received_message: None,
                 })
             })
         }

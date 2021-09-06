@@ -4,9 +4,9 @@ use {
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(super) struct Pid(usize);
+pub(crate) struct Pid(usize);
 impl Pid {
-    pub(super) const fn new(pid: usize) -> Self {
+    pub(crate) const fn new(pid: usize) -> Self {
         Self(pid)
     }
 
