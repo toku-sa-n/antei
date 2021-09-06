@@ -1,9 +1,7 @@
 use {
-    crate::process::{
-        ipc::{receive, send, Message, ReceiveFrom},
-        Pid,
-    },
+    crate::process::ipc::{receive, send, ReceiveFrom},
     core::mem::MaybeUninit,
+    message::{Body, Header, Message},
 };
 
 pub(crate) fn main() -> ! {
@@ -13,9 +11,15 @@ pub(crate) fn main() -> ! {
 
         log::info!("The sysproc received a message: {:#X?}", message);
 
-        if message.body == 0x334 {
+        if let Body(0x334, 0, 0, 0, 0) = message.body {
             log::info!("The sysproc is sending a message.");
-            send(message.from, Message::new(Pid::default(), 0x0114_0514));
+
+            let reply = Message {
+                header: Header::default(),
+                body: Body(0x0114_0514, 0, 0, 0, 0),
+            };
+
+            send(message.header.sender_pid.into(), reply);
             log::info!("The sysproc sent a message.");
         }
     }

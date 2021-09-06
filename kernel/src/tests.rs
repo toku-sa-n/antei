@@ -1,9 +1,10 @@
 use {
     crate::process::{
-        ipc::{receive, send, Message, ReceiveFrom},
+        ipc::{receive, send, ReceiveFrom},
         Pid,
     },
     core::mem::MaybeUninit,
+    message::{Body, Header, Message},
 };
 
 pub(crate) fn main() -> ! {
@@ -13,7 +14,11 @@ pub(crate) fn main() -> ! {
 }
 
 fn ipc() {
-    send(Pid::new(2), Message::new(Pid::default(), 0x334));
+    let m = Message {
+        header: Header::default(),
+        body: Body(0x334, 0, 0, 0, 0),
+    };
+    send(Pid::new(2), m);
 
     let mut m = MaybeUninit::uninit();
     receive(ReceiveFrom::Pid(Pid::new(2)), m.as_mut_ptr());
@@ -21,5 +26,5 @@ fn ipc() {
     // SAFETY: `receive` receives a message.
     let m = unsafe { m.assume_init() };
 
-    assert_eq!(m.body, 0x0114_0514, "Wrong message body.");
+    assert_eq!(m.body, Body(0x0114_0514, 0, 0, 0, 0), "Wrong message body.");
 }
