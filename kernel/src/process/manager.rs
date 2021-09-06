@@ -110,7 +110,7 @@ impl<const N: usize> Manager<N> {
 }
 
 struct Switcher<'a, const N: usize>(&'a mut Manager<N>);
-impl<'a, const N: usize> Switcher<'a, N> {
+impl<const N: usize> Switcher<'_, N> {
     fn try_switch(mut self) -> Option<(*mut Context, *mut Context)> {
         let next = self.update_runnable_pids_and_return_next_pid();
 
