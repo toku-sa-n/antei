@@ -37,7 +37,8 @@ pub(crate) fn send(to: Pid, mut message: Message) {
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
-    lock().receive(from, ptr_to_accessor(buffer));
+    // SAFETY: The pointer is not dereferenced.
+    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
 
     // This switch is necessary because the receiver may wait for the sender.
     switch();
@@ -65,7 +66,10 @@ fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
     m.expect("Failed to lock the process manager.")
 }
 
-fn ptr_to_accessor<T>(p: *mut T) -> ReadWrite<T> {
+/// # Safety
+///
+/// The caller must not dereference `p` while the returned accessor is alive.
+unsafe fn ptr_to_accessor<T>(p: *mut T) -> ReadWrite<T> {
     let p = VirtAddr::from_ptr(p);
     let p = vm::translate(p);
     let p = p.expect("The address is not mapped.");
