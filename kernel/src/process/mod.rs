@@ -235,6 +235,14 @@ fn initrd<'a>() -> &'a [u8] {
 enum State {
     Running,
     Runnable,
+    Sending { to: Pid, message: Message },
+    Receiving(ReceiveFrom),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum ReceiveFrom {
+    Any,
+    Pid(Pid),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
