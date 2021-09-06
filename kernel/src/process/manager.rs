@@ -137,11 +137,11 @@ impl<const N: usize> Manager<N> {
     }
 
     fn send(&mut self, to: Pid, message: Message) {
-        Sender::new(self, to, message).send()
+        Sender::new(self, to, message).send();
     }
 
     fn receive(&mut self, from: ReceiveFrom, buffer: ReadWrite<Message>) {
-        Receiver::new(self, from, buffer).receive()
+        Receiver::new(self, from, buffer).receive();
     }
 
     fn wake(&mut self, pid: Pid) {
