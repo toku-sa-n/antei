@@ -1,10 +1,11 @@
 use {
     super::{
-        context::Context, Message, Pid, Priority, Process, ReceiveFrom, State,
-        LEAST_PRIORITY_LEVEL, MAX_PROCESS,
+        context::Context, Pid, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL,
+        MAX_PROCESS,
     },
     crate::tss,
     heapless::{Deque, Vec},
+    message::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
     vm::accessor::single::{read_write, ReadWrite},
     x86_64::VirtAddr,
@@ -28,7 +29,7 @@ pub(crate) fn switch() {
 }
 
 pub(crate) fn send(to: Pid, mut message: Message) {
-    message.from = lock().running;
+    message.header.sender_pid = lock().running.as_usize();
 
     lock().send(to, message);
 

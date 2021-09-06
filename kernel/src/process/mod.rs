@@ -4,6 +4,7 @@ use {
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
     heapless::Deque,
+    message::Message,
     os_units::NumOfPages,
     vm::{
         accessor::single::{write_only, ReadWrite},
@@ -241,17 +242,6 @@ fn initrd<'a>() -> &'a [u8] {
 
     // SAFETY: No mutable references point to this region.
     unsafe { slice::from_raw_parts(start, num_of_pages.as_bytes().as_usize()) }
-}
-
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) struct Message {
-    pub(crate) from: Pid,
-    pub(crate) body: u64,
-}
-impl Message {
-    pub(crate) fn new(from: Pid, body: u64) -> Self {
-        Self { from, body }
-    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
