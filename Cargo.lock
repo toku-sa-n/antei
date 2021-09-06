@@ -258,6 +258,8 @@ dependencies = [
  "heapless",
  "log",
  "message",
+ "num-derive",
+ "num-traits",
  "os_units",
  "pic",
  "predefined_mmap",

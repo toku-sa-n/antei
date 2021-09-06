@@ -139,3 +139,39 @@ asm_switch_context:
 	mov rsi, [rsi+0x30]
 
 	iretq
+
+	.global asm_handle_syscall
+
+asm_handle_syscall:
+	// The arguments are passed in rax, rdi, and rsi.
+	cli
+
+	push rbp
+	mov  rbp, rsp
+
+	and rsp, 0xfffffffffffffff0
+
+	push rcx
+	push r11
+	push rbx
+	mov  rbx, rax
+
+	call current_kernel_stack_bottom
+
+	mov rsp, rax
+	mov rax, rbx
+
+	mov rdx, rsi
+	mov rsi, rdi
+	mov rdi, rax
+
+	call handle_syscall
+
+	pop rbx
+	pop r11
+	pop rcx
+
+	mov rsp, rbp
+	pop rbp
+
+	sysretq

@@ -61,6 +61,11 @@ pub(super) fn add_idle() {
     lock().add_idle();
 }
 
+#[no_mangle]
+fn current_kernel_stack_bottom() -> u64 {
+    lock().current_kernel_stack_bottom().as_u64()
+}
+
 fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
     let m = MANAGER.try_lock();
 
@@ -163,6 +168,10 @@ impl<const N: usize> Manager<N> {
         let priority = proc.priority;
 
         self.runnable_pids.push(pid, priority);
+    }
+
+    fn current_kernel_stack_bottom(&self) -> VirtAddr {
+        self.process_as_ref(self.running).kernel_stack_bottom_addr()
     }
 
     fn process_as_ref(&self, pid: Pid) -> &Process {
