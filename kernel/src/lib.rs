@@ -55,6 +55,8 @@ pub fn fini() -> ! {
 
 #[panic_handler]
 fn panic(i: &PanicInfo<'_>) -> ! {
+    x86_64::instructions::interrupts::disable();
+
     qemu_println!("{}", i);
 
     exit_panic();
