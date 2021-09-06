@@ -257,6 +257,7 @@ impl Message {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) enum ReceiveFrom {
     Any,
+    #[allow(dead_code)]
     Pid(Pid),
 }
 
