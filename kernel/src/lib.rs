@@ -9,6 +9,7 @@ mod libc;
 mod log;
 mod process;
 mod sysproc;
+mod tests;
 mod timer;
 mod tss;
 

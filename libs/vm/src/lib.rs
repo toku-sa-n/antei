@@ -8,7 +8,7 @@ mod phys;
 
 pub use {
     heap::{alloc, boxed::Kbox, dealloc},
-    map::{alloc_pages, current_pml4, elf::map_elf, map, unmap},
+    map::{alloc_pages, current_pml4, elf::map_elf, map, translate, unmap},
     phys::frame_allocator,
 };
 use {uefi::service::boot::MemoryDescriptor, x86_64::structures::paging::Size4KiB};

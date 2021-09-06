@@ -1,11 +1,14 @@
 use {
-    crate::sysproc,
+    crate::{sysproc, tests},
     aligned_ptr::slice,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
+    heapless::Deque,
     os_units::NumOfPages,
-    pid::Pid,
-    vm::{accessor::single::write_only, Kbox},
+    vm::{
+        accessor::single::{write_only, ReadWrite},
+        Kbox,
+    },
     x86_64::{
         registers::control::Cr3,
         structures::paging::{FrameAllocator, PageTableFlags, PhysFrame, Size4KiB},
@@ -13,9 +16,10 @@ use {
     },
 };
 
-pub(crate) use manager::switch;
+pub(crate) use {manager::switch, pid::Pid};
 
 mod context;
+pub(crate) mod ipc;
 mod manager;
 mod pid;
 
@@ -31,15 +35,17 @@ pub(super) fn init() {
 
     manager::add(Process::from_initrd("init"));
     manager::add(Process::from_function(sysproc::main));
+    manager::add(Process::from_function(tests::main));
 }
 
-#[derive(Debug)]
 pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
+    sending_to_this: Deque<Pid, MAX_PROCESS>,
     state: State,
+    message_buffer: Option<ReadWrite<Message>>,
 }
 impl Process {
     const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
@@ -50,7 +56,9 @@ impl Process {
             context: UnsafeCell::default(),
             priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
+            sending_to_this: Deque::new(),
             state: State::Running,
+            message_buffer: None,
         }
     }
 
@@ -81,7 +89,9 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack,
+                    sending_to_this: Deque::new(),
                     state: State::Runnable,
+                    message_buffer: None,
                 })
             })
         }
@@ -123,7 +133,9 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
+                    sending_to_this: Deque::new(),
                     state: State::Runnable,
+                    message_buffer: None,
                 })
             })
         }
@@ -229,10 +241,29 @@ fn initrd<'a>() -> &'a [u8] {
     unsafe { slice::from_raw_parts(start, num_of_pages.as_bytes().as_usize()) }
 }
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) struct Message {
+    pub(crate) from: Pid,
+    pub(crate) body: u64,
+}
+impl Message {
+    pub(crate) fn new(from: Pid, body: u64) -> Self {
+        Self { from, body }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) enum ReceiveFrom {
+    Any,
+    Pid(Pid),
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum State {
     Running,
     Runnable,
+    Sending { to: Pid, message: Message },
+    Receiving(ReceiveFrom),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

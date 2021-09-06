@@ -58,6 +58,11 @@ pub fn current_pml4() -> PageTable {
     pml4().clone()
 }
 
+#[must_use]
+pub fn translate(addr: VirtAddr) -> Option<PhysAddr> {
+    mapper().translate_addr(addr)
+}
+
 /// # Safety
 ///
 /// Hereafter,

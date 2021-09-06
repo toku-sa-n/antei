@@ -3,10 +3,10 @@ use {
     core::fmt,
 };
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(super) struct Pid(usize);
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) struct Pid(usize);
 impl Pid {
-    pub(super) const fn new(pid: usize) -> Self {
+    pub(crate) const fn new(pid: usize) -> Self {
         Self(pid)
     }
 

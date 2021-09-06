@@ -1,8 +1,13 @@
 use {
-    super::{context::Context, Pid, Priority, Process, State, LEAST_PRIORITY_LEVEL, MAX_PROCESS},
+    super::{
+        context::Context, Message, Pid, Priority, Process, ReceiveFrom, State,
+        LEAST_PRIORITY_LEVEL, MAX_PROCESS,
+    },
     crate::tss,
     heapless::{Deque, Vec},
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
+    vm::accessor::single::{read_write, ReadWrite},
+    x86_64::VirtAddr,
 };
 
 static MANAGER: Spinlock<Manager<MAX_PROCESS>> = const_spinlock(Manager::new());
@@ -20,6 +25,23 @@ pub(crate) fn switch() {
 
         Context::switch(current_context, next_context);
     }
+}
+
+pub(crate) fn send(to: Pid, mut message: Message) {
+    message.from = lock().running;
+
+    lock().send(to, message);
+
+    // This switch is necessary because the sender may wait for the receiver.
+    switch();
+}
+
+pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
+    // SAFETY: The pointer is not dereferenced.
+    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+
+    // This switch is necessary because the receiver may wait for the sender.
+    switch();
 }
 
 pub(super) fn init() {
@@ -42,6 +64,16 @@ fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
     let m = MANAGER.try_lock();
 
     m.expect("Failed to lock the process manager.")
+}
+
+/// # Safety
+///
+/// The caller must not dereference `p` while the returned accessor is alive.
+unsafe fn ptr_to_accessor<T>(p: *mut T) -> ReadWrite<T> {
+    let p = VirtAddr::from_ptr(p);
+    let p = vm::translate(p);
+    let p = p.expect("The address is not mapped.");
+    unsafe { read_write(p) }
 }
 
 struct Manager<const N: usize> {
@@ -107,6 +139,42 @@ impl<const N: usize> Manager<N> {
     fn try_switch(&mut self) -> Option<(*mut Context, *mut Context)> {
         Switcher::from(self).try_switch()
     }
+
+    fn send(&mut self, to: Pid, message: Message) {
+        Sender::new(self, to, message).send();
+    }
+
+    fn receive(&mut self, from: ReceiveFrom, buffer: ReadWrite<Message>) {
+        Receiver::new(self, from, buffer).receive();
+    }
+
+    fn wake(&mut self, pid: Pid) {
+        let proc = self.process_as_mut(pid);
+
+        assert!(
+            !matches!(proc.state, State::Running | State::Runnable),
+            "The process is already awake."
+        );
+
+        proc.state = State::Runnable;
+
+        let pid = proc.pid;
+        let priority = proc.priority;
+
+        self.runnable_pids.push(pid, priority);
+    }
+
+    fn process_as_ref(&self, pid: Pid) -> &Process {
+        let proc = self.processes[pid.as_usize()].as_ref();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
+
+    fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
+        let proc = self.processes[pid.as_usize()].as_mut();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
 }
 
 struct Switcher<'a, const N: usize>(&'a mut Manager<N>);
@@ -118,7 +186,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn update_runnable_pids_and_return_next_pid(&mut self) -> Pid {
-        if self.process_as_ref(self.0.running).state == State::Running {
+        if self.0.process_as_ref(self.0.running).state == State::Running {
             self.push_current_process_as_runnable();
         }
 
@@ -126,7 +194,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        let process = self.process_as_ref(self.0.running);
+        let process = self.0.process_as_ref(self.0.running);
 
         let pid = process.pid;
         let priority = process.priority;
@@ -140,45 +208,209 @@ impl<const N: usize> Switcher<'_, N> {
 
         self.switch_kernel_stack(next);
 
-        if self.process_as_ref(self.0.running).state == State::Running {
-            self.process_as_mut(self.0.running).state = State::Runnable;
+        if self.0.process_as_ref(self.0.running).state == State::Running {
+            self.0.process_as_mut(self.0.running).state = State::Runnable;
         }
 
         let current = self.0.running;
 
         self.0.running = next;
-        self.process_as_mut(next).state = State::Running;
+        self.0.process_as_mut(next).state = State::Running;
 
         (self.context(current), self.context(next))
     }
 
     fn check_kernel_stack_guard(&self, pid: Pid) {
-        self.process_as_ref(pid).check_kernel_stack_guard();
+        self.0.process_as_ref(pid).check_kernel_stack_guard();
     }
 
     fn switch_kernel_stack(&self, next: Pid) {
-        tss::set_kernel_stack_addr(self.process_as_ref(next).kernel_stack_bottom_addr());
+        tss::set_kernel_stack_addr(self.0.process_as_ref(next).kernel_stack_bottom_addr());
     }
 
     fn context(&self, pid: Pid) -> *mut Context {
-        self.process_as_ref(pid).context.get()
-    }
-
-    fn process_as_ref(&self, pid: Pid) -> &Process {
-        let proc = self.0.processes[pid.as_usize()].as_ref();
-
-        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
-    }
-
-    fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
-        let proc = self.0.processes[pid.as_usize()].as_mut();
-
-        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+        self.0.process_as_ref(pid).context.get()
     }
 }
 impl<'a, const N: usize> From<&'a mut Manager<N>> for Switcher<'a, N> {
     fn from(manager: &'a mut Manager<N>) -> Self {
         Self(manager)
+    }
+}
+
+// We use synronous sending not to overflow a message buffer by sending lots of messages to the
+// same process.
+struct Sender<'a, const N: usize> {
+    manager: &'a mut Manager<N>,
+    to: Pid,
+    message: Message,
+}
+impl<'a, const N: usize> Sender<'a, N> {
+    fn new(manager: &'a mut Manager<N>, to: Pid, message: Message) -> Self {
+        Self {
+            manager,
+            to,
+            message,
+        }
+    }
+
+    fn send(mut self) {
+        self.ensure_no_deadlocks();
+
+        if self.is_receiver_waiting_message_from_me() {
+            self.send_and_wake_receiver();
+        } else {
+            self.sleep();
+        }
+    }
+
+    fn ensure_no_deadlocks(&self) {
+        let mut proc_ptr = self.manager.process_as_ref(self.to);
+
+        while let State::Sending { to, .. } = proc_ptr.state {
+            if to == self.manager.running {
+                panic!("A deadlock happened during sending a message.");
+            }
+
+            proc_ptr = self.manager.process_as_ref(to);
+        }
+    }
+
+    fn is_receiver_waiting_message_from_me(&self) -> bool {
+        match self.manager.process_as_ref(self.to).state {
+            State::Receiving(ReceiveFrom::Any) => true,
+            State::Receiving(ReceiveFrom::Pid(pid)) => self.manager.running == pid,
+            _ => false,
+        }
+    }
+
+    fn send_and_wake_receiver(&mut self) {
+        let receiver = self.manager.process_as_mut(self.to);
+
+        let message_buffer = receiver.message_buffer.as_mut();
+        let message_buffer = message_buffer.expect("No message buffer.");
+
+        message_buffer.write_volatile(self.message);
+
+        receiver.message_buffer = None;
+
+        self.manager.wake(self.to);
+    }
+
+    fn sleep(&mut self) {
+        let sender = self.manager.process_as_mut(self.manager.running);
+
+        sender.state = State::Sending {
+            to: self.to,
+            message: self.message,
+        };
+
+        let running = self.manager.running;
+        let receiver = self.manager.process_as_mut(self.to);
+
+        let r = receiver.sending_to_this.push_back(running);
+        r.expect("Sending queue is full.");
+    }
+}
+
+struct Receiver<'a, const N: usize> {
+    manager: &'a mut Manager<N>,
+    from: ReceiveFrom,
+    buffer: ReadWrite<Message>,
+}
+impl<'a, const N: usize> Receiver<'a, N> {
+    fn new(manager: &'a mut Manager<N>, from: ReceiveFrom, buffer: ReadWrite<Message>) -> Self {
+        Self {
+            manager,
+            from,
+            buffer,
+        }
+    }
+
+    fn receive(mut self) {
+        self.ensure_no_deadlocks();
+
+        if self.is_sender_sending() {
+            self.receive_and_wake_sender();
+        } else {
+            self.sleep();
+        }
+    }
+
+    fn ensure_no_deadlocks(&self) {
+        let from = if let ReceiveFrom::Pid(pid) = self.from {
+            pid
+        } else {
+            return;
+        };
+
+        let mut proc_ptr = self.manager.process_as_ref(from);
+
+        while let State::Receiving(ReceiveFrom::Pid(from)) = proc_ptr.state {
+            if from == self.manager.running {
+                panic!("A deadlock happened during receiving a message.",);
+            }
+
+            proc_ptr = self.manager.process_as_ref(from);
+        }
+    }
+
+    fn is_sender_sending(&self) -> bool {
+        match self.from {
+            ReceiveFrom::Any => {
+                let receiver = self.manager.process_as_ref(self.manager.running);
+
+                !receiver.sending_to_this.is_empty()
+            }
+            ReceiveFrom::Pid(sender) => {
+                let sender = self.manager.process_as_ref(sender);
+
+                matches!(sender.state, State::Sending { .. })
+            }
+        }
+    }
+
+    fn receive_and_wake_sender(&mut self) {
+        let receiver = self.manager.process_as_mut(self.manager.running);
+
+        let sender_pid = match self.from {
+            ReceiveFrom::Any => {
+                let pid = receiver.sending_to_this.pop_front();
+
+                pid.expect("No process is trying to send a message to this.")
+            }
+            ReceiveFrom::Pid(pid) => pid,
+        };
+
+        let running = self.manager.running;
+
+        let sender = self.manager.process_as_ref(sender_pid);
+        let message = if let State::Sending { to, message } = sender.state {
+            assert_eq!(
+                to, running,
+                "This process is not sending a message to this process."
+            );
+
+            message
+        } else {
+            panic!("The sender process is not sending a message.");
+        };
+
+        self.buffer.write_volatile(message);
+
+        self.manager.wake(sender_pid);
+    }
+
+    fn sleep(self) {
+        let receiver = self.manager.process_as_mut(self.manager.running);
+
+        assert!(
+            receiver.message_buffer.is_none(),
+            "The message buffer is not empty."
+        );
+
+        receiver.state = State::Receiving(self.from);
+        receiver.message_buffer = Some(self.buffer);
     }
 }
 
