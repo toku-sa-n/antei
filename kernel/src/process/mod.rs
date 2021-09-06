@@ -3,9 +3,13 @@ use {
     aligned_ptr::slice,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
+    heapless::Deque,
     os_units::NumOfPages,
     pid::Pid,
-    vm::{accessor::single::write_only, Kbox},
+    vm::{
+        accessor::single::{write_only, ReadWrite},
+        Kbox,
+    },
     x86_64::{
         registers::control::Cr3,
         structures::paging::{FrameAllocator, PageTableFlags, PhysFrame, Size4KiB},
@@ -35,14 +39,14 @@ pub(super) fn init() {
     manager::add(Process::from_function(sysproc::main));
 }
 
-#[derive(Debug)]
 pub(super) struct Process {
     pid: Pid,
     context: UnsafeCell<Context>,
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
+    sending_to_this: Deque<Pid, MAX_PROCESS>,
     state: State,
-    received_message: Option<Message>,
+    message_buffer: Option<ReadWrite<Message>>,
 }
 impl Process {
     const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
@@ -53,8 +57,9 @@ impl Process {
             context: UnsafeCell::default(),
             priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
+            sending_to_this: Deque::new(),
             state: State::Running,
-            received_message: None,
+            message_buffer: None,
         }
     }
 
@@ -85,8 +90,9 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack,
+                    sending_to_this: Deque::new(),
                     state: State::Runnable,
-                    received_message: None,
+                    message_buffer: None,
                 })
             })
         }
@@ -128,8 +134,9 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
+                    sending_to_this: Deque::new(),
                     state: State::Runnable,
-                    received_message: None,
+                    message_buffer: None,
                 })
             })
         }
@@ -236,17 +243,17 @@ fn initrd<'a>() -> &'a [u8] {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) enum ReceiveFrom {
+    Any,
+    Pid(Pid),
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 enum State {
     Running,
     Runnable,
     Sending { to: Pid, message: Message },
     Receiving(ReceiveFrom),
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum ReceiveFrom {
-    Any,
-    Pid(Pid),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
