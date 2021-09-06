@@ -107,6 +107,18 @@ impl<const N: usize> Manager<N> {
     fn try_switch(&mut self) -> Option<(*mut Context, *mut Context)> {
         Switcher::from(self).try_switch()
     }
+
+    fn process_as_ref(&self, pid: Pid) -> &Process {
+        let proc = self.processes[pid.as_usize()].as_ref();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
+
+    fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
+        let proc = self.processes[pid.as_usize()].as_mut();
+
+        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+    }
 }
 
 struct Switcher<'a, const N: usize>(&'a mut Manager<N>);
@@ -118,7 +130,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn update_runnable_pids_and_return_next_pid(&mut self) -> Pid {
-        if self.process_as_ref(self.0.running).state == State::Running {
+        if self.0.process_as_ref(self.0.running).state == State::Running {
             self.push_current_process_as_runnable();
         }
 
@@ -126,7 +138,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        let process = self.process_as_ref(self.0.running);
+        let process = self.0.process_as_ref(self.0.running);
 
         let pid = process.pid;
         let priority = process.priority;
@@ -140,40 +152,28 @@ impl<const N: usize> Switcher<'_, N> {
 
         self.switch_kernel_stack(next);
 
-        if self.process_as_ref(self.0.running).state == State::Running {
-            self.process_as_mut(self.0.running).state = State::Runnable;
+        if self.0.process_as_ref(self.0.running).state == State::Running {
+            self.0.process_as_mut(self.0.running).state = State::Runnable;
         }
 
         let current = self.0.running;
 
         self.0.running = next;
-        self.process_as_mut(next).state = State::Running;
+        self.0.process_as_mut(next).state = State::Running;
 
         (self.context(current), self.context(next))
     }
 
     fn check_kernel_stack_guard(&self, pid: Pid) {
-        self.process_as_ref(pid).check_kernel_stack_guard();
+        self.0.process_as_ref(pid).check_kernel_stack_guard();
     }
 
     fn switch_kernel_stack(&self, next: Pid) {
-        tss::set_kernel_stack_addr(self.process_as_ref(next).kernel_stack_bottom_addr());
+        tss::set_kernel_stack_addr(self.0.process_as_ref(next).kernel_stack_bottom_addr());
     }
 
     fn context(&self, pid: Pid) -> *mut Context {
-        self.process_as_ref(pid).context.get()
-    }
-
-    fn process_as_ref(&self, pid: Pid) -> &Process {
-        let proc = self.0.processes[pid.as_usize()].as_ref();
-
-        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
-    }
-
-    fn process_as_mut(&mut self, pid: Pid) -> &mut Process {
-        let proc = self.0.processes[pid.as_usize()].as_mut();
-
-        proc.unwrap_or_else(|| panic!("No entry for the process with {}", pid))
+        self.0.process_as_ref(pid).context.get()
     }
 }
 impl<'a, const N: usize> From<&'a mut Manager<N>> for Switcher<'a, N> {
