@@ -1,11 +1,10 @@
 use {
-    crate::sysproc,
+    crate::{sysproc, tests},
     aligned_ptr::slice,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
     heapless::Deque,
     os_units::NumOfPages,
-    pid::Pid,
     vm::{
         accessor::single::{write_only, ReadWrite},
         Kbox,
@@ -17,11 +16,10 @@ use {
     },
 };
 
-pub(crate) use manager::switch;
-
-type Message = usize;
+pub(crate) use {manager::switch, pid::Pid};
 
 mod context;
+pub(crate) mod ipc;
 mod manager;
 mod pid;
 
@@ -37,6 +35,7 @@ pub(super) fn init() {
 
     manager::add(Process::from_initrd("init"));
     manager::add(Process::from_function(sysproc::main));
+    manager::add(Process::from_function(tests::main));
 }
 
 pub(super) struct Process {
@@ -240,6 +239,17 @@ fn initrd<'a>() -> &'a [u8] {
 
     // SAFETY: No mutable references point to this region.
     unsafe { slice::from_raw_parts(start, num_of_pages.as_bytes().as_usize()) }
+}
+
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) struct Message {
+    pub(crate) from: Pid,
+    pub(crate) body: u64,
+}
+impl Message {
+    pub(crate) fn new(from: Pid, body: u64) -> Self {
+        Self { from, body }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]

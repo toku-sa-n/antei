@@ -27,7 +27,9 @@ pub(crate) fn switch() {
     }
 }
 
-pub(crate) fn send(to: Pid, message: Message) {
+pub(crate) fn send(to: Pid, mut message: Message) {
+    message.from = lock().running;
+
     lock().send(to, message);
 
     // This switch is necessary because the sender may wait for the receiver.
@@ -281,15 +283,12 @@ impl<'a, const N: usize> Sender<'a, N> {
     fn send_and_wake_receiver(&mut self) {
         let receiver = self.manager.process_as_mut(self.to);
 
-        assert!(
-            receiver.message_buffer.is_none(),
-            "The receiver has received another message."
-        );
-
         let message_buffer = receiver.message_buffer.as_mut();
         let message_buffer = message_buffer.expect("No message buffer.");
 
         message_buffer.write_volatile(self.message);
+
+        receiver.message_buffer = None;
 
         self.manager.wake(self.to);
     }
@@ -301,6 +300,12 @@ impl<'a, const N: usize> Sender<'a, N> {
             to: self.to,
             message: self.message,
         };
+
+        let running = self.manager.running;
+        let receiver = self.manager.process_as_mut(self.to);
+
+        let r = receiver.sending_to_this.push_back(running);
+        r.expect("Sending queue is full.");
     }
 }
 
@@ -373,7 +378,7 @@ impl<'a, const N: usize> Receiver<'a, N> {
 
         let running = self.manager.running;
 
-        let mut sender = self.manager.process_as_mut(sender_pid);
+        let sender = self.manager.process_as_ref(sender_pid);
         let message = if let State::Sending { to, message } = sender.state {
             assert_eq!(
                 to, running,
@@ -387,10 +392,10 @@ impl<'a, const N: usize> Receiver<'a, N> {
 
         self.buffer.write_volatile(message);
 
-        sender.state = State::Runnable;
+        self.manager.wake(sender_pid);
     }
 
-    fn sleep(&mut self) {
+    fn sleep(self) {
         let receiver = self.manager.process_as_mut(self.manager.running);
 
         assert!(
@@ -399,6 +404,7 @@ impl<'a, const N: usize> Receiver<'a, N> {
         );
 
         receiver.state = State::Receiving(self.from);
+        receiver.message_buffer = Some(self.buffer);
     }
 }
 
