@@ -27,7 +27,7 @@ pub(super) fn init() {
 /// The caller must ensure that the correct system call handler is registered with the LSTAR
 /// register and segment selectors with STAR.
 unsafe fn enable_syscall_and_sysret() {
-    // SAFETY: Enabling `syscall` and `sysret` does not violate memory safety.
+    // SAFETY: The caller must register proper system call handler and segment selectors.
     unsafe {
         Efer::update(|efer| efer.insert(EferFlags::SYSTEM_CALL_EXTENSIONS));
     }
