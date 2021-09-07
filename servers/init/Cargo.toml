@@ -13,3 +13,8 @@ test = false
 
 [features]
 test_on_qemu = []
+
+[dependencies]
+ipc = { path = "../../libs/ipc" }
+message = { path = "../../libs/message" }
+rlibc = "1.0.0"

@@ -3,7 +3,7 @@ use {
         context::Context, Pid, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL,
         MAX_PROCESS,
     },
-    crate::tss,
+    crate::{interrupt, tss},
     heapless::{Deque, Vec},
     message::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
@@ -29,17 +29,25 @@ pub(crate) fn switch() {
 }
 
 pub(crate) fn send(to: Pid, mut message: Message) {
-    message.header.sender_pid = lock().running.as_usize();
+    interrupt::disable_do_restore(|| {
+        message.header.sender_pid = lock().running.as_usize();
 
-    lock().send(to, message);
+        log::info!("Send from {} to {}", lock().running, to);
+
+        lock().send(to, message);
+    });
 
     // This switch is necessary because the sender may wait for the receiver.
     switch();
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
-    // SAFETY: The pointer is not dereferenced.
-    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+    interrupt::disable_do_restore(|| {
+        log::info!("{} receives from {:?}", lock().running, from);
+
+        // SAFETY: The pointer is not dereferenced.
+        lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+    });
 
     // This switch is necessary because the receiver may wait for the sender.
     switch();

@@ -7,6 +7,7 @@ members = [
     "libs/boot_info",
     "libs/debug",
     "libs/frame_allocator",
+    "libs/ipc",
     "libs/message",
     "libs/pic",
     "libs/predefined_mmap",

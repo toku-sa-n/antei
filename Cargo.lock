@@ -239,6 +239,19 @@ dependencies = [
 [[package]]
 name = "init"
 version = "0.1.0"
+dependencies = [
+ "ipc",
+ "message",
+ "rlibc",
+]
+
+[[package]]
+name = "ipc"
+version = "0.1.0"
+dependencies = [
+ "cc",
+ "message",
+]
 
 [[package]]
 name = "kernel"

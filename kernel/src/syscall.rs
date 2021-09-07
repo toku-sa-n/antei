@@ -1,7 +1,10 @@
 use {
-    crate::process::{
-        ipc::{self, ReceiveFrom},
-        Pid,
+    crate::{
+        gdt,
+        process::{
+            ipc::{self, ReceiveFrom},
+            Pid,
+        },
     },
     aligned_ptr::ptr,
     core::convert::TryInto,
@@ -10,7 +13,7 @@ use {
     x86_64::{
         registers::{
             control::{Efer, EferFlags},
-            model_specific::LStar,
+            model_specific::{LStar, Star},
         },
         VirtAddr,
     },
@@ -19,6 +22,7 @@ use {
 pub(super) fn init() {
     enable_syscall_and_sysret();
     register_syscall_handler();
+    register_segments_with_star();
 }
 
 fn enable_syscall_and_sysret() {
@@ -36,6 +40,16 @@ fn register_syscall_handler() {
     LStar::write(VirtAddr::new(
         (asm_handle_syscall as usize).try_into().unwrap(),
     ));
+}
+
+fn register_segments_with_star() {
+    let r = Star::write(
+        gdt::user_code_selector(),
+        gdt::user_data_selector(),
+        gdt::kernel_code_selector(),
+        gdt::kernel_data_selector(),
+    );
+    r.expect("Failed to register segment selectors with STAR.");
 }
 
 #[no_mangle]
@@ -57,7 +71,7 @@ extern "sysv64" fn handle_syscall(index: u64, a1: u64, a2: u64) {
 
             ipc::receive(from, a2 as *mut _);
         }
-        None => panic!("Unknown index."),
+        None => panic!("Unknown index: {}", index),
     }
 }
 

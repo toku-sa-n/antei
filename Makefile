@@ -29,7 +29,7 @@ KERNEL	=	$(BUILD_DIR)/kernel
 
 INIT_DIR	=	servers/init
 INIT_SRCS	=	$(call cargo_project_src, $(INIT_DIR))
-INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
+INIT_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/init
 INIT	=	$(BUILD_DIR)/init
 
 INITRD_CONTENTS	=	init
@@ -45,7 +45,10 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
 				-drive format=raw,file=$(ISO_FILE)	\
 				-m 4G	\
+				-no-reboot\
+				-no-shutdown\
 				-serial stdio	\
+				-d int\
 				-display none
 
 .PHONY:	all run test clean

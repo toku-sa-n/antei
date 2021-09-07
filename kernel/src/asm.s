@@ -146,20 +146,30 @@ asm_handle_syscall:
 	// The arguments are passed in rax, rdi, and rsi.
 	cli
 
+	push rcx
+	push r11
+
 	push rbp
 	mov  rbp, rsp
 
 	and rsp, 0xfffffffffffffff0
 
-	push rcx
-	push r11
+	push rsi
+	push rdi
 	push rbx
-	mov  rbx, rax
+
+	mov rbx, rax
 
 	call current_kernel_stack_bottom
 
+	pop rcx
+	pop rdi
+	pop rsi
+
 	mov rsp, rax
+
 	mov rax, rbx
+	mov rbx, rcx
 
 	mov rdx, rsi
 	mov rsi, rdi
@@ -167,11 +177,12 @@ asm_handle_syscall:
 
 	call handle_syscall
 
-	pop rbx
+	mov rsp, rbp
+	pop rbp
+
 	pop r11
 	pop rcx
 
-	mov rsp, rbp
-	pop rbp
+	sti
 
 	sysretq
