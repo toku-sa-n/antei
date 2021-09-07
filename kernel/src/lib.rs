@@ -41,6 +41,8 @@ pub fn init(boot_info: BootInfo) {
     }
 
     process::init();
+
+    syscall::init();
 }
 
 pub fn idle() -> ! {
