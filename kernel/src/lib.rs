@@ -8,6 +8,7 @@ mod interrupt;
 mod libc;
 mod log;
 mod process;
+mod syscall;
 mod sysproc;
 #[cfg(test_on_qemu)]
 mod tests;
