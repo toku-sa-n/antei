@@ -3,7 +3,7 @@ use {
         context::Context, Pid, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL,
         MAX_PROCESS,
     },
-    crate::tss,
+    crate::{interrupt, tss},
     heapless::{Deque, Vec},
     message::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
@@ -28,21 +28,16 @@ pub(crate) fn switch() {
     }
 }
 
-pub(crate) fn send(to: Pid, mut message: Message) {
-    message.header.sender_pid = lock().running.as_usize();
-
-    lock().send(to, message);
-
-    // This switch is necessary because the sender may wait for the receiver.
-    switch();
+pub(crate) fn send(to: Pid, message: Message) {
+    interrupt::disable_interrupts_and_do(|| {
+        send_without_disabling_interrupts(to, message);
+    })
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
-    // SAFETY: The pointer is not dereferenced.
-    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
-
-    // This switch is necessary because the receiver may wait for the sender.
-    switch();
+    interrupt::disable_interrupts_and_do(|| {
+        receive_without_disabling_interrupts(from, buffer);
+    })
 }
 
 pub(super) fn init() {
@@ -59,6 +54,23 @@ pub(super) fn add(p: Process) {
 
 pub(super) fn add_idle() {
     lock().add_idle();
+}
+
+fn send_without_disabling_interrupts(to: Pid, mut message: Message) {
+    message.header.sender_pid = lock().running.as_usize();
+
+    lock().send(to, message);
+
+    // This switch is necessary because the sender may wait for the receiver.
+    switch();
+}
+
+fn receive_without_disabling_interrupts(from: ReceiveFrom, buffer: *mut Message) {
+    // SAFETY: The pointer is not dereferenced.
+    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+
+    // This switch is necessary because the receiver may wait for the sender.
+    switch();
 }
 
 fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
