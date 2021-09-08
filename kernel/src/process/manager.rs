@@ -335,8 +335,7 @@ impl<'a, const N: usize> Sender<'a, N> {
         let running = self.manager.running;
         let receiver = self.manager.process_as_mut(self.to);
 
-        let r = receiver.sending_to_this.push_back(running);
-        r.expect("Sending queue is full.");
+        receiver.sending_to_this.push(running);
     }
 }
 
@@ -357,8 +356,8 @@ impl<'a, const N: usize> Receiver<'a, N> {
     fn receive(mut self) {
         self.ensure_no_deadlocks();
 
-        if self.is_sender_sending() {
-            self.receive_and_wake_sender();
+        if let Some(pid) = self.pop_sender_pid() {
+            self.receive_and_wake_sender(pid);
         } else {
             self.sleep();
         }
@@ -382,33 +381,21 @@ impl<'a, const N: usize> Receiver<'a, N> {
         }
     }
 
-    fn is_sender_sending(&self) -> bool {
-        match self.from {
-            ReceiveFrom::Any => {
-                let receiver = self.manager.process_as_ref(self.manager.running);
+    fn pop_sender_pid(&mut self) -> Option<Pid> {
+        let pid_queue = &mut self
+            .manager
+            .process_as_mut(self.manager.running)
+            .sending_to_this;
 
-                !receiver.sending_to_this.is_empty()
-            }
-            ReceiveFrom::Pid(sender) => {
-                let sender = self.manager.process_as_ref(sender);
-
-                matches!(sender.state, State::Sending { .. })
-            }
-        }
-    }
-
-    fn receive_and_wake_sender(&mut self) {
-        let receiver = self.manager.process_as_mut(self.manager.running);
-
-        let sender_pid = match self.from {
-            ReceiveFrom::Any => {
-                let pid = receiver.sending_to_this.pop_front();
-
-                pid.expect("No process is trying to send a message to this.")
-            }
-            ReceiveFrom::Pid(pid) => pid,
+        let remove_index = match self.from {
+            ReceiveFrom::Any => 0,
+            ReceiveFrom::Pid(pid) => pid_queue.iter().position(|&p| p == pid)?,
         };
 
+        pid_queue.pop_at(remove_index)
+    }
+
+    fn receive_and_wake_sender(&mut self, sender_pid: Pid) {
         let running = self.manager.running;
 
         let sender = self.manager.process_as_ref(sender_pid);

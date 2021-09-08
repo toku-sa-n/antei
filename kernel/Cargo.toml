@@ -39,6 +39,7 @@ elfloader = "0.14.0"
 heapless = "0.7.5"
 rlibc = "1.0.0"
 ipc_api = { path = "../libs/ipc", package = "ipc" }
+arrayvec = { version = "0.7.1", default-features = false }
 
 [build-dependencies]
 cc = "1.0.70"
