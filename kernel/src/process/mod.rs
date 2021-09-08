@@ -128,8 +128,6 @@ impl Process {
 
                 let stack_range = vm::alloc_pages(stack_size, stack_flags)?;
 
-                log::info!("Stack range: {:?}", stack_range);
-
                 let context = Context::user(entry, pml4, stack_range.end.start_address());
                 let context = UnsafeCell::new(context);
 
