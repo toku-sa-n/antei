@@ -1,6 +1,12 @@
 use {
-    crate::gdt,
-    core::convert::TryInto,
+    crate::{
+        gdt,
+        process::{ipc, Pid},
+    },
+    aligned_ptr::ptr,
+    core::convert::{TryFrom, TryInto},
+    ipc_api::syscalls::Ty,
+    num_traits::FromPrimitive,
     x86_64::{
         registers::{
             control::{Efer, EferFlags},
@@ -25,6 +31,28 @@ pub(super) fn init() {
     }
 
     disable_interrupts_on_syscall();
+}
+
+#[no_mangle]
+fn handle_syscall(index: u64, a1: u64, a2: u64) {
+    match FromPrimitive::from_u64(index) {
+        Some(Ty::Send) => {
+            let to = Pid::new(a1.try_into().unwrap());
+            let message = unsafe { ptr::get(a2 as *const _) };
+
+            ipc::send(to, message);
+        }
+        Some(Ty::Receive) => {
+            let from = if usize::try_from(a1).unwrap() == usize::MAX {
+                ipc::ReceiveFrom::Any
+            } else {
+                ipc::ReceiveFrom::Pid(Pid::new(a1.try_into().unwrap()))
+            };
+
+            ipc::receive(from, a2 as *mut _);
+        }
+        None => panic!("Invalid system call index."),
+    }
 }
 
 /// # Safety

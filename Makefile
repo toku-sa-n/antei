@@ -29,7 +29,7 @@ KERNEL	=	$(BUILD_DIR)/kernel
 
 INIT_DIR	=	servers/init
 INIT_SRCS	=	$(call cargo_project_src, $(INIT_DIR))
-INIT_IN_TARGET	=	target/$(RELEASE_OR_DEBUG)/init
+INIT_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/init
 INIT	=	$(BUILD_DIR)/init
 
 INITRD_CONTENTS	=	init

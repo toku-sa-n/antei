@@ -143,4 +143,35 @@ asm_switch_context:
 	.global asm_handle_syscall
 
 asm_handle_syscall:
+	// We must reserve rcx, and r11.
+	// `rdi`: index
+	// `rsi`: a1
+	// `rdx`: a2
+
+	push rcx
+	push r11
+
+	push rbp
+	mov  rbp, rsp
+
+	push rdi
+	push rsi
+	push rdx
+
+	call current_kernel_stack_bottom
+
+	pop rdx
+	pop rsi
+	pop rdi
+
+	mov rsp, rax
+
+	call handle_syscall
+
+	mov rsp, rbp
+	pop rbp
+
+	pop r11
+	pop rcx
+
 	sysretq
