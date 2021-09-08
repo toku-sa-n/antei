@@ -9,12 +9,10 @@ extern "sysv64" {
 }
 
 pub fn send(to: usize, message: Message) {
+    let message: *const _ = &message;
+
     unsafe {
-        execute_syscall(
-            Ty::Send,
-            to.try_into().unwrap(),
-            &message as *const _ as u64,
-        );
+        execute_syscall(Ty::Send, to.try_into().unwrap(), message as _);
     }
 }
 
