@@ -243,6 +243,9 @@ version = "0.1.0"
 [[package]]
 name = "ipc"
 version = "0.1.0"
+dependencies = [
+ "posix",
+]
 
 [[package]]
 name = "kernel"
@@ -265,6 +268,7 @@ dependencies = [
  "log",
  "os_units",
  "pic",
+ "posix",
  "predefined_mmap",
  "qemu",
  "qemu_print",
