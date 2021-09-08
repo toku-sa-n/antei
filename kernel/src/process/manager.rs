@@ -3,7 +3,7 @@ use {
         context::Context, Pid, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL,
         MAX_PROCESS,
     },
-    crate::tss,
+    crate::{interrupt, tss},
     heapless::{Deque, Vec},
     message::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
@@ -28,21 +28,30 @@ pub(crate) fn switch() {
     }
 }
 
-pub(crate) fn send(to: Pid, mut message: Message) {
-    message.header.sender_pid = lock().running.as_usize();
-
-    lock().send(to, message);
-
-    // This switch is necessary because the sender may wait for the receiver.
-    switch();
+pub(crate) fn send(to: Pid, message: Message) {
+    // The kernel-privileged processes call this function directly, so at this point, the
+    // interrupts may not be disabled. If a process switch occurs during the execution of this
+    // function because of the timer interrupt, the kernel-privileged process still locks the
+    // process manager. When the following process tries to switch, it fails to lock the process
+    // manager because the preceding kernel-privileged process has already locked it. That is why
+    // we disable interrupts while sending a message to avoid a process switch during the execution
+    // of this function.
+    interrupt::disable_interrupts_and_do(|| {
+        send_without_disabling_interrupts(to, message);
+    });
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
-    // SAFETY: The pointer is not dereferenced.
-    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
-
-    // This switch is necessary because the receiver may wait for the sender.
-    switch();
+    // The kernel-privileged processes call this function directly, so at this point, the
+    // interrupts may not be disabled. If a process switch occurs during the execution of this
+    // function because of the timer interrupt, the kernel-privileged process still locks the
+    // process manager. When the following process tries to switch, it fails to lock the process
+    // manager because the preceding kernel-privileged process has already locked it. That is why
+    // we disable interrupts while receiving a message to avoid a process switch during the
+    // execution of this function.
+    interrupt::disable_interrupts_and_do(|| {
+        receive_without_disabling_interrupts(from, buffer);
+    });
 }
 
 pub(super) fn init() {
@@ -59,6 +68,23 @@ pub(super) fn add(p: Process) {
 
 pub(super) fn add_idle() {
     lock().add_idle();
+}
+
+fn send_without_disabling_interrupts(to: Pid, mut message: Message) {
+    message.header.sender_pid = lock().running.as_usize();
+
+    lock().send(to, message);
+
+    // This switch is necessary because the sender may wait for the receiver.
+    switch();
+}
+
+fn receive_without_disabling_interrupts(from: ReceiveFrom, buffer: *mut Message) {
+    // SAFETY: The pointer is not dereferenced.
+    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+
+    // This switch is necessary because the receiver may wait for the sender.
+    switch();
 }
 
 fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {

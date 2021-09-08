@@ -5,6 +5,8 @@ extern crate rlibc as _;
 
 mod gdt;
 mod interrupt;
+#[macro_use]
+mod io;
 mod libc;
 mod log;
 mod process;
@@ -15,7 +17,7 @@ mod tests;
 mod timer;
 mod tss;
 
-use {boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt, qemu_print::qemu_println};
+use {boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt};
 
 pub fn init(boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
@@ -55,7 +57,7 @@ pub fn idle() -> ! {
 fn panic(i: &PanicInfo<'_>) -> ! {
     x86_64::instructions::interrupts::disable();
 
-    qemu_println!("{}", i);
+    qemu_printlnk!("{}", i);
 
     exit_panic();
 }
