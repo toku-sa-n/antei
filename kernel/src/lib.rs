@@ -10,6 +10,7 @@ mod io;
 mod libc;
 mod log;
 mod process;
+mod syscall;
 mod sysproc;
 #[cfg(test_on_qemu)]
 mod tests;
@@ -42,6 +43,8 @@ pub fn init(boot_info: BootInfo) {
     }
 
     process::init();
+
+    syscall::init();
 }
 
 pub fn idle() -> ! {

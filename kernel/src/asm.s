@@ -139,3 +139,8 @@ asm_switch_context:
 	mov rsi, [rsi+0x30]
 
 	iretq
+
+	.global asm_handle_syscall
+
+asm_handle_syscall:
+	sysretq
