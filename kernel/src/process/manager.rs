@@ -29,12 +29,26 @@ pub(crate) fn switch() {
 }
 
 pub(crate) fn send(to: Pid, message: Message) {
+    // The kernel-privileged processes call this function directly, so at this point, the
+    // interrupts may not be disabled. If a process switch occurs during the execution of this
+    // function because of the timer interrupt, the kernel-privileged process still locks the
+    // process manager. When the following process tries to switch, it fails to lock the process
+    // manager because the preceding kernel-privileged process has already locked it. That is why
+    // we disable interrupts while sending a message to avoid a process switch during the execution
+    // of this function.
     interrupt::disable_interrupts_and_do(|| {
         send_without_disabling_interrupts(to, message);
     })
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
+    // The kernel-privileged processes call this function directly, so at this point, the
+    // interrupts may not be disabled. If a process switch occurs during the execution of this
+    // function because of the timer interrupt, the kernel-privileged process still locks the
+    // process manager. When the following process tries to switch, it fails to lock the process
+    // manager because the preceding kernel-privileged process has already locked it. That is why
+    // we disable interrupts while receiving a message to avoid a process switch during the
+    // execution of this function.
     interrupt::disable_interrupts_and_do(|| {
         receive_without_disabling_interrupts(from, buffer);
     })
