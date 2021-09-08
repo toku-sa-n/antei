@@ -4,7 +4,7 @@ use {
         Pid,
     },
     core::mem::MaybeUninit,
-    message::{Body, Header, Message},
+    ipc_api::{Body, Header, Message},
 };
 
 pub(crate) fn main() -> ! {

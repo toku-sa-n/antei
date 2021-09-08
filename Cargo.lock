@@ -241,6 +241,10 @@ name = "init"
 version = "0.1.0"
 
 [[package]]
+name = "ipc"
+version = "0.1.0"
+
+[[package]]
 name = "kernel"
 version = "0.1.0"
 dependencies = [
@@ -256,8 +260,8 @@ dependencies = [
  "elfloader",
  "frame_allocator",
  "heapless",
+ "ipc",
  "log",
- "message",
  "os_units",
  "pic",
  "predefined_mmap",
@@ -294,10 +298,6 @@ checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
 dependencies = [
  "cfg-if",
 ]
-
-[[package]]
-name = "message"
-version = "0.1.0"
 
 [[package]]
 name = "nb"
