@@ -243,6 +243,9 @@ version = "0.1.0"
 [[package]]
 name = "ipc"
 version = "0.1.0"
+dependencies = [
+ "posix",
+]
 
 [[package]]
 name = "kernel"
@@ -265,6 +268,7 @@ dependencies = [
  "log",
  "os_units",
  "pic",
+ "posix",
  "predefined_mmap",
  "qemu",
  "qemu_print",
@@ -366,6 +370,10 @@ checksum = "24ec21f514e2e16e94649f1d041ca4a7069b512c037ac156360652a775e6229d"
 dependencies = [
  "x86_64",
 ]
+
+[[package]]
+name = "posix"
+version = "0.1.0"
 
 [[package]]
 name = "predefined_mmap"

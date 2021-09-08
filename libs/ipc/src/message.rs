@@ -1,3 +1,5 @@
+use posix::sys::types::Pid;
+
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Message {
@@ -8,7 +10,7 @@ pub struct Message {
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Header {
-    pub sender_pid: usize,
+    pub sender_pid: Pid,
 }
 
 #[repr(C)]

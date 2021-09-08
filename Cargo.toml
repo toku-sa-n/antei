@@ -9,6 +9,7 @@ members = [
     "libs/frame_allocator",
     "libs/ipc",
     "libs/pic",
+    "libs/posix",
     "libs/predefined_mmap",
     "libs/qemu",
     "libs/r_acpi",
