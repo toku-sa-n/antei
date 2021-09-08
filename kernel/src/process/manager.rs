@@ -38,7 +38,7 @@ pub(crate) fn send(to: Pid, message: Message) {
     // of this function.
     interrupt::disable_interrupts_and_do(|| {
         send_without_disabling_interrupts(to, message);
-    })
+    });
 }
 
 pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
@@ -51,7 +51,7 @@ pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
     // execution of this function.
     interrupt::disable_interrupts_and_do(|| {
         receive_without_disabling_interrupts(from, buffer);
-    })
+    });
 }
 
 pub(super) fn init() {
