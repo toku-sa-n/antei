@@ -1,7 +1,4 @@
-use {
-    log::{set_logger, Level, LevelFilter, Log, Metadata, Record},
-    qemu_print::qemu_println,
-};
+use log::{set_logger, Level, LevelFilter, Log, Metadata, Record};
 
 static LOGGER: Logger = Logger;
 
@@ -21,9 +18,9 @@ impl Log for Logger {
     fn log(&self, record: &Record<'_>) {
         if self.enabled(record.metadata()) {
             if let (Some(file), Some(line)) = (record.file(), record.line()) {
-                qemu_println!("[{}:{}] {} - {}", file, line, record.level(), record.args());
+                qemu_printlnk!("[{}:{}] {} - {}", file, line, record.level(), record.args());
             } else {
-                qemu_println!("{} - {}", record.level(), record.args());
+                qemu_printlnk!("{} - {}", record.level(), record.args());
             }
         }
     }
@@ -31,7 +28,7 @@ impl Log for Logger {
     #[cfg(not(test_on_qemu))]
     fn log(&self, record: &Record<'_>) {
         if self.enabled(record.metadata()) {
-            qemu_println!("{} - {}", record.level(), record.args());
+            qemu_printlnk!("{} - {}", record.level(), record.args());
         }
     }
 
