@@ -38,7 +38,7 @@ static_assertions = "1.1.0"
 elfloader = "0.14.0"
 heapless = "0.7.5"
 rlibc = "1.0.0"
-message = { path = "../libs/message" }
+ipc_api = { path = "../libs/ipc", package = "ipc" }
 
 [build-dependencies]
 cc = "1.0.70"

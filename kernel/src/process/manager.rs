@@ -5,7 +5,7 @@ use {
     },
     crate::{interrupt, tss},
     heapless::{Deque, Vec},
-    message::Message,
+    ipc_api::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
     vm::accessor::single::{read_write, ReadWrite},
     x86_64::VirtAddr,

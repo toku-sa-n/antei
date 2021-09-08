@@ -4,7 +4,7 @@ use {
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
     heapless::Deque,
-    message::Message,
+    ipc_api::Message,
     os_units::NumOfPages,
     vm::{
         accessor::single::{write_only, ReadWrite},
