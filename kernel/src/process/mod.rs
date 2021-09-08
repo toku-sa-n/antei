@@ -1,9 +1,9 @@
 use {
     crate::sysproc,
     aligned_ptr::slice,
+    arrayvec::ArrayVec,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
-    heapless::Deque,
     ipc_api::Message,
     os_units::NumOfPages,
     vm::{
@@ -46,7 +46,7 @@ pub(super) struct Process {
     context: UnsafeCell<Context>,
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
-    sending_to_this: Deque<Pid, MAX_PROCESS>,
+    sending_to_this: ArrayVec<Pid, MAX_PROCESS>,
     state: State,
     message_buffer: Option<ReadWrite<Message>>,
 }
@@ -59,7 +59,7 @@ impl Process {
             context: UnsafeCell::default(),
             priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
-            sending_to_this: Deque::new(),
+            sending_to_this: ArrayVec::new(),
             state: State::Running,
             message_buffer: None,
         }
@@ -92,7 +92,7 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack,
-                    sending_to_this: Deque::new(),
+                    sending_to_this: ArrayVec::new(),
                     state: State::Runnable,
                     message_buffer: None,
                 })
@@ -136,7 +136,7 @@ impl Process {
                     context,
                     priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
-                    sending_to_this: Deque::new(),
+                    sending_to_this: ArrayVec::new(),
                     state: State::Runnable,
                     message_buffer: None,
                 })
