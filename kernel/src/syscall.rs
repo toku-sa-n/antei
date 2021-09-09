@@ -38,16 +38,18 @@ pub(super) fn init() {
 fn handle_syscall(index: u64, a1: u64, a2: u64) {
     match FromPrimitive::from_u64(index) {
         Some(Ty::Send) => {
-            let to = Pid::new(a1 as _);
+            let to = Pid::new(a1.try_into().unwrap());
             let message = unsafe { ptr::get(a2 as *const _) };
 
             ipc::send(to, message);
         }
         Some(Ty::Receive) => {
+            // See: https://github.com/rust-lang/rust-clippy/issues/7648.
+            #[allow(clippy::cast_possible_truncation, clippy::invalid_upcast_comparisons)]
             let from = if (a1 as PosixPid) < 0 {
                 ipc::ReceiveFrom::Any
             } else {
-                ipc::ReceiveFrom::Pid(Pid::new(a1 as _))
+                ipc::ReceiveFrom::Pid(Pid::new(a1.try_into().unwrap()))
             };
 
             ipc::receive(from, a2 as *mut _);
