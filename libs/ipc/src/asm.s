@@ -34,15 +34,16 @@ execute_syscall:
 
 	fxrstor [rsp]
 	add     rsp, 512+8
-	pop     r11
-	pop     r10
-	pop     r9
-	pop     r8
-	pop     rdi
-	pop     rsi
-	pop     rdx
-	pop     rcx
-	pop     rax
+
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdi
+	pop rsi
+	pop rdx
+	pop rcx
+	pop rax
 
 	mov rsp, rbp
 	pop rbp
