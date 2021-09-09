@@ -81,6 +81,12 @@ impl Context {
         code_segment: SegmentSelector,
         data_segment: SegmentSelector,
     ) -> Self {
+        assert_eq!(
+            rsp.as_u64() % 16,
+            8,
+            "`RSP % 16` must be 8. We must simulate the condition after calling the main function."
+        );
+
         Self {
             rsp: rsp.as_u64(),
             rip: entry.as_u64(),
