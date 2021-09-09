@@ -4,7 +4,6 @@ use {
         MAX_PROCESS,
     },
     crate::{interrupt, tss},
-    core::convert::TryInto,
     heapless::{Deque, Vec},
     ipc_api::Message,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
@@ -77,7 +76,7 @@ fn current_kernel_stack_bottom() -> u64 {
 }
 
 fn send_without_disabling_interrupts(to: Pid, mut message: Message) {
-    message.header.sender_pid = lock().running.as_usize().try_into().unwrap();
+    message.header.sender_pid = lock().running.into();
 
     lock().send(to, message);
 
