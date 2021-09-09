@@ -15,7 +15,7 @@ extern "sysv64" {
 ///
 /// # Panics
 ///
-/// This method panics if `to <= 0`.
+/// This function panics if `to <= 0`.
 pub fn send(to: Pid, message: Message) -> Result<(), Error> {
     let to = to.try_into();
     let to = to.expect("Invalid PID.");
@@ -35,7 +35,7 @@ pub fn send(to: Pid, message: Message) -> Result<(), Error> {
 ///
 /// # Panics
 ///
-/// This method panics if `from` specifies a negative PID.
+/// This function panics if `from` specifies a negative PID.
 pub fn receive(from: ReceiveFrom) -> Result<Message, Error> {
     let mut m = MaybeUninit::uninit();
 
