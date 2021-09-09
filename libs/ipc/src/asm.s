@@ -9,8 +9,8 @@
 execute_syscall:
 	// fn execute_syscall(index: u64, a1: u64, a2: u64);
 	// index: rdi
-	// a1: rsi
-	// a2: rdx
+	// a1:    rsi
+	// a2:    rdx
 
 	push rbp
 	mov  rbp, rsp
