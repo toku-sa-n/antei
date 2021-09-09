@@ -3,7 +3,6 @@ use {
     core::{
         convert::{TryFrom, TryInto},
         fmt,
-        num::TryFromIntError,
     },
     posix::sys::types::Pid as PosixPid,
 };
@@ -42,10 +41,10 @@ impl TryFrom<PosixPid> for Pid {
         pid.try_into().map(Self).map_err(|_| NegativePid(pid))
     }
 }
-impl TryFrom<Pid> for PosixPid {
-    type Error = TryFromIntError;
-    fn try_from(pid: Pid) -> Result<Self, Self::Error> {
-        pid.as_usize().try_into()
+impl From<Pid> for PosixPid {
+    fn from(pid: Pid) -> Self {
+        pid.try_into()
+            .unwrap_or_else(|_| unreachable!("PID must be less than or equal to `PosixPid::MAX`."))
     }
 }
 impl fmt::Display for Pid {
