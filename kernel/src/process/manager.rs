@@ -71,6 +71,11 @@ pub(super) fn add_idle() {
     lock().add_idle();
 }
 
+#[no_mangle]
+fn current_kernel_stack_bottom() -> u64 {
+    lock().current_kernel_stack_bottom().as_u64()
+}
+
 fn send_without_disabling_interrupts(to: Pid, mut message: Message) {
     message.header.sender_pid = lock().running.as_usize().try_into().unwrap();
 
@@ -190,6 +195,10 @@ impl<const N: usize> Manager<N> {
         let priority = proc.priority;
 
         self.runnable_pids.push(pid, priority);
+    }
+
+    fn current_kernel_stack_bottom(&self) -> VirtAddr {
+        self.process_as_ref(self.running).kernel_stack_bottom_addr()
     }
 
     fn process_as_ref(&self, pid: Pid) -> &Process {
