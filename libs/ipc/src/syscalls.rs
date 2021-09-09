@@ -9,6 +9,10 @@ extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64) -> u64;
 }
 
+/// # Errors
+///
+/// This function returns an error if there is no process with PID `to`.
+///
 /// # Panics
 ///
 /// This method panics if `to <= 0`.
@@ -25,6 +29,10 @@ pub fn send(to: Pid, message: Message) -> Result<(), Error> {
     }
 }
 
+/// # Errors
+///
+/// This function returns an error if there is no process with PID `from` specifies.
+///
 /// # Panics
 ///
 /// This method panics if `from` specifies a negative PID.
