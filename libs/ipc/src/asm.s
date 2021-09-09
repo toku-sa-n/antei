@@ -15,8 +15,6 @@ execute_syscall:
 	push rbp
 	mov  rbp, rsp
 
-	and rsp, 0xfffffffffffffff0
-
 	push rax
 	push rcx
 	push rdx
