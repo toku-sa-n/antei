@@ -80,7 +80,7 @@ impl Process {
 
         let kernel_stack_len = kernel_stack.get_mut().len();
 
-        let kernel_stack_end = VirtAddr::from_ptr(kernel_stack.get()) + kernel_stack_len;
+        let kernel_stack_end = VirtAddr::from_ptr(kernel_stack.get()) + kernel_stack_len - 8_u64;
 
         unsafe {
             Self::switch_pml4_do(pml4, || {
@@ -128,7 +128,7 @@ impl Process {
 
                 let stack_range = vm::alloc_pages(stack_size, stack_flags)?;
 
-                let context = Context::user(entry, pml4, stack_range.end.start_address());
+                let context = Context::user(entry, pml4, stack_range.end.start_address() - 8_u64);
                 let context = UnsafeCell::new(context);
 
                 Some(Self {
