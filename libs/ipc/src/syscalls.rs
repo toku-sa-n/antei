@@ -2,13 +2,19 @@ use {
     super::Message,
     core::{convert::TryInto, mem::MaybeUninit},
     num_derive::FromPrimitive,
+    posix::sys::types::Pid,
 };
 
 extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64);
 }
 
-pub fn send(to: usize, message: Message) {
+/// # Panics
+///
+/// This method panics if `to <= 0`.
+pub fn send(to: Pid, message: Message) {
+    assert!(to > 0, "Invalid PID.");
+
     let message: *const _ = &message;
 
     unsafe {
@@ -16,13 +22,17 @@ pub fn send(to: usize, message: Message) {
     }
 }
 
+/// # Panics
+///
+/// This method panics if `from` specifies a negative PID.
+#[must_use]
 pub fn receive(from: ReceiveFrom) -> Message {
     let mut m = MaybeUninit::uninit();
 
     let from = match from {
-        ReceiveFrom::Any => usize::MAX,
+        ReceiveFrom::Any => -1,
         ReceiveFrom::Pid(pid) => {
-            assert_ne!(pid, usize::MAX);
+            assert!(pid > 0, "Invalid PID.");
 
             pid
         }
@@ -45,5 +55,5 @@ pub enum Ty {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum ReceiveFrom {
     Any,
-    Pid(usize),
+    Pid(Pid),
 }
