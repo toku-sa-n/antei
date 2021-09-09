@@ -1,4 +1,9 @@
-use {super::Message, core::mem::MaybeUninit, num_derive::FromPrimitive, posix::sys::types::Pid};
+use {
+    super::Message,
+    core::{convert::TryInto, mem::MaybeUninit},
+    num_derive::FromPrimitive,
+    posix::sys::types::Pid,
+};
 
 extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64);
@@ -8,12 +13,13 @@ extern "sysv64" {
 ///
 /// This method panics if `to <= 0`.
 pub fn send(to: Pid, message: Message) {
-    assert!(to > 0, "Invalid PID.");
+    let to = to.try_into();
+    let to = to.expect("Invalid PID.");
 
     let message: *const _ = &message;
 
     unsafe {
-        execute_syscall(Ty::Send, to as _, message as _);
+        execute_syscall(Ty::Send, to, message as _);
     }
 }
 
@@ -34,6 +40,10 @@ pub fn receive(from: ReceiveFrom) -> Message {
     };
 
     unsafe {
+        // We cannot use `try_into` because it returns an error if the value is negative while the
+        // negative PID is valid here because it means the sender's PID is unspecified. Also, the
+        // sign information will not be lost as the kernel casts it to `i32` again.
+        #[allow(clippy::cast_sign_loss)]
         execute_syscall(Ty::Receive, from as _, m.as_mut_ptr() as _);
     }
 
