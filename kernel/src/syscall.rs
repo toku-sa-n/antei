@@ -35,13 +35,16 @@ pub(super) fn init() {
 }
 
 #[no_mangle]
-fn handle_syscall(index: u64, a1: u64, a2: u64) {
+fn handle_syscall(index: u64, a1: u64, a2: u64) -> u64 {
     match FromPrimitive::from_u64(index) {
         Some(Ty::Send) => {
             let to = Pid::new(a1.try_into().unwrap());
             let message = unsafe { ptr::get(a2 as *const _) };
 
-            ipc::send(to, message);
+            match ipc::send(to, message) {
+                Ok(()) => 0,
+                Err(_) => -1_i32 as _,
+            }
         }
         Some(Ty::Receive) => {
             // See: https://github.com/rust-lang/rust-clippy/issues/7648.
@@ -52,9 +55,12 @@ fn handle_syscall(index: u64, a1: u64, a2: u64) {
                 ipc::ReceiveFrom::Pid(Pid::new(a1.try_into().unwrap()))
             };
 
-            ipc::receive(from, a2 as *mut _);
+            match ipc::receive(from, a2 as *mut _) {
+                Ok(()) => 0,
+                Err(_) => -1_i32 as _,
+            }
         }
-        None => panic!("Invalid system call index."),
+        None => -1_i32 as _,
     }
 }
 

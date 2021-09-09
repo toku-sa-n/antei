@@ -5,7 +5,7 @@ use {
     },
     crate::{interrupt, tss},
     heapless::{Deque, Vec},
-    ipc_api::Message,
+    ipc_api::{Error, Message},
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
     vm::accessor::single::{read_write, ReadWrite},
     x86_64::VirtAddr,
@@ -28,7 +28,7 @@ pub(crate) fn switch() {
     }
 }
 
-pub(crate) fn send(to: Pid, message: Message) {
+pub(crate) fn send(to: Pid, message: Message) -> Result<(), Error> {
     // The kernel-privileged processes call this function directly, so at this point, the
     // interrupts may not be disabled. If a process switch occurs during the execution of this
     // function because of the timer interrupt, the kernel-privileged process still locks the
@@ -36,12 +36,10 @@ pub(crate) fn send(to: Pid, message: Message) {
     // manager because the preceding kernel-privileged process has already locked it. That is why
     // we disable interrupts while sending a message to avoid a process switch during the execution
     // of this function.
-    interrupt::disable_interrupts_and_do(|| {
-        send_without_disabling_interrupts(to, message);
-    });
+    interrupt::disable_interrupts_and_do(|| send_without_disabling_interrupts(to, message))
 }
 
-pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
+pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) -> Result<(), Error> {
     // The kernel-privileged processes call this function directly, so at this point, the
     // interrupts may not be disabled. If a process switch occurs during the execution of this
     // function because of the timer interrupt, the kernel-privileged process still locks the
@@ -49,9 +47,7 @@ pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) {
     // manager because the preceding kernel-privileged process has already locked it. That is why
     // we disable interrupts while receiving a message to avoid a process switch during the
     // execution of this function.
-    interrupt::disable_interrupts_and_do(|| {
-        receive_without_disabling_interrupts(from, buffer);
-    });
+    interrupt::disable_interrupts_and_do(|| receive_without_disabling_interrupts(from, buffer))
 }
 
 pub(super) fn init() {
@@ -75,21 +71,28 @@ fn current_kernel_stack_bottom() -> u64 {
     lock().current_kernel_stack_bottom().as_u64()
 }
 
-fn send_without_disabling_interrupts(to: Pid, mut message: Message) {
+fn send_without_disabling_interrupts(to: Pid, mut message: Message) -> Result<(), Error> {
     message.header.sender_pid = lock().running.into();
 
-    lock().send(to, message);
+    lock().send(to, message)?;
 
     // This switch is necessary because the sender may wait for the receiver.
     switch();
+
+    Ok(())
 }
 
-fn receive_without_disabling_interrupts(from: ReceiveFrom, buffer: *mut Message) {
+fn receive_without_disabling_interrupts(
+    from: ReceiveFrom,
+    buffer: *mut Message,
+) -> Result<(), Error> {
     // SAFETY: The pointer is not dereferenced.
-    lock().receive(from, unsafe { ptr_to_accessor(buffer) });
+    lock().receive(from, unsafe { ptr_to_accessor(buffer) })?;
 
     // This switch is necessary because the receiver may wait for the sender.
     switch();
+
+    Ok(())
 }
 
 fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
@@ -172,12 +175,12 @@ impl<const N: usize> Manager<N> {
         Switcher::from(self).try_switch()
     }
 
-    fn send(&mut self, to: Pid, message: Message) {
-        Sender::new(self, to, message).send();
+    fn send(&mut self, to: Pid, message: Message) -> Result<(), Error> {
+        Sender::new(self, to, message)?.send()
     }
 
-    fn receive(&mut self, from: ReceiveFrom, buffer: ReadWrite<Message>) {
-        Receiver::new(self, from, buffer).receive();
+    fn receive(&mut self, from: ReceiveFrom, buffer: ReadWrite<Message>) -> Result<(), Error> {
+        Receiver::new(self, from, buffer)?.receive()
     }
 
     fn wake(&mut self, pid: Pid) {
@@ -290,34 +293,42 @@ struct Sender<'a, const N: usize> {
     message: Message,
 }
 impl<'a, const N: usize> Sender<'a, N> {
-    fn new(manager: &'a mut Manager<N>, to: Pid, message: Message) -> Self {
-        Self {
-            manager,
-            to,
-            message,
+    fn new(manager: &'a mut Manager<N>, to: Pid, message: Message) -> Result<Self, Error> {
+        if manager.exists(to) {
+            Ok(Self {
+                manager,
+                to,
+                message,
+            })
+        } else {
+            Err(Error::NoSuchProcess(to.into()))
         }
     }
 
-    fn send(mut self) {
-        self.ensure_no_deadlocks();
+    fn send(mut self) -> Result<(), Error> {
+        self.ensure_no_deadlocks()?;
 
         if self.is_receiver_waiting_message_from_me() {
             self.send_and_wake_receiver();
         } else {
             self.sleep();
         }
+
+        Ok(())
     }
 
-    fn ensure_no_deadlocks(&self) {
+    fn ensure_no_deadlocks(&self) -> Result<(), Error> {
         let mut proc_ptr = self.manager.process_as_ref(self.to);
 
         while let State::Sending { to, .. } = proc_ptr.state {
             if to == self.manager.running {
-                panic!("A deadlock happened during sending a message.");
+                return Err(Error::Deadlock);
             }
 
             proc_ptr = self.manager.process_as_ref(to);
         }
+
+        Ok(())
     }
 
     fn is_receiver_waiting_message_from_me(&self) -> bool {
@@ -362,40 +373,54 @@ struct Receiver<'a, const N: usize> {
     buffer: ReadWrite<Message>,
 }
 impl<'a, const N: usize> Receiver<'a, N> {
-    fn new(manager: &'a mut Manager<N>, from: ReceiveFrom, buffer: ReadWrite<Message>) -> Self {
-        Self {
+    fn new(
+        manager: &'a mut Manager<N>,
+        from: ReceiveFrom,
+        buffer: ReadWrite<Message>,
+    ) -> Result<Self, Error> {
+        if let ReceiveFrom::Pid(pid) = from {
+            if !manager.exists(pid) {
+                return Err(Error::NoSuchProcess(pid.into()));
+            }
+        }
+
+        Ok(Self {
             manager,
             from,
             buffer,
-        }
+        })
     }
 
-    fn receive(mut self) {
-        self.ensure_no_deadlocks();
+    fn receive(mut self) -> Result<(), Error> {
+        self.ensure_no_deadlocks()?;
 
         if let Some(pid) = self.pop_sender_pid() {
             self.receive_and_wake_sender(pid);
         } else {
             self.sleep();
         }
+
+        Ok(())
     }
 
-    fn ensure_no_deadlocks(&self) {
+    fn ensure_no_deadlocks(&self) -> Result<(), Error> {
         let from = if let ReceiveFrom::Pid(pid) = self.from {
             pid
         } else {
-            return;
+            return Ok(());
         };
 
         let mut proc_ptr = self.manager.process_as_ref(from);
 
         while let State::Receiving(ReceiveFrom::Pid(from)) = proc_ptr.state {
             if from == self.manager.running {
-                panic!("A deadlock happened during receiving a message.",);
+                return Err(Error::Deadlock);
             }
 
             proc_ptr = self.manager.process_as_ref(from);
         }
+
+        Ok(())
     }
 
     fn pop_sender_pid(&mut self) -> Option<Pid> {
