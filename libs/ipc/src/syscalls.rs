@@ -48,15 +48,11 @@ pub fn receive(from: ReceiveFrom) -> Result<Message, Error> {
         }
     };
 
-    let r = unsafe {
-        // We cannot use `try_into` because it returns an error if the value is negative while the
-        // negative PID is valid here because it means the sender's PID is unspecified. Also, the
-        // sign information will not be lost as the kernel casts it to `i32` again.
-        #[allow(clippy::cast_sign_loss)]
-        execute_syscall(Ty::Receive, from as _, m.as_mut_ptr() as _)
-    };
-
-    if r == 0 {
+    // We cannot use `try_into` because it returns an error if the value is negative while the
+    // negative PID is valid here because it means the sender's PID is unspecified. Also, the
+    // sign information will not be lost as the kernel casts it to `i32` again.
+    #[allow(clippy::cast_sign_loss)]
+    if unsafe { execute_syscall(Ty::Receive, from as _, m.as_mut_ptr() as _) } == 0 {
         Ok(unsafe { m.assume_init() })
     } else {
         Err(Error)
