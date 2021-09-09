@@ -21,7 +21,7 @@ pub(crate) fn main() -> ! {
 
             match message.header.sender_pid.try_into() {
                 Ok(pid) => {
-                    send(pid, reply);
+                    send(pid, reply).expect("Failed to send a message.");
 
                     log::info!("The sysproc sent a message.");
                 }
@@ -36,7 +36,7 @@ pub(crate) fn main() -> ! {
 fn receive_message() -> Message {
     let mut m = MaybeUninit::uninit();
 
-    receive(ReceiveFrom::Any, m.as_mut_ptr());
+    receive(ReceiveFrom::Any, m.as_mut_ptr()).expect("Failed to receive a message.");
 
     // SAFETY: `receive` receives a message.
     unsafe { m.assume_init() }

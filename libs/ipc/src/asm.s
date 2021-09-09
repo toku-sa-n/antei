@@ -43,7 +43,8 @@ execute_syscall:
 	pop rsi
 	pop rdx
 	pop rcx
-	pop rax
+
+	add rsp, 8
 
 	mov rsp, rbp
 	pop rbp
