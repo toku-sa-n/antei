@@ -43,7 +43,8 @@ impl TryFrom<PosixPid> for Pid {
 }
 impl From<Pid> for PosixPid {
     fn from(pid: Pid) -> Self {
-        pid.try_into()
+        pid.as_usize()
+            .try_into()
             .unwrap_or_else(|_| unreachable!("PID must be less than or equal to `PosixPid::MAX`."))
     }
 }
