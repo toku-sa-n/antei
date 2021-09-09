@@ -43,6 +43,7 @@ fn handle_syscall(index: u64, a1: u64, a2: u64) -> u64 {
 
             match ipc::send(to, message) {
                 Ok(()) => 0,
+                #[allow(clippy::cast_sign_loss)]
                 Err(_) => -1_i32 as _,
             }
         }
@@ -57,9 +58,11 @@ fn handle_syscall(index: u64, a1: u64, a2: u64) -> u64 {
 
             match ipc::receive(from, a2 as *mut _) {
                 Ok(()) => 0,
+                #[allow(clippy::cast_sign_loss)]
                 Err(_) => -1_i32 as _,
             }
         }
+        #[allow(clippy::cast_sign_loss)]
         None => -1_i32 as _,
     }
 }
