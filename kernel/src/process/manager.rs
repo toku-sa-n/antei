@@ -198,7 +198,15 @@ impl<const N: usize> Manager<N> {
     }
 
     fn current_kernel_stack_bottom(&self) -> VirtAddr {
-        self.process_as_ref(self.running).kernel_stack_bottom_addr()
+        self.running_as_ref().kernel_stack_bottom_addr()
+    }
+
+    fn running_as_ref(&self) -> &Process {
+        self.process_as_ref(self.running)
+    }
+
+    fn running_as_mut(&mut self) -> &mut Process {
+        self.process_as_mut(self.running)
     }
 
     fn process_as_ref(&self, pid: Pid) -> &Process {
@@ -223,7 +231,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn update_runnable_pids_and_return_next_pid(&mut self) -> Pid {
-        if self.0.process_as_ref(self.0.running).state == State::Running {
+        if self.0.running_as_ref().state == State::Running {
             self.push_current_process_as_runnable();
         }
 
@@ -231,7 +239,7 @@ impl<const N: usize> Switcher<'_, N> {
     }
 
     fn push_current_process_as_runnable(&mut self) {
-        let process = self.0.process_as_ref(self.0.running);
+        let process = self.0.running_as_ref();
 
         let pid = process.pid;
         let priority = process.priority;
@@ -245,8 +253,8 @@ impl<const N: usize> Switcher<'_, N> {
 
         self.switch_kernel_stack(next);
 
-        if self.0.process_as_ref(self.0.running).state == State::Running {
-            self.0.process_as_mut(self.0.running).state = State::Runnable;
+        if self.0.running_as_ref().state == State::Running {
+            self.0.running_as_mut().state = State::Runnable;
         }
 
         let current = self.0.running;
@@ -335,7 +343,7 @@ impl<'a, const N: usize> Sender<'a, N> {
     }
 
     fn sleep(&mut self) {
-        let sender = self.manager.process_as_mut(self.manager.running);
+        let sender = self.manager.running_as_mut();
 
         sender.state = State::Sending {
             to: self.to,
@@ -392,10 +400,7 @@ impl<'a, const N: usize> Receiver<'a, N> {
     }
 
     fn pop_sender_pid(&mut self) -> Option<Pid> {
-        let pid_queue = &mut self
-            .manager
-            .process_as_mut(self.manager.running)
-            .sending_to_this;
+        let pid_queue = &mut self.manager.running_as_mut().sending_to_this;
 
         let remove_index = match self.from {
             ReceiveFrom::Any => 0,
@@ -426,7 +431,7 @@ impl<'a, const N: usize> Receiver<'a, N> {
     }
 
     fn sleep(self) {
-        let receiver = self.manager.process_as_mut(self.manager.running);
+        let receiver = self.manager.running_as_mut();
 
         assert!(
             receiver.message_buffer.is_none(),
