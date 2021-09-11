@@ -1,5 +1,7 @@
 #![no_std]
 
+pub mod predefined;
+
 use {
     core::{
         convert::{TryFrom, TryInto},
