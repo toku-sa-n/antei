@@ -1,5 +1,6 @@
+#![no_std]
+
 use {
-    super::{manager, MAX_PROCESS},
     core::{
         convert::{TryFrom, TryInto},
         fmt,
@@ -10,18 +11,16 @@ use {
 // We use `usize` because it is more valuable than `PosixPid`. After all, we can use it as an index
 // of an array.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) struct Pid(usize);
+pub struct Pid(usize);
 impl Pid {
-    pub(crate) const fn new(pid: usize) -> Self {
+    #[must_use]
+    pub const fn new(pid: usize) -> Self {
         Self(pid)
     }
 
-    pub(super) const fn as_usize(self) -> usize {
+    #[must_use]
+    pub const fn as_usize(self) -> usize {
         self.0
-    }
-
-    pub(super) fn generate() -> Option<Self> {
-        (0..MAX_PROCESS).find_map(|i| (!manager::process_exists(i.into())).then(|| Self(i)))
     }
 }
 impl From<Pid> for usize {
@@ -55,4 +54,4 @@ impl fmt::Display for Pid {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) struct NegativePid(PosixPid);
+pub struct NegativePid(PosixPid);
