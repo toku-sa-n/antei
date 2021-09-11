@@ -42,10 +42,6 @@ pub fn receive(from: ReceiveFrom) -> Message {
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `from` specifies.
-///
-/// # Panics
-///
-/// This function panics if `from` specifies a negative PID.
 pub fn try_receive(from: ReceiveFrom) -> Result<Message, Error> {
     let mut m = MaybeUninit::uninit();
 
