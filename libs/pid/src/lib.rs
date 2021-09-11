@@ -13,10 +13,12 @@ use {
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Pid(usize);
 impl Pid {
+    #[must_use]
     pub const fn new(pid: usize) -> Self {
         Self(pid)
     }
 
+    #[must_use]
     pub const fn as_usize(self) -> usize {
         self.0
     }
