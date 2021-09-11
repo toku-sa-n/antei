@@ -16,9 +16,9 @@ fn main() -> ! {
             body: Body(0x334, 0, 0, 0, 0),
         };
 
-        ipc::try_send(2, message).unwrap();
+        ipc::send(2, message);
 
-        let message = ipc::try_receive(ReceiveFrom::Pid(2)).unwrap();
+        let message = ipc::receive(ReceiveFrom::Pid(2));
 
         assert_eq!(message.body, Body(0x0114_0514, 0, 0, 0, 0));
 
