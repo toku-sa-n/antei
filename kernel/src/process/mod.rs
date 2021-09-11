@@ -2,6 +2,7 @@ use {
     crate::sysproc,
     aligned_ptr::slice,
     arrayvec::ArrayVec,
+    config::MAX_PID,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
     ipc_api::Message,
@@ -24,7 +25,6 @@ pub(crate) mod ipc;
 mod manager;
 
 const LEAST_PRIORITY_LEVEL: usize = 1;
-const MAX_PROCESS: usize = 8;
 const GUARD_PAGE_SIZE: usize = 4096;
 const KERNEL_STACK_BYTES: usize = 12288;
 
@@ -46,7 +46,7 @@ pub(super) struct Process {
     context: UnsafeCell<Context>,
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
-    sending_to_this: ArrayVec<Pid, MAX_PROCESS>,
+    sending_to_this: ArrayVec<Pid, MAX_PID>,
     state: State,
     message_buffer: Option<ReadWrite<Message>>,
 }
@@ -232,7 +232,7 @@ impl Process {
     }
 
     fn generate_pid() -> Option<Pid> {
-        (0..MAX_PROCESS).find_map(|i| (!manager::process_exists(i.into())).then(|| Pid::new(i)))
+        (0..MAX_PID).find_map(|i| (!manager::process_exists(i.into())).then(|| Pid::new(i)))
     }
 }
 

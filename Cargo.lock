@@ -142,6 +142,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
+name = "config"
+version = "0.1.0"
+
+[[package]]
 name = "conquer-once"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -266,6 +270,7 @@ dependencies = [
  "boot_info",
  "cc",
  "cfg_aliases",
+ "config",
  "conquer-once",
  "cpio_reader",
  "elfloader",
