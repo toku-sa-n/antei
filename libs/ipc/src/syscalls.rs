@@ -39,6 +39,7 @@ pub fn try_send(to: Pid, message: Message) -> Result<(), Error> {
 /// # Panics
 ///
 /// This method panics if `from` specifies a negative PID.
+#[must_use]
 pub fn receive(from: ReceiveFrom) -> Message {
     try_receive(from).expect("Failed to receive a message.")
 }
