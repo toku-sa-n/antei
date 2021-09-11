@@ -1,6 +1,6 @@
 use {
     super::{
-        context::Context, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL, MAX_PROCESS,
+        context::Context, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL, MAX_PID,
     },
     crate::{interrupt, tss},
     heapless::{Deque, Vec},
@@ -11,7 +11,7 @@ use {
     x86_64::VirtAddr,
 };
 
-static MANAGER: Spinlock<Manager<MAX_PROCESS>> = const_spinlock(Manager::new());
+static MANAGER: Spinlock<Manager<MAX_PID>> = const_spinlock(Manager::new());
 
 pub(crate) fn switch() {
     // It is impossible to inline `manager`. If it is inlined, the lock will not be unlocked until
@@ -95,7 +95,7 @@ fn receive_without_disabling_interrupts(
     Ok(())
 }
 
-fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PROCESS>> {
+fn lock<'a>() -> SpinlockGuard<'a, Manager<MAX_PID>> {
     let m = MANAGER.try_lock();
 
     m.expect("Failed to lock the process manager.")
@@ -469,7 +469,7 @@ impl<'a, const N: usize> Receiver<'a, N> {
 
 // `Deque` is non-Copyable, so we cannot do `[Deque::new(); NUM_LEVEL]`. This is why we use the
 // `Vec`, instead of an array.
-struct RunnablePids<const NUM_LEVEL: usize>(Vec<Deque<Pid, MAX_PROCESS>, NUM_LEVEL>);
+struct RunnablePids<const NUM_LEVEL: usize>(Vec<Deque<Pid, MAX_PID>, NUM_LEVEL>);
 impl<const NUM_LEVEL: usize> RunnablePids<NUM_LEVEL> {
     const fn new() -> Self {
         Self(Vec::new())

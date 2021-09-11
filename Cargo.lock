@@ -270,6 +270,7 @@ dependencies = [
  "boot_info",
  "cc",
  "cfg_aliases",
+ "config",
  "conquer-once",
  "cpio_reader",
  "elfloader",
