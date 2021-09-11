@@ -1,7 +1,7 @@
 #![no_std]
 
 #[panic_handler]
-fn panic(_: &core::panic::PanicInfo) -> ! {
+fn panic(_: &core::panic::PanicInfo<'_>) -> ! {
     loop {
         core::hint::spin_loop();
     }
