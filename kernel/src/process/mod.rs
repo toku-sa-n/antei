@@ -36,6 +36,7 @@ pub(super) fn init() {
 
     manager::add(Process::from_initrd("init"));
     manager::add(Process::from_function(sysproc::main));
+    manager::add(Process::from_initrd("pm"));
 
     #[cfg(test_on_qemu)]
     manager::add(Process::from_function(crate::tests::main));
