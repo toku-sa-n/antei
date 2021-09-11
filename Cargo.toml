@@ -5,6 +5,7 @@ members = [
     "libs/acpi",
     "libs/apic",
     "libs/boot_info",
+    "libs/config",
     "libs/debug",
     "libs/frame_allocator",
     "libs/ipc",
