@@ -1,11 +1,11 @@
 use {
     super::{
-        context::Context, Pid, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL,
-        MAX_PROCESS,
+        context::Context, Priority, Process, ReceiveFrom, State, LEAST_PRIORITY_LEVEL, MAX_PROCESS,
     },
     crate::{interrupt, tss},
     heapless::{Deque, Vec},
     ipc_api::{Error, Message},
+    pid::Pid,
     spinning_top::{const_spinlock, Spinlock, SpinlockGuard},
     vm::accessor::single::{read_write, ReadWrite},
     x86_64::VirtAddr,

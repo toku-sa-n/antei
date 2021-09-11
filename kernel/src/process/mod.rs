@@ -22,7 +22,6 @@ pub(crate) use {manager::switch, pid::Pid};
 mod context;
 pub(crate) mod ipc;
 mod manager;
-mod pid;
 
 const LEAST_PRIORITY_LEVEL: usize = 1;
 const MAX_PROCESS: usize = 8;
@@ -71,7 +70,7 @@ impl Process {
     }
 
     fn try_from_function(f: fn() -> !) -> Option<Self> {
-        let pid = Pid::generate()?;
+        let pid = Self::generate_pid()?;
 
         let pml4 = Self::create_new_pml4()?;
 
@@ -107,7 +106,7 @@ impl Process {
     }
 
     fn try_from_initrd(name: &str) -> Option<Self> {
-        let pid = Pid::generate()?;
+        let pid = Self::generate_pid()?;
 
         let stack_size = NumOfPages::new(5);
 
@@ -230,6 +229,10 @@ impl Process {
         }
 
         stack
+    }
+
+    fn generate_pid() -> Option<Pid> {
+        (0..MAX_PROCESS).find_map(|i| (!manager::process_exists(i.into())).then(|| Pid::new(i)))
     }
 }
 
