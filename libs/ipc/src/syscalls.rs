@@ -20,6 +20,7 @@ pub fn send(to: Pid, message: Message) {
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `to`.
+#[cfg_attr(target_pointer_width = "64", allow(clippy::missing_panics_doc))]
 pub fn try_send(to: Pid, message: Message) -> Result<(), Error> {
     let message: *const _ = &message;
 
