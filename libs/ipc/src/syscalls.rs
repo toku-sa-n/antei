@@ -9,6 +9,13 @@ extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64) -> u64;
 }
 
+/// # Panics
+///
+/// This function panics if `to <= 0`.
+pub fn send(to: Pid, message: Message) {
+    try_send(to, message).expect("Failed to send a message.");
+}
+
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `to`.
@@ -27,6 +34,13 @@ pub fn try_send(to: Pid, message: Message) -> Result<(), Error> {
     } else {
         Err(Error)
     }
+}
+
+/// # Panics
+///
+/// This method panics if `from` specifies a negative PID.
+pub fn receive(from: ReceiveFrom) -> Message {
+    try_receive(from).expect("Failed to receive a message.")
 }
 
 /// # Errors
