@@ -3,9 +3,12 @@
 
 extern crate init as _;
 
-use ipc::{
-    message::{Body, Header, Message},
-    ReceiveFrom,
+use {
+    ipc::{
+        message::{Body, Header, Message},
+        ReceiveFrom,
+    },
+    pid::Pid,
 };
 
 #[no_mangle]
@@ -16,12 +19,12 @@ fn main() -> ! {
             body: Body(0x334, 0, 0, 0, 0),
         };
 
-        ipc::send(2, message);
+        ipc::send(Pid::new(2), message);
 
-        let message = ipc::receive(ReceiveFrom::Pid(2));
+        let message = ipc::receive(ReceiveFrom::Pid(Pid::new(2)));
 
         assert_eq!(message.body, Body(0x0114_0514, 0, 0, 0, 0));
 
-        assert!(ipc::try_receive(ReceiveFrom::Pid(6)).is_err());
+        assert!(ipc::try_receive(ReceiveFrom::Pid(Pid::new(6))).is_err());
     }
 }

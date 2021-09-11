@@ -11,3 +11,4 @@ cc = "1.0.69"
 posix = { path = "../posix" }
 num-derive = { version = "0.3.3", default-features = false }
 num-traits = { version = "0.2.14", default-features = false }
+pid = { path = "../pid" }
