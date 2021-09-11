@@ -7,5 +7,5 @@ pub mod syscalls;
 pub use {
     error::Error,
     message::Message,
-    syscalls::{receive, send, ReceiveFrom},
+    syscalls::{receive, send, try_receive, try_send, ReceiveFrom},
 };

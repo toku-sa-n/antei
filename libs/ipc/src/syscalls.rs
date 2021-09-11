@@ -9,6 +9,13 @@ extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64) -> u64;
 }
 
+/// # Panics
+///
+/// This function panics if `to <= 0`.
+pub fn send(to: Pid, message: Message) {
+    try_send(to, message).expect("Failed to send a message.");
+}
+
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `to`.
@@ -16,7 +23,7 @@ extern "sysv64" {
 /// # Panics
 ///
 /// This function panics if `to <= 0`.
-pub fn send(to: Pid, message: Message) -> Result<(), Error> {
+pub fn try_send(to: Pid, message: Message) -> Result<(), Error> {
     let to = to.try_into();
     let to = to.expect("Invalid PID.");
 
@@ -29,6 +36,14 @@ pub fn send(to: Pid, message: Message) -> Result<(), Error> {
     }
 }
 
+/// # Panics
+///
+/// This method panics if `from` specifies a negative PID.
+#[must_use]
+pub fn receive(from: ReceiveFrom) -> Message {
+    try_receive(from).expect("Failed to receive a message.")
+}
+
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `from` specifies.
@@ -36,7 +51,7 @@ pub fn send(to: Pid, message: Message) -> Result<(), Error> {
 /// # Panics
 ///
 /// This function panics if `from` specifies a negative PID.
-pub fn receive(from: ReceiveFrom) -> Result<Message, Error> {
+pub fn try_receive(from: ReceiveFrom) -> Result<Message, Error> {
     let mut m = MaybeUninit::uninit();
 
     let from = match from {
