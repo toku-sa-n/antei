@@ -9,7 +9,6 @@ members = [
     "libs/frame_allocator",
     "libs/ipc",
     "libs/pic",
-    "libs/pm",
     "libs/posix",
     "libs/predefined_mmap",
     "libs/qemu",
@@ -17,6 +16,7 @@ members = [
     "libs/uefi",
     "libs/vm",
     "servers/init",
+    "servers/pm",
 ]
 
 [profile.dev]
