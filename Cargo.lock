@@ -252,6 +252,7 @@ name = "init"
 version = "0.1.0"
 dependencies = [
  "ipc",
+ "pid",
  "rlibc",
 ]
 
@@ -262,6 +263,7 @@ dependencies = [
  "cc",
  "num-derive",
  "num-traits",
+ "pid",
  "posix",
 ]
 
@@ -593,6 +595,10 @@ dependencies = [
  "uefi",
  "x86_64",
 ]
+
+[[package]]
+name = "vm_server"
+version = "0.1.0"
 
 [[package]]
 name = "void"

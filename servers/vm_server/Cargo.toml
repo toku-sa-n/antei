@@ -1,11 +1,11 @@
 [package]
-name = "init"
+name = "vm_server"
 version = "0.1.0"
 edition = "2018"
 license = "MIT OR Apache-2.0"
 
 [[bin]]
-name = "init"
+name = "vm_server"
 test = false
 
 [lib]
@@ -13,8 +13,3 @@ test = false
 
 [features]
 test_on_qemu = []
-
-[dependencies]
-ipc = { path = "../../libs/ipc" }
-pid = { path = "../../libs/pid" }
-rlibc = "1.0.0"

@@ -20,6 +20,7 @@ members = [
     "libs/vm",
     "servers/init",
     "servers/pm",
+    "servers/vm_server",
 ]
 
 [profile.dev]

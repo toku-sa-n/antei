@@ -2,50 +2,52 @@ use {
     super::Message,
     core::{convert::TryInto, mem::MaybeUninit},
     num_derive::FromPrimitive,
-    posix::sys::types::Pid,
+    pid::Pid,
+    posix::sys::types::Pid as PosixPid,
 };
 
 extern "sysv64" {
     fn execute_syscall(index: Ty, a1: u64, a2: u64) -> u64;
 }
 
+/// # Panics
+///
+/// This function panics if there is no process with PID `to`.
+pub fn send(to: Pid, message: Message) {
+    try_send(to, message).expect("Failed to send a message.");
+}
+
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `to`.
-///
-/// # Panics
-///
-/// This function panics if `to <= 0`.
-pub fn send(to: Pid, message: Message) -> Result<(), Error> {
-    let to = to.try_into();
-    let to = to.expect("Invalid PID.");
-
+#[cfg_attr(target_pointer_width = "64", allow(clippy::missing_panics_doc))]
+pub fn try_send(to: Pid, message: Message) -> Result<(), Error> {
     let message: *const _ = &message;
 
-    if unsafe { execute_syscall(Ty::Send, to, message as _) } == 0 {
+    if unsafe { execute_syscall(Ty::Send, to.as_usize().try_into().unwrap(), message as _) } == 0 {
         Ok(())
     } else {
         Err(Error)
     }
 }
 
+/// # Panics
+///
+/// This method panics if there is no process with PID `from` specifies.
+#[must_use]
+pub fn receive(from: ReceiveFrom) -> Message {
+    try_receive(from).expect("Failed to receive a message.")
+}
+
 /// # Errors
 ///
 /// This function returns an error if there is no process with PID `from` specifies.
-///
-/// # Panics
-///
-/// This function panics if `from` specifies a negative PID.
-pub fn receive(from: ReceiveFrom) -> Result<Message, Error> {
+pub fn try_receive(from: ReceiveFrom) -> Result<Message, Error> {
     let mut m = MaybeUninit::uninit();
 
     let from = match from {
         ReceiveFrom::Any => -1,
-        ReceiveFrom::Pid(pid) => {
-            assert!(pid > 0, "Invalid PID.");
-
-            pid
-        }
+        ReceiveFrom::Pid(pid) => PosixPid::from(pid),
     };
 
     // We cannot use `try_into` because it returns an error if the value is negative while the
