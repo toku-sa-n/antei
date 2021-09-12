@@ -1,0 +1,15 @@
+[package]
+name = "qemu_serial"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "qemu_serial"
+test = false
+
+[lib]
+test = false
+
+[features]
+test_on_qemu = []

@@ -20,6 +20,7 @@ members = [
     "libs/vm",
     "servers/init",
     "servers/pm",
+    "servers/qemu_serial",
     "servers/vm_server",
 ]
 
