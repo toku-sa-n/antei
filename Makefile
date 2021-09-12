@@ -37,7 +37,12 @@ PM_SRCS	=	$(call cargo_project_src, $(PM_DIR))
 PM_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/pm
 PM	=	$(BUILD_DIR)/pm
 
-INITRD_CONTENTS	=	init pm
+VM_SERVER_DIR	=	servers/vm_server
+VM_SERVER_SRCS	=	$(call cargo_project_src, $(VM_SERVER_DIR))
+VM_SERVER_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/vm_server
+VM_SERVER	=	$(BUILD_DIR)/vm_server
+
+INITRD_CONTENTS	=	init pm vm_server
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 LIBS_DIR	=	libs
@@ -78,7 +83,7 @@ $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
-$(INITRD): $(INIT) $(PM)|$(BUILD_DIR)
+$(INITRD): $(INIT) $(PM) $(VM_SERVER)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|tr " " "\n"|cpio -o > $(notdir $@)
 
 $(INIT): $(INIT_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
@@ -88,6 +93,10 @@ $(INIT): $(INIT_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 $(PM): $(PM_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(PM_DIR) && cargo build $(RUSTFLAGS))
 	cp $(PM_IN_TARGET) $@
+
+$(VM_SERVER): $(VM_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
+	(cd $(VM_SERVER_DIR) && cargo build $(RUSTFLAGS))
+	cp $(VM_SERVER_TARGET) $@
 
 $(BUILD_DIR):
 	mkdir -p $@

@@ -1,0 +1,8 @@
+[build]
+target = "x86_64-unknown-linux-gnu"
+
+[target.x86_64-unknown-linux-gnu]
+rustflags = [
+    "-C", "link-args=-T servers/vm_server/vm_server.ld",
+    "-C", "relocation-model=static",
+]
