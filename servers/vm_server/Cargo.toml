@@ -13,3 +13,6 @@ test = false
 
 [features]
 test_on_qemu = []
+
+[dependencies]
+config = { path = "../../libs/config" }
