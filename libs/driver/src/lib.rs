@@ -47,6 +47,7 @@ fn loop_iteration(handler: &mut impl Handler) {
 
     let reply = Message {
         header: Header::default(),
+        #[allow(clippy::cast_sign_loss)]
         body: Body(status as u64, 0, 0, 0, 0),
     };
 
