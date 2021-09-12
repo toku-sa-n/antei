@@ -4,6 +4,12 @@ define cargo_project_src
 	$(shell find $1|grep -v $1/target)
 endef
 
+define server =
+$(BUILD_DIR)/$1: $(call cargo_project_src,servers/$1) $(LIBS_SRCS)|$(BUILD_DIR)
+	(cd servers/$1 && cargo build $(RUSTFLAGS))
+	cp target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/$1 $(BUILD_DIR)/$1
+endef
+
 ifeq ($(RELEASE), 1)
 	RELEASE_OR_DEBUG	=	release
 	RUSTFLAGS	=	--release
@@ -27,22 +33,8 @@ KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
-INIT_DIR	=	servers/init
-INIT_SRCS	=	$(call cargo_project_src, $(INIT_DIR))
-INIT_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/init
-INIT	=	$(BUILD_DIR)/init
-
-PM_DIR	=	servers/pm
-PM_SRCS	=	$(call cargo_project_src, $(PM_DIR))
-PM_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/pm
-PM	=	$(BUILD_DIR)/pm
-
-VM_SERVER_DIR	=	servers/vm_server
-VM_SERVER_SRCS	=	$(call cargo_project_src, $(VM_SERVER_DIR))
-VM_SERVER_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/vm_server
-VM_SERVER	=	$(BUILD_DIR)/vm_server
-
 INITRD_CONTENTS	=	init pm vm_server
+INITRD_DEPENDENCIES	=	$(foreach file,$(INITRD_CONTENTS),$(BUILD_DIR)/$(file))
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 LIBS_DIR	=	libs
@@ -83,20 +75,12 @@ $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
 
-$(INITRD): $(INIT) $(PM) $(VM_SERVER)|$(BUILD_DIR)
+$(INITRD): $(INITRD_DEPENDENCIES)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|tr " " "\n"|cpio -o > $(notdir $@)
 
-$(INIT): $(INIT_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
-	(cd $(INIT_DIR) && cargo build $(RUSTFLAGS))
-	cp $(INIT_IN_TARGET) $@
-
-$(PM): $(PM_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
-	(cd $(PM_DIR) && cargo build $(RUSTFLAGS))
-	cp $(PM_IN_TARGET) $@
-
-$(VM_SERVER): $(VM_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
-	(cd $(VM_SERVER_DIR) && cargo build $(RUSTFLAGS))
-	cp $(VM_SERVER_TARGET) $@
+$(eval $(call server,init))
+$(eval $(call server,pm))
+$(eval $(call server,vm_server))
 
 $(BUILD_DIR):
 	mkdir -p $@
