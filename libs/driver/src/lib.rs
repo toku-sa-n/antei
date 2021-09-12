@@ -40,8 +40,8 @@ fn loop_iteration(handler: &mut impl Handler) {
         Some(OperationType::Open) => handler.open(&message),
         Some(OperationType::Close) => handler.close(&message),
         Some(OperationType::Read) => handler.read(&message),
-        Some(OperationType::Write) => handler.read(&message),
-        Some(OperationType::Ioctl) => handler.read(&message),
+        Some(OperationType::Write) => handler.write(&message),
+        Some(OperationType::Ioctl) => handler.ioctl(&message),
         None => -1,
     };
 
