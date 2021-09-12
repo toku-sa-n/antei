@@ -76,7 +76,6 @@ $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	cp $(BOOTX64_IN_TARGET) $@
 
 $(INITRD): $(INITRD_DEPENDENCIES)|$(BUILD_DIR)
-	@echo $(INITRD_DEPENDENCIES)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|tr " " "\n"|cpio -o > $(notdir $@)
 
 $(eval $(call server,init))
