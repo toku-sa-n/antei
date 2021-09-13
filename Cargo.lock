@@ -603,6 +603,8 @@ name = "vm_server"
 version = "0.1.0"
 dependencies = [
  "config",
+ "pid",
+ "x86_64",
 ]
 
 [[package]]
