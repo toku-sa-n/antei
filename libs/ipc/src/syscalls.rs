@@ -73,6 +73,11 @@ pub enum ReceiveFrom {
     Any,
     Pid(Pid),
 }
+impl From<Pid> for ReceiveFrom {
+    fn from(pid: Pid) -> Self {
+        Self::Pid(pid)
+    }
+}
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Error;
