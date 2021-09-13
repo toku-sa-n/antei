@@ -2,13 +2,16 @@
 
 use {
     aligned_ptr::slice,
-    uefi::service::boot::{
-        MemoryDescriptor, MemoryType, ACPI_MEMORY_NVS, ACPI_RECLAIM_MEMORY, BOOT_SERVICES_CODE,
-        BOOT_SERVICES_DATA, CONVENTIONAL_MEMORY, LOADER_CODE, LOADER_DATA, MEMORY_MAPPED_IO,
-        MEMORY_MAPPED_IO_PORT_SPACE, MEMORY_MORE_RELIABLE, MEMORY_NV, MEMORY_RO, MEMORY_RP,
-        MEMORY_RUNTIME, MEMORY_UC, MEMORY_UCE, MEMORY_WB, MEMORY_WC, MEMORY_WP, MEMORY_WT,
-        MEMORY_XP, PAL_CODE, PERSISTENT_MEMORY, RESERVED_MEMORY_TYPE, RUNTIME_SERVICES_CODE,
-        RUNTIME_SERVICES_DATA, UNUSABLE_MEMORY,
+    uefi::{
+        protocols::console::graphics_output,
+        service::boot::{
+            MemoryDescriptor, MemoryType, ACPI_MEMORY_NVS, ACPI_RECLAIM_MEMORY, BOOT_SERVICES_CODE,
+            BOOT_SERVICES_DATA, CONVENTIONAL_MEMORY, LOADER_CODE, LOADER_DATA, MEMORY_MAPPED_IO,
+            MEMORY_MAPPED_IO_PORT_SPACE, MEMORY_MORE_RELIABLE, MEMORY_NV, MEMORY_RO, MEMORY_RP,
+            MEMORY_RUNTIME, MEMORY_UC, MEMORY_UCE, MEMORY_WB, MEMORY_WC, MEMORY_WP, MEMORY_WT,
+            MEMORY_XP, PAL_CODE, PERSISTENT_MEMORY, RESERVED_MEMORY_TYPE, RUNTIME_SERVICES_CODE,
+            RUNTIME_SERVICES_DATA, UNUSABLE_MEMORY,
+        },
     },
     x86_64::{PhysAddr, VirtAddr},
 };
@@ -23,17 +26,19 @@ pub struct BootInfo {
 
     mmap: Mmap,
     rsdp: PhysAddr,
+    gop: graphics_output::ModeInformation,
 
     magic_footer: u64,
 }
 impl BootInfo {
     #[must_use]
-    pub fn new(mmap: Mmap, rsdp: PhysAddr) -> Self {
+    pub fn new(mmap: Mmap, rsdp: PhysAddr, gop: graphics_output::ModeInformation) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
 
             mmap,
             rsdp,
+            gop,
 
             magic_footer: MAGIC_FOOTER,
         }
@@ -52,6 +57,11 @@ impl BootInfo {
     #[must_use]
     pub fn rsdp(&self) -> PhysAddr {
         self.rsdp
+    }
+
+    #[must_use]
+    pub fn gop_mode_information(&self) -> graphics_output::ModeInformation {
+        self.gop
     }
 
     fn check_header_and_footer(&self) {

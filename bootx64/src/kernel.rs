@@ -1,7 +1,7 @@
 use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
-    uefi::service::boot::MemoryDescriptor,
+    uefi::{protocols::console::graphics_output, service::boot::MemoryDescriptor},
     x86_64::{PhysAddr, VirtAddr},
 };
 
@@ -14,8 +14,13 @@ pub fn locate<'a>(st: &mut SystemTable) -> &'a [u8] {
 /// The caller must ensure that
 /// - The recursive paging address `0xff7f_bfdf_e000` is accessible.
 /// - There is no reference to one of the all working page tables.
-pub unsafe fn load_and_jump(binary: &[u8], mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
-    jump(unsafe { load(binary, mmap) }, mmap, rsdp);
+pub unsafe fn load_and_jump(
+    binary: &[u8],
+    mmap: &mut [MemoryDescriptor],
+    rsdp: PhysAddr,
+    gop: graphics_output::ModeInformation,
+) -> ! {
+    jump(unsafe { load(binary, mmap) }, mmap, rsdp, gop);
 }
 
 /// # Safety
@@ -32,7 +37,12 @@ unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     entry
 }
 
-fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
+fn jump(
+    entry: VirtAddr,
+    mmap: &mut [MemoryDescriptor],
+    rsdp: PhysAddr,
+    gop: graphics_output::ModeInformation,
+) -> ! {
     extern "sysv64" {
         fn switch_stack_and_call_kernel_code(
             boot_info: *mut BootInfo,
@@ -47,7 +57,7 @@ fn jump(entry: VirtAddr, mmap: &mut [MemoryDescriptor], rsdp: PhysAddr) -> ! {
     // SAFETY: The pointer and the length are the correct ones.
     let mmap = unsafe { Mmap::new(mmap_start, mmap_len) };
 
-    let mut boot_info = BootInfo::new(mmap, rsdp);
+    let mut boot_info = BootInfo::new(mmap, rsdp, gop);
 
     // SAFETY: Correct arguments.
     unsafe {

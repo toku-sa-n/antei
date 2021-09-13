@@ -2,7 +2,7 @@
 #![no_main]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-use bootx64::{initrd, kernel, paging, rsdp, stack};
+use bootx64::{gop, initrd, kernel, paging, rsdp, stack};
 
 #[no_mangle]
 fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
@@ -11,6 +11,8 @@ fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
     let initrd_binary = initrd::locate(&mut st);
 
     let rsdp = rsdp::get(&st);
+
+    let gop = gop::set_preferred_resolution(&mut st);
 
     let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
 
@@ -33,6 +35,6 @@ fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
     unsafe {
-        kernel::load_and_jump(kernel_binary, mmap, rsdp);
+        kernel::load_and_jump(kernel_binary, mmap, rsdp, gop);
     }
 }
