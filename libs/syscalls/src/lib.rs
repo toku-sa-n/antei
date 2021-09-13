@@ -9,6 +9,9 @@ use {
     pid::predefined,
 };
 
+/// # Panics
+///
+/// This function panics if the kernel did not reply an empty message.
 pub fn noop() {
     let message = Message {
         header: Header::default(),
