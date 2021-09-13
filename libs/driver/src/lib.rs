@@ -1,7 +1,6 @@
 #![no_std]
 
 use {
-    core::convert::TryInto,
     ipc::{
         message::{Body, Header},
         Message, ReceiveFrom,
