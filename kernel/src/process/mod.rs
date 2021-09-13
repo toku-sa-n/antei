@@ -5,7 +5,7 @@ use {
     config::MAX_PID,
     context::Context,
     core::{cell::UnsafeCell, convert::TryInto},
-    ipc_api::Message,
+    ipc_api::{Message, ReceiveFrom},
     os_units::NumOfPages,
     vm::{
         accessor::single::{write_only, ReadWrite},
@@ -247,13 +247,6 @@ fn initrd<'a>() -> &'a [u8] {
 
     // SAFETY: No mutable references point to this region.
     unsafe { slice::from_raw_parts(start, num_of_pages.as_bytes().as_usize()) }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) enum ReceiveFrom {
-    Any,
-    #[allow(dead_code)]
-    Pid(Pid),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
