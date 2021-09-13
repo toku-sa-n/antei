@@ -1,6 +1,6 @@
 use {
     crate::process::ipc::{receive, send, ReceiveFrom},
-    core::{convert::TryInto, mem::MaybeUninit},
+    core::mem::MaybeUninit,
     ipc_api::message::{Body, Header, Message},
 };
 
@@ -19,16 +19,9 @@ pub(crate) fn main() -> ! {
                 body: Body(0x0114_0514, 0, 0, 0, 0),
             };
 
-            match message.header.sender_pid.try_into() {
-                Ok(pid) => {
-                    send(pid, reply).expect("Failed to send a message.");
+            send(message.header.sender_pid, reply).expect("Failed to send a message.");
 
-                    log::info!("The sysproc sent a message.");
-                }
-                Err(e) => {
-                    log::error!("The pid indicated an error: {:?}", e);
-                }
-            }
+            log::info!("The sysproc sent a message.");
         }
     }
 }
