@@ -14,14 +14,13 @@ pub(crate) fn main() -> ! {
 fn loop_iteration() {
     let message = receive_message();
 
-    match FromPrimitive::from_u64(message.body.0) {
-        Some(syscalls::Ty::Noop) => {
-            let to = message.header.sender_pid;
+    if let Some(syscalls::Ty::Noop) = FromPrimitive::from_u64(message.body.0) {
+        let to = message.header.sender_pid;
 
-            let r = send(to, Message::default());
-            r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
-        }
-        _ => log::warn!("Unrecognized message: {:?}", message),
+        let r = send(to, Message::default());
+        r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
+    } else {
+        log::warn!("Unrecognized message: {:?}", message);
     }
 }
 
