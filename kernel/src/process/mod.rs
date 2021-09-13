@@ -83,22 +83,18 @@ impl Process {
 
         let kernel_stack_end = VirtAddr::from_ptr(kernel_stack.get()) + kernel_stack_len - 8_u64;
 
-        unsafe {
-            Self::switch_pml4_do(pml4, || {
-                let context = Context::kernel(entry, pml4, kernel_stack_end);
-                let context = UnsafeCell::new(context);
+        let context = Context::kernel(entry, pml4, kernel_stack_end);
+        let context = UnsafeCell::new(context);
 
-                Some(Self {
-                    pid,
-                    context,
-                    priority: Priority::new(0),
-                    kernel_stack,
-                    sending_to_this: ArrayVec::new(),
-                    state: State::Runnable,
-                    message_buffer: None,
-                })
-            })
-        }
+        Some(Self {
+            pid,
+            context,
+            priority: Priority::new(0),
+            kernel_stack,
+            sending_to_this: ArrayVec::new(),
+            state: State::Runnable,
+            message_buffer: None,
+        })
     }
 
     fn from_initrd(name: &str) -> Self {
