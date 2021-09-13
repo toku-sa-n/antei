@@ -5,6 +5,7 @@ use {
         message::{Body, Header, Message},
         ReceiveFrom,
     },
+    num_derive::FromPrimitive,
     pid::predefined,
 };
 
@@ -21,6 +22,7 @@ pub fn noop() {
     assert_eq!(reply.body, Body::default());
 }
 
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Ty {
     Noop,
 }

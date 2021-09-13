@@ -543,6 +543,8 @@ name = "syscalls"
 version = "0.1.0"
 dependencies = [
  "ipc",
+ "num-derive",
+ "num-traits",
  "pid",
 ]
 
