@@ -13,3 +13,9 @@ test = false
 
 [features]
 test_on_qemu = []
+
+[dependencies]
+driver = { path = "../../libs/driver" }
+ipc = { path = "../../libs/ipc" }
+spinning_top = { version = "0.2.4", default-features = false }
+uart_16550 = { version = "0.2.15", features = ["stable"], default-features = false }

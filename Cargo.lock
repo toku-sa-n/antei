@@ -451,6 +451,12 @@ dependencies = [
 [[package]]
 name = "qemu_serial"
 version = "0.1.0"
+dependencies = [
+ "driver",
+ "ipc",
+ "spinning_top",
+ "uart_16550",
+]
 
 [[package]]
 name = "quote"
