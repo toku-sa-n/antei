@@ -18,3 +18,4 @@ test_on_qemu = []
 ipc = { path = "../../libs/ipc" }
 pid = { path = "../../libs/pid" }
 rlibc = "1.0.0"
+syscalls = { path = "../../libs/syscalls" }

@@ -14,7 +14,7 @@ pub(crate) fn main() -> ! {
 fn ipc() {
     let m = Message {
         header: Header::default(),
-        body: Body(0x334, 0, 0, 0, 0),
+        body: Body(syscalls::Ty::Noop as _, 0, 0, 0, 0),
     };
     send(predefined::SYSPROC, m).unwrap();
 
@@ -24,5 +24,5 @@ fn ipc() {
     // SAFETY: `receive` receives a message.
     let m = unsafe { m.assume_init() };
 
-    assert_eq!(m.body, Body(0x0114_0514, 0, 0, 0, 0), "Wrong message body.");
+    assert_eq!(m.body, Body::default());
 }
