@@ -1,4 +1,4 @@
-use posix::sys::types::Pid;
+use pid::Pid;
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug, Default, PartialOrd, Ord, PartialEq, Eq, Hash)]
