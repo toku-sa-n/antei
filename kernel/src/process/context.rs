@@ -1,11 +1,4 @@
-use x86_64::structures::gdt::SegmentSelector;
-
-use {
-    crate::gdt,
-    core::mem::size_of,
-    static_assertions::const_assert_eq,
-    x86_64::{registers::rflags::RFlags, structures::paging::PhysFrame, VirtAddr},
-};
+use {core::mem::size_of, static_assertions::const_assert_eq};
 
 #[repr(C, align(16))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -44,26 +37,6 @@ pub(super) struct Context {
 }
 const_assert_eq!(size_of::<Context>(), 8 * 4 * 6 + 512);
 impl Context {
-    pub(super) fn kernel(entry: VirtAddr, pml4: PhysFrame, rsp: VirtAddr) -> Self {
-        Self::new(
-            entry,
-            pml4,
-            rsp,
-            gdt::kernel_code_selector(),
-            gdt::kernel_data_selector(),
-        )
-    }
-
-    pub(super) fn user(entry: VirtAddr, pml4: PhysFrame, rsp: VirtAddr) -> Self {
-        Self::new(
-            entry,
-            pml4,
-            rsp,
-            gdt::user_code_selector(),
-            gdt::user_data_selector(),
-        )
-    }
-
     pub(super) fn switch(old: *mut Context, new: *mut Context) {
         extern "sysv64" {
             fn asm_switch_context(old: *mut Context, new: *mut Context);
@@ -71,32 +44,6 @@ impl Context {
 
         unsafe {
             asm_switch_context(old, new);
-        }
-    }
-
-    fn new(
-        entry: VirtAddr,
-        pml4: PhysFrame,
-        rsp: VirtAddr,
-        code_segment: SegmentSelector,
-        data_segment: SegmentSelector,
-    ) -> Self {
-        assert_eq!(
-            rsp.as_u64() % 16,
-            8,
-            "`RSP % 16` must be 8. We must simulate the condition after calling the main function."
-        );
-
-        Self {
-            rsp: rsp.as_u64(),
-            rip: entry.as_u64(),
-            rflags: (RFlags::INTERRUPT_FLAG | RFlags::PARITY_FLAG).bits(),
-            cr3: pml4.start_address().as_u64(),
-            cs: code_segment.0.into(),
-            ss: data_segment.0.into(),
-            fs: data_segment.0.into(),
-            gs: data_segment.0.into(),
-            ..Self::default()
         }
     }
 }

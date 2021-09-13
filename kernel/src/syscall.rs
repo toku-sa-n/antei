@@ -1,13 +1,6 @@
 use {
-    crate::{
-        gdt,
-        process::{ipc, Pid},
-    },
-    aligned_ptr::ptr,
+    crate::gdt,
     core::convert::TryInto,
-    ipc_api::syscalls::Ty,
-    num_traits::FromPrimitive,
-    posix::sys::types::Pid as PosixPid,
     x86_64::{
         registers::{
             control::{Efer, EferFlags},
@@ -35,36 +28,8 @@ pub(super) fn init() {
 }
 
 #[no_mangle]
-fn handle_syscall(index: u64, a1: u64, a2: u64) -> u64 {
-    match FromPrimitive::from_u64(index) {
-        Some(Ty::Send) => {
-            let to = Pid::new(a1.try_into().unwrap());
-            let message = unsafe { ptr::get(a2 as *const _) };
-
-            match ipc::send(to, message) {
-                Ok(()) => 0,
-                #[allow(clippy::cast_sign_loss)]
-                Err(_) => -1_i32 as _,
-            }
-        }
-        Some(Ty::Receive) => {
-            // See: https://github.com/rust-lang/rust-clippy/issues/7648.
-            #[allow(clippy::cast_possible_truncation, clippy::invalid_upcast_comparisons)]
-            let from = if (a1 as PosixPid) < 0 {
-                ipc::ReceiveFrom::Any
-            } else {
-                ipc::ReceiveFrom::Pid(Pid::new(a1.try_into().unwrap()))
-            };
-
-            match ipc::receive(from, a2 as *mut _) {
-                Ok(()) => 0,
-                #[allow(clippy::cast_sign_loss)]
-                Err(_) => -1_i32 as _,
-            }
-        }
-        #[allow(clippy::cast_sign_loss)]
-        None => -1_i32 as _,
-    }
+fn handle_syscall() -> u64 {
+    todo!();
 }
 
 /// # Safety
