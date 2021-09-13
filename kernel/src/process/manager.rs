@@ -72,7 +72,7 @@ fn current_kernel_stack_bottom() -> u64 {
 }
 
 fn send_without_disabling_interrupts(to: Pid, mut message: Message) -> Result<(), Error> {
-    message.header.sender_pid = lock().running.into();
+    message.header.sender_pid = lock().running;
 
     lock().send(to, message)?;
 
