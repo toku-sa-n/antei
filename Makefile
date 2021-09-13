@@ -4,6 +4,12 @@ define cargo_project_src
 	$(shell find $1|grep -v $1/target)
 endef
 
+define server =
+$(BUILD_DIR)/$1: $(call cargo_project_src,servers/$1) $(LIBS_SRCS)|$(BUILD_DIR)
+	(cd servers/$1 && cargo build $(RUSTFLAGS))
+	cp target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/$1 $(BUILD_DIR)/$1
+endef
+
 ifeq ($(RELEASE), 1)
 	RELEASE_OR_DEBUG	=	release
 	RUSTFLAGS	=	--release
@@ -26,6 +32,10 @@ KERNEL_DIR	=	kernel
 KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
+
+INITRD_CONTENTS	=	init pm vm_server
+INITRD_DEPENDENCIES	=	$(foreach file,$(INITRD_CONTENTS),$(BUILD_DIR)/$(file))
+INITRD	=	$(BUILD_DIR)/initrd.cpio
 
 LIBS_DIR	=	libs
 LIBS_SRCS	=	$(shell find $(LIBS_DIR)/)
@@ -50,6 +60,7 @@ $(ISO_FILE): $(KERNEL) $(INITRD) $(BOOTX64)|$(BUILD_DIR)
 	mmd -i $@ ::/efi
 	mmd -i $@ ::/efi/boot
 	mcopy -i $@ $(KERNEL) ::/
+	mcopy -i $@ $(INITRD) ::/
 	mcopy -i $@ $(BOOTX64) ::/efi/boot
 
 # Do not add a target like $(KERNEL_IN_TARGET).
@@ -63,6 +74,13 @@ $(KERNEL): $(KERNEL_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd $(BOOTX64_DIR) && cargo build $(RUSTFLAGS))
 	cp $(BOOTX64_IN_TARGET) $@
+
+$(INITRD): $(INITRD_DEPENDENCIES)|$(BUILD_DIR)
+	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|tr " " "\n"|cpio -o > $(notdir $@)
+
+$(eval $(call server,init))
+$(eval $(call server,pm))
+$(eval $(call server,vm_server))
 
 $(BUILD_DIR):
 	mkdir -p $@

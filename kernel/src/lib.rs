@@ -11,6 +11,9 @@ mod libc;
 mod log;
 mod process;
 mod syscall;
+mod sysproc;
+#[cfg(test_on_qemu)]
+mod tests;
 mod timer;
 mod tss;
 
@@ -44,13 +47,7 @@ pub fn init(boot_info: BootInfo) {
     syscall::init();
 }
 
-#[cfg(test_on_qemu)]
-pub fn fini() -> ! {
-    qemu::exit_success();
-}
-
-#[cfg(not(test_on_qemu))]
-pub fn fini() -> ! {
+pub fn idle() -> ! {
     loop {
         x86_64::instructions::interrupts::enable_and_hlt();
     }
