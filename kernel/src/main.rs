@@ -7,7 +7,7 @@ extern crate kernel as _;
 use {
     aligned_ptr::ptr,
     boot_info::BootInfo,
-    kernel::{idle, init},
+    kernel::{fini, init},
 };
 
 /// # Safety
@@ -18,5 +18,5 @@ unsafe extern "sysv64" fn main(boot_info: *mut BootInfo) {
     // SAFETY: `boot_info` must be dereferenceable.
     init(unsafe { ptr::get(boot_info) });
 
-    idle();
+    fini();
 }

@@ -173,28 +173,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "cpio_reader"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd420c52d86c5b08c494e7e3d16bce23f08f3f6544cccce2d6cc986d3144dca1"
-dependencies = [
- "bitflags",
-]
-
-[[package]]
 name = "debug"
 version = "0.1.0"
 dependencies = [
  "cc",
-]
-
-[[package]]
-name = "driver"
-version = "0.1.0"
-dependencies = [
- "ipc",
- "num-derive",
- "num-traits",
 ]
 
 [[package]]
@@ -250,26 +232,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "init"
-version = "0.1.0"
-dependencies = [
- "ipc",
- "pid",
- "rlibc",
-]
-
-[[package]]
-name = "ipc"
-version = "0.1.0"
-dependencies = [
- "cc",
- "num-derive",
- "num-traits",
- "pid",
- "posix",
-]
-
-[[package]]
 name = "kernel"
 version = "0.1.0"
 dependencies = [
@@ -283,11 +245,9 @@ dependencies = [
  "cfg_aliases",
  "config",
  "conquer-once",
- "cpio_reader",
  "elfloader",
  "frame_allocator",
  "heapless",
- "ipc",
  "log",
  "num-derive",
  "num-traits",
@@ -403,10 +363,6 @@ version = "0.1.0"
 dependencies = [
  "posix",
 ]
-
-[[package]]
-name = "pm"
-version = "0.1.0"
 
 [[package]]
 name = "posix"
@@ -597,10 +553,6 @@ dependencies = [
  "uefi",
  "x86_64",
 ]
-
-[[package]]
-name = "vm_server"
-version = "0.1.0"
 
 [[package]]
 name = "void"
