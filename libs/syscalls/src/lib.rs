@@ -1,0 +1,28 @@
+#![no_std]
+
+use {
+    ipc::message::{Body, Header, Message},
+    num_derive::FromPrimitive,
+    pid::predefined,
+};
+
+/// # Panics
+///
+/// This function panics if the kernel did not reply an empty message.
+pub fn noop() {
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::Noop as _, 0, 0, 0, 0),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    assert_eq!(reply.body, Body::default());
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Ty {
+    Noop,
+}
