@@ -51,7 +51,7 @@ fn loop_iteration(handler: &mut impl Handler) {
         body: Body(status as u64, 0, 0, 0, 0),
     };
 
-    ipc::send(message.header.sender_pid.try_into().unwrap(), reply);
+    ipc::send(message.header.sender_pid, reply);
 }
 
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord, Hash)]
