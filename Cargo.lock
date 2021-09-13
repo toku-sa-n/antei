@@ -539,6 +539,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "syscalls"
+version = "0.1.0"
+dependencies = [
+ "ipc",
+ "pid",
+]
+
+[[package]]
 name = "uart_16550"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"

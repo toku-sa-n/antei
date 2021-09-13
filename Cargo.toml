@@ -16,6 +16,7 @@ members = [
     "libs/predefined_mmap",
     "libs/qemu",
     "libs/r_acpi",
+    "libs/syscalls",
     "libs/uefi",
     "libs/vm",
     "servers/init",
