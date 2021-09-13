@@ -1,10 +1,7 @@
 #![no_std]
 
 use {
-    ipc::{
-        message::{Body, Header, Message},
-        ReceiveFrom,
-    },
+    ipc::message::{Body, Header, Message},
     num_derive::FromPrimitive,
     pid::predefined,
 };
@@ -20,7 +17,7 @@ pub fn noop() {
 
     ipc::send(predefined::SYSPROC, message);
 
-    let reply = ipc::receive(ReceiveFrom::Pid(predefined::SYSPROC));
+    let reply = ipc::receive(predefined::SYSPROC.into());
 
     assert_eq!(reply.body, Body::default());
 }
