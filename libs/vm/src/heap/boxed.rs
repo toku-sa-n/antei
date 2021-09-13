@@ -26,6 +26,14 @@ impl<T> Kbox<T> {
         }
     }
 }
+impl<T> Clone for Kbox<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self::new(self.deref().clone())
+    }
+}
 impl<T> Deref for Kbox<T> {
     type Target = T;
 
