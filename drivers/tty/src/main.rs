@@ -5,6 +5,9 @@ extern crate tty as _;
 
 #[no_mangle]
 fn main() -> ! {
-    syscalls::get_screen_info();
-    loop {}
+    let _ = syscalls::get_screen_info();
+
+    loop {
+        core::hint::spin_loop();
+    }
 }
