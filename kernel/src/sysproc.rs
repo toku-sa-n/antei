@@ -3,7 +3,7 @@ use {
         self,
         ipc::{receive, send, ReceiveFrom},
     },
-    core::{convert::TryInto, mem::MaybeUninit},
+    core::{convert::TryInto, mem::MaybeUninit, ptr},
     ipc_api::message::Message,
     num_traits::FromPrimitive,
     os_units::Bytes,
@@ -39,17 +39,15 @@ fn handle_copy_data_from(message: &Message) {
     let data = process::enter_address_space_and_do(src_pid, || {
         let mut buffer = [0_u8; 128];
 
-        for (i, b) in buffer.iter_mut().enumerate().take(bytes.as_usize()) {
-            *b = unsafe { (src_addr + i).as_ptr::<u8>().read() };
+        unsafe {
+            ptr::copy(src_addr.as_ptr(), buffer.as_mut_ptr(), bytes.as_usize());
         }
 
         buffer
     });
 
-    for (i, &d) in data.iter().enumerate().take(bytes.as_usize()) {
-        unsafe {
-            (dst_addr + i).as_mut_ptr::<u8>().write(d);
-        }
+    unsafe {
+        ptr::copy(data.as_ptr(), dst_addr.as_mut_ptr(), bytes.as_usize());
     }
 
     reply_ack(message.header.sender_pid);
