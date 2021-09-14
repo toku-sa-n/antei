@@ -8,4 +8,6 @@ license = "MIT OR Apache-2.0"
 ipc = { path = "../ipc" }
 num-derive = { version = "0.3.3", default-features = false }
 num-traits = { version = "0.2.14", default-features = false }
+os_units = "0.4.2"
 pid = { path = "../pid/" }
+x86_64 = { version = "0.14.4", default-features = false }
