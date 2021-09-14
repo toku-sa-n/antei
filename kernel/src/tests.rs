@@ -17,6 +17,7 @@ pub(crate) fn main_1() -> ! {
     let m = unsafe { m.assume_init() };
 
     let mut buffer = [0; 128];
+
     let src_addr = VirtAddr::new(m.body.0);
     let dst_addr = VirtAddr::from_ptr(buffer.as_mut_ptr());
     let count = DATA.len();
@@ -39,9 +40,7 @@ pub(crate) fn main_1() -> ! {
 
     assert_eq!(unsafe { m.assume_init().body }, Body::default());
 
-    for i in 0..count {
-        assert_eq!(buffer[i], DATA.as_bytes()[i]);
-    }
+    assert_eq!(&buffer[..count], DATA.as_bytes());
 
     qemu::exit_success();
 }
