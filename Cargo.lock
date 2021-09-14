@@ -538,7 +538,9 @@ dependencies = [
  "ipc",
  "num-derive",
  "num-traits",
+ "os_units",
  "pid",
+ "x86_64",
 ]
 
 [[package]]

@@ -18,7 +18,10 @@ use {
     },
 };
 
-pub(crate) use {manager::switch, pid::Pid};
+pub(crate) use {
+    manager::{enter_address_space_and_do, switch},
+    pid::Pid,
+};
 
 mod context;
 pub(crate) mod ipc;
@@ -39,11 +42,14 @@ pub(super) fn init() {
     manager::add(Process::from_initrd("vm_server"));
 
     #[cfg(test_on_qemu)]
-    manager::add(Process::from_function(crate::tests::main));
+    manager::add(Process::from_function(crate::tests::main_1));
+    #[cfg(test_on_qemu)]
+    manager::add(Process::from_function(crate::tests::main_2));
 }
 
 pub(super) struct Process {
     pid: Pid,
+    pml4: PhysFrame,
     context: UnsafeCell<Context>,
     priority: Priority,
     kernel_stack: Kbox<UnsafeCell<[u8; KERNEL_STACK_BYTES]>>,
@@ -55,8 +61,11 @@ impl Process {
     const KERNEL_STACK_MAGIC: [u8; 8] = [0x73, 0x74, 0x6b, 0x67, 0x75, 0x61, 0x72, 0x64];
 
     fn idle() -> Self {
+        let (pml4, _) = Cr3::read();
+
         Self {
             pid: Pid::new(0),
+            pml4,
             context: UnsafeCell::default(),
             priority: Priority::new(LEAST_PRIORITY_LEVEL),
             kernel_stack: Self::generate_kernel_stack(),
@@ -88,6 +97,7 @@ impl Process {
 
         Some(Self {
             pid,
+            pml4,
             context,
             priority: Priority::new(0),
             kernel_stack,
@@ -120,7 +130,7 @@ impl Process {
 
         // SAFETY: `pml4` is generated in this method.
         unsafe {
-            Self::switch_pml4_do(pml4, || {
+            switch_pml4_do(pml4, || {
                 let entry = vm::map_elf(binary);
 
                 let stack_range = vm::alloc_pages(stack_size, stack_flags)?;
@@ -130,6 +140,7 @@ impl Process {
 
                 Some(Self {
                     pid,
+                    pml4,
                     context,
                     priority: Priority::new(0),
                     kernel_stack: Self::generate_kernel_stack(),
@@ -151,27 +162,6 @@ impl Process {
         if magic != Self::KERNEL_STACK_MAGIC {
             panic!("The kernel stack is smashed.");
         }
-    }
-
-    /// # Safety
-    ///
-    /// `pml4` must be a correct PML4.
-    unsafe fn switch_pml4_do<T>(pml4: PhysFrame, f: impl FnOnce() -> T) -> T {
-        let (old_pml4, flags) = Cr3::read();
-
-        // SAFETY: The caller must ensure that `pml4` is a correct PML4.
-        unsafe {
-            Cr3::write(pml4, flags);
-        }
-
-        let r = f();
-
-        // SAFETY: `old_pml4` is surely a correct PML4.
-        unsafe {
-            Cr3::write(old_pml4, flags);
-        }
-
-        r
     }
 
     fn create_new_pml4() -> Option<PhysFrame> {
@@ -231,6 +221,27 @@ impl Process {
     fn generate_pid() -> Option<Pid> {
         (0..MAX_PID).find_map(|i| (!manager::process_exists(i.into())).then(|| Pid::new(i)))
     }
+}
+
+/// # Safety
+///
+/// `pml4` must be a correct PML4.
+unsafe fn switch_pml4_do<T>(pml4: PhysFrame, f: impl FnOnce() -> T) -> T {
+    let (old_pml4, flags) = Cr3::read();
+
+    // SAFETY: The caller must ensure that `pml4` is a correct PML4.
+    unsafe {
+        Cr3::write(pml4, flags);
+    }
+
+    let r = f();
+
+    // SAFETY: `old_pml4` is surely a correct PML4.
+    unsafe {
+        Cr3::write(old_pml4, flags);
+    }
+
+    r
 }
 
 fn initrd<'a>() -> &'a [u8] {

@@ -50,6 +50,10 @@ pub(crate) fn receive(from: ReceiveFrom, buffer: *mut Message) -> Result<(), Err
     interrupt::disable_interrupts_and_do(|| receive_without_disabling_interrupts(from, buffer))
 }
 
+pub(crate) fn enter_address_space_and_do<T>(pid: Pid, f: impl FnOnce() -> T) -> T {
+    interrupt::disable_interrupts_and_do(|| lock().enter_address_space_and_do(pid, f))
+}
+
 pub(super) fn init() {
     lock().init();
 }
@@ -197,6 +201,11 @@ impl<const N: usize> Manager<N> {
         let priority = proc.priority;
 
         self.runnable_pids.push(pid, priority);
+    }
+
+    fn enter_address_space_and_do<T>(&self, pid: Pid, f: impl FnOnce() -> T) -> T {
+        // SAFETY: `pml4` is the correct PML4.
+        unsafe { super::switch_pml4_do(self.process_as_ref(pid).pml4, f) }
     }
 
     fn current_kernel_stack_bottom(&self) -> VirtAddr {

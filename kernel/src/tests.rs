@@ -1,14 +1,61 @@
 use {
     crate::process::ipc::{receive, send, ReceiveFrom},
-    core::mem::MaybeUninit,
+    core::{convert::TryInto, mem::MaybeUninit},
     ipc_api::message::{Body, Header, Message},
     pid::predefined,
+    x86_64::{instructions::hlt, VirtAddr},
 };
 
-pub(crate) fn main() -> ! {
+static DATA: &str = "Take the initiative and shoot fire. That's all.";
+
+pub(crate) fn main_1() -> ! {
     ipc();
 
+    let mut m = MaybeUninit::uninit();
+    receive(predefined::TEST_2.into(), m.as_mut_ptr()).unwrap();
+
+    let m = unsafe { m.assume_init() };
+
+    let mut buffer = [0; 128];
+    let src_addr = VirtAddr::new(m.body.0);
+    let dst_addr = VirtAddr::from_ptr(buffer.as_mut_ptr());
+    let count = DATA.len();
+
+    let message = Message {
+        header: Header::default(),
+        body: Body(
+            syscalls::Ty::CopyDataFrom as _,
+            predefined::TEST_2.as_usize().try_into().unwrap(),
+            src_addr.as_u64(),
+            dst_addr.as_u64(),
+            count.try_into().unwrap(),
+        ),
+    };
+
+    send(predefined::SYSPROC, message).unwrap();
+
+    let mut m = MaybeUninit::uninit();
+    receive(predefined::SYSPROC.into(), m.as_mut_ptr()).unwrap();
+
+    assert_eq!(unsafe { m.assume_init().body }, Body::default());
+
+    for i in 0..count {
+        assert_eq!(buffer[i], DATA.as_bytes()[i]);
+    }
+
     qemu::exit_success();
+}
+
+pub(crate) fn main_2() -> ! {
+    let m = Message {
+        header: Header::default(),
+        body: Body(DATA.as_ptr() as _, DATA.len().try_into().unwrap(), 0, 0, 0),
+    };
+    send(predefined::TEST_1, m).unwrap();
+
+    loop {
+        hlt();
+    }
 }
 
 fn ipc() {

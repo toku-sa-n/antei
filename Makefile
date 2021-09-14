@@ -46,8 +46,10 @@ QEMU	=	qemu-system-x86_64
 QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
 				-drive format=raw,file=$(ISO_FILE)	\
+				-no-shutdown -no-reboot\
 				-m 4G	\
-				-serial stdio	\
+				-d int\
+				-monitor stdio	\
 				-display none
 
 .PHONY:	all run test clean
