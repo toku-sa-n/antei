@@ -7,7 +7,6 @@ members = [
     "libs/boot_info",
     "libs/config",
     "libs/debug",
-    "libs/driver",
     "libs/frame_allocator",
     "libs/ipc",
     "libs/pic",
