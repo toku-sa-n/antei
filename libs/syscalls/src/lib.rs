@@ -57,6 +57,10 @@ pub unsafe fn copy_data_from(src_pid: Pid, src_addr: VirtAddr, dst_addr: VirtAdd
     assert_eq!(reply.body, Body::default());
 }
 
+/// # Panics
+///
+/// This function panics if the kernel sent an invalid bits order.
+#[must_use]
 pub fn get_screen_info() -> ScreenInfo {
     let message = Message {
         header: Header::default(),
@@ -83,18 +87,22 @@ pub struct ScreenInfo {
     scan_line_width: u32,
 }
 impl ScreenInfo {
+    #[must_use]
     pub fn resolution_x(&self) -> u32 {
         self.resolution_x
     }
 
+    #[must_use]
     pub fn resolution_y(&self) -> u32 {
         self.resolution_y
     }
 
+    #[must_use]
     pub fn bits_order(&self) -> BitsOrder {
         self.bits_order
     }
 
+    #[must_use]
     pub fn scan_line_width(&self) -> u32 {
         self.scan_line_width
     }
