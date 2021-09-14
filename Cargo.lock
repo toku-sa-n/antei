@@ -540,6 +540,10 @@ dependencies = [
 [[package]]
 name = "tty"
 version = "0.1.0"
+dependencies = [
+ "rlibc",
+ "syscalls",
+]
 
 [[package]]
 name = "uart_16550"

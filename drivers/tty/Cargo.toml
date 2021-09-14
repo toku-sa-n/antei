@@ -13,3 +13,7 @@ test = false
 
 [features]
 test_on_qemu = []
+
+[dependencies]
+rlibc = "1.0.0"
+syscalls = { path = "../../libs/syscalls" }

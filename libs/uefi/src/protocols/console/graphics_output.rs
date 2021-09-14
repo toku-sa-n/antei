@@ -5,7 +5,10 @@ use core::mem::MaybeUninit;
 use r_efi::efi;
 use r_efi::efi::protocols::graphics_output;
 
-pub use r_efi::efi::protocols::graphics_output::ModeInformation;
+pub use r_efi::efi::protocols::graphics_output::{
+    ModeInformation, PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR,
+    PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR,
+};
 
 #[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);

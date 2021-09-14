@@ -4,6 +4,7 @@ use {
     core::convert::TryInto,
     ipc::message::{Body, Header, Message},
     num_derive::FromPrimitive,
+    num_traits::FromPrimitive,
     os_units::Bytes,
     pid::{predefined, Pid},
     x86_64::VirtAddr,
@@ -56,8 +57,58 @@ pub unsafe fn copy_data_from(src_pid: Pid, src_addr: VirtAddr, dst_addr: VirtAdd
     assert_eq!(reply.body, Body::default());
 }
 
+pub fn get_screen_info() -> ScreenInfo {
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::GetScreenInfo as _, 0, 0, 0, 0),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    ScreenInfo {
+        resolution_x: reply.body.0.try_into().unwrap(),
+        resolution_y: reply.body.1.try_into().unwrap(),
+        bits_order: FromPrimitive::from_u64(reply.body.2).expect("Invalid bits order."),
+        scan_line_width: reply.body.3.try_into().unwrap(),
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ScreenInfo {
+    resolution_x: u32,
+    resolution_y: u32,
+    bits_order: BitsOrder,
+    scan_line_width: u32,
+}
+impl ScreenInfo {
+    pub fn resolution_x(&self) -> u32 {
+        self.resolution_x
+    }
+
+    pub fn resolution_y(&self) -> u32 {
+        self.resolution_y
+    }
+
+    pub fn bits_order(&self) -> BitsOrder {
+        self.bits_order
+    }
+
+    pub fn scan_line_width(&self) -> u32 {
+        self.scan_line_width
+    }
+}
+
+#[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum BitsOrder {
+    RedGreenBlueReserved,
+    BlueGreenRedReserved,
+}
+
 #[derive(Copy, Clone, Debug, FromPrimitive, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Ty {
     Noop,
     CopyDataFrom,
+    GetScreenInfo,
 }
