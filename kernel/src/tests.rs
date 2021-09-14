@@ -6,7 +6,7 @@ use {
     x86_64::{instructions::hlt, VirtAddr},
 };
 
-static DATA: &str = "Take the initiative and shoot fire. That's all.";
+static DATA: &str = "Take the initiative and shoot flame. That's all.";
 
 pub(crate) fn main_1() -> ! {
     ipc();
