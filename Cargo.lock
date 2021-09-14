@@ -13,7 +13,7 @@ name = "acpi"
 version = "0.1.0"
 dependencies = [
  "accessor",
- "bit_field 0.10.1",
+ "bit_field",
  "r_acpi",
  "x86_64",
 ]
@@ -28,7 +28,7 @@ checksum = "5fc5e98d2fade1025ad475e78dbcfd7db6e997f21c6cac8e20e1b530cbac031b"
 name = "apic"
 version = "0.1.0"
 dependencies = [
- "bit_field 0.10.1",
+ "bit_field",
  "num-derive",
  "num-traits",
  "paste",
@@ -64,12 +64,6 @@ checksum = "5deb64efa5bd81e31fcd1938615a6d98c82eafcbcd787162b6f63b91d6bac5b3"
 dependencies = [
  "rustc_version",
 ]
-
-[[package]]
-name = "bit_field"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed8765909f9009617974ab6b7d332625b320b33c326b1e9321382ef1999b5d56"
 
 [[package]]
 name = "bit_field"
@@ -214,7 +208,7 @@ name = "frame_allocator"
 version = "0.1.0"
 dependencies = [
  "arrayvec",
- "bit_field 0.10.1",
+ "bit_field",
  "os_units",
  "uefi",
  "x86_64",
@@ -557,7 +551,7 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bad643914094137d475641b6bab89462505316ec2ce70907ad20102d28a79ab8"
 dependencies = [
- "bit_field 0.10.1",
+ "bit_field",
 ]
 
 [[package]]
@@ -628,11 +622,11 @@ dependencies = [
 
 [[package]]
 name = "x86_64"
-version = "0.14.4"
+version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d95947de37ad0d2d9a4a4dd22e0d042e034e5cbd7ab53edbca0d8035e0a6a64d"
+checksum = "4522ae25e1e0dbf4302ffde77e55c43afe3d7523cba662943b5de8ff04871f6c"
 dependencies = [
- "bit_field 0.9.0",
+ "bit_field",
  "bitflags",
  "cc",
  "volatile",

@@ -28,7 +28,7 @@ qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { version = "0.1.0", features = ["stable"], default-features = false }
 spinning_top = "0.2.4"
 uefi = { path = "../libs/uefi" }
-x86_64 = { version = "0.14.4", features = ["instructions", "external_asm"], default-features = false }
+x86_64 = { version = "0.14.5", features = ["instructions", "external_asm"], default-features = false }
 vm = { path = "../libs/vm" }
 log = "0.4.14"
 apic = { path = "../libs/apic" }
