@@ -34,16 +34,16 @@ fn loop_iteration() {
             let data = process::enter_address_space_and_do(src_pid, || {
                 let mut buffer = [0_u8; 128];
 
-                for i in 0..bytes.as_usize() {
-                    buffer[i] = unsafe { (src_addr + i).as_ptr::<u8>().read() };
+                for (i, b) in buffer.iter_mut().enumerate().take(bytes.as_usize()) {
+                    *b = unsafe { (src_addr + i).as_ptr::<u8>().read() };
                 }
 
                 buffer
             });
 
-            for i in 0..bytes.as_usize() {
+            for (i, &d) in data.iter().enumerate().take(bytes.as_usize()) {
                 unsafe {
-                    (dst_addr + i).as_mut_ptr::<u8>().write(data[i]);
+                    (dst_addr + i).as_mut_ptr::<u8>().write(d);
                 }
             }
 
