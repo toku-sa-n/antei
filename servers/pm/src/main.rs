@@ -3,9 +3,11 @@
 
 extern crate pm as _;
 
+use ipc::ReceiveFrom;
+
 #[no_mangle]
 fn main() -> ! {
     loop {
-        core::hint::spin_loop();
+        let _ = ipc::receive(ReceiveFrom::Any);
     }
 }

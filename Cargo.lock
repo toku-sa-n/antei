@@ -432,6 +432,10 @@ dependencies = [
 [[package]]
 name = "pm"
 version = "0.1.0"
+dependencies = [
+ "ipc",
+ "rlibc",
+]
 
 [[package]]
 name = "posix"
@@ -677,6 +681,10 @@ dependencies = [
 [[package]]
 name = "vm_server"
 version = "0.1.0"
+dependencies = [
+ "ipc",
+ "rlibc",
+]
 
 [[package]]
 name = "void"
