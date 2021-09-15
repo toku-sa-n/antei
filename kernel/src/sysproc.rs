@@ -99,8 +99,6 @@ fn handle_map_memory(message: &Message) {
     let flags =
         PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
 
-    log::info!("start: {:?}, len: {}", start, len);
-
     let virt =
         process::enter_address_space_and_do(to, || unsafe { vm::map_user(start, len, flags) });
 
