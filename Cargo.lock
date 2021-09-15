@@ -541,6 +541,7 @@ dependencies = [
 name = "tty"
 version = "0.1.0"
 dependencies = [
+ "os_units",
  "rlibc",
  "syscalls",
 ]

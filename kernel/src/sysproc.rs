@@ -15,7 +15,7 @@ use {
         PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR,
         PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR,
     },
-    x86_64::VirtAddr,
+    x86_64::{structures::paging::PageTableFlags, PhysAddr, VirtAddr},
 };
 
 pub(crate) fn main() -> ! {
@@ -31,6 +31,7 @@ fn loop_iteration() {
         Some(syscalls::Ty::Noop) => reply_ack(message.header.sender_pid),
         Some(syscalls::Ty::CopyDataFrom) => handle_copy_data_from(&message),
         Some(syscalls::Ty::GetScreenInfo) => handle_get_screen_info(message.header.sender_pid),
+        Some(syscalls::Ty::MapMemory) => handle_map_memory(&message),
         None => log::warn!("Unrecognized message: {:?}", message),
     }
 }
@@ -87,6 +88,28 @@ fn handle_get_screen_info(to: Pid) {
     };
 
     let r = send(to, message);
+    r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
+}
+
+fn handle_map_memory(message: &Message) {
+    let to = message.header.sender_pid;
+
+    let start = PhysAddr::new(message.body.1);
+    let len = Bytes::new(message.body.2.try_into().unwrap());
+    let flags =
+        PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::USER_ACCESSIBLE;
+
+    log::info!("start: {:?}, len: {}", start, len);
+
+    let virt =
+        process::enter_address_space_and_do(to, || unsafe { vm::map_user(start, len, flags) });
+
+    let reply = Message {
+        header: Header::default(),
+        body: Body(virt.as_u64(), 0, 0, 0, 0),
+    };
+
+    let r = send(to, reply);
     r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
 }
 

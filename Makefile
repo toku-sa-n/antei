@@ -53,8 +53,7 @@ QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
 				-drive format=raw,file=$(ISO_FILE)	\
 				-m 4G	\
-				-serial stdio	\
-				-display none
+				-serial stdio
 
 .PHONY:	all run test clean
 
@@ -97,7 +96,8 @@ run: $(ISO_FILE)
 
 test: QEMU_PARAMS	+=	\
 	-device isa-debug-exit,iobase=0xf4,iosize=0x04	\
-	-no-reboot
+	-no-reboot	\
+	-display none
 test: RUSTFLAGS	+=	--features test_on_qemu
 test: SUCCESS	=	33
 test: $(ISO_FILE)
