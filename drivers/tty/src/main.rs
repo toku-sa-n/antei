@@ -11,9 +11,9 @@ fn main() -> ! {
     let len = screen_info.scan_line_width() * screen_info.resolution_y() * 4;
     let len = Bytes::new(len.try_into().unwrap());
 
-    let virt = syscalls::map_memory(screen_info.frame_buffer(), len);
-
     unsafe {
+        let virt = syscalls::map_memory(screen_info.frame_buffer(), len);
+
         core::ptr::write_bytes(virt.as_mut_ptr::<u8>(), 255, len.as_usize());
     }
 
