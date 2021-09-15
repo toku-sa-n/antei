@@ -573,6 +573,7 @@ dependencies = [
  "num-traits",
  "r-efi",
  "ucs2",
+ "x86_64",
 ]
 
 [[package]]

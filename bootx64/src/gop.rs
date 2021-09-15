@@ -1,20 +1,26 @@
-use crate::uefi_panic;
-use uefi::protocols::console::edid;
-use uefi::protocols::console::graphics_output;
-use uefi::{protocols::console, service::boot::WithProtocol};
+use {
+    crate::uefi_panic,
+    uefi::{
+        protocols::console::{self, edid, graphics_output},
+        service::boot::WithProtocol,
+    },
+    x86_64::PhysAddr,
+};
 
 /// # Panics
 ///
 /// This method panics if there is no proper GOP mode.
 #[must_use]
-pub fn set_preferred_resolution(st: &mut crate::SystemTable) -> graphics_output::ModeInformation {
+pub fn set_preferred_resolution(
+    st: &mut crate::SystemTable,
+) -> (graphics_output::ModeInformation, PhysAddr) {
     let s = try_set_preferred_resolution(st);
     st.expect_ok(s, "Failed to set the preferred screen resolution.")
 }
 
 fn try_set_preferred_resolution(
     st: &mut crate::SystemTable,
-) -> uefi::Result<graphics_output::ModeInformation> {
+) -> uefi::Result<(graphics_output::ModeInformation, PhysAddr)> {
     let resolution = resolution_to_use(st);
 
     let gop = try_get_gop(st)?.protocol;
@@ -29,7 +35,7 @@ fn try_set_preferred_resolution(
             {
                 gop.set_mode(i)?;
 
-                return Ok(mode_info);
+                return Ok((mode_info, gop.frame_buffer()));
             }
         }
     }
