@@ -55,9 +55,9 @@ fn handle_copy_data_from(message: &Message) {
         buffer
     });
 
-    unsafe {
+    process::enter_address_space_and_do(message.header.sender_pid, || unsafe {
         ptr::copy(data.as_ptr(), dst_addr.as_mut_ptr(), bytes.as_usize());
-    }
+    });
 
     reply_ack(message.header.sender_pid);
 }
