@@ -35,6 +35,7 @@ pub unsafe fn map(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
 ///
 /// Refer to [`Mapper::map_to`].
 #[must_use]
+#[allow(clippy::module_name_repetitions)]
 pub unsafe fn map_user(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
     let frame_range = to_frame_range(p, b.as_num_of_pages());
 
