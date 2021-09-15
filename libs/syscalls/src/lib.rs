@@ -109,6 +109,9 @@ pub unsafe fn map_memory(start: PhysAddr, len: Bytes) -> VirtAddr {
     VirtAddr::new(reply.body.0)
 }
 
+/// # Panics
+///
+/// This function panics if `s.len() >= 128`.
 pub fn write(s: &str) {
     assert!(
         s.len() < 128,
