@@ -80,8 +80,15 @@ pub fn get_screen_info() -> ScreenInfo {
     }
 }
 
+/// # Safety
+///
+/// The caller must ensure that the memory region is the correct one.
+///
+/// # Panics
+///
+/// This function panics if the kernel failed to map the memory.
 #[must_use]
-pub fn map_memory(start: PhysAddr, len: Bytes) -> VirtAddr {
+pub unsafe fn map_memory(start: PhysAddr, len: Bytes) -> VirtAddr {
     let message = Message {
         header: Header::default(),
         body: Body(
