@@ -7,5 +7,6 @@ extern crate init as _;
 fn main() -> ! {
     loop {
         syscalls::noop();
+        syscalls::write("INIT SERVER.");
     }
 }

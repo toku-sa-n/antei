@@ -109,6 +109,37 @@ pub unsafe fn map_memory(start: PhysAddr, len: Bytes) -> VirtAddr {
     VirtAddr::new(reply.body.0)
 }
 
+/// # Panics
+///
+/// This function panics if `s.len() >= 128`.
+pub fn write(s: &str) {
+    assert!(
+        s.len() < 128,
+        "The current limitation is that the length must be less than 128 characters."
+    );
+
+    let message = Message {
+        header: Header::default(),
+        body: Body(
+            Ty::Write as _,
+            s.as_ptr() as _,
+            s.len().try_into().unwrap(),
+            0,
+            0,
+        ),
+    };
+
+    ipc::send(predefined::TTY, message);
+
+    let reply = ipc::receive(predefined::TTY.into());
+
+    assert_eq!(
+        reply.body,
+        Body::default(),
+        "The tty sent an invalid message."
+    );
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ScreenInfo {
     resolution_x: u32,
@@ -156,4 +187,5 @@ pub enum Ty {
     CopyDataFrom,
     GetScreenInfo,
     MapMemory,
+    Write,
 }
