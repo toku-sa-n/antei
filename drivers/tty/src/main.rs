@@ -3,19 +3,13 @@
 
 extern crate tty as _;
 
-use {core::convert::TryInto, os_units::Bytes};
+use tty::println;
 
 #[no_mangle]
 fn main() -> ! {
-    let screen_info = syscalls::get_screen_info();
-    let len = screen_info.scan_line_width() * screen_info.resolution_y() * 4;
-    let len = Bytes::new(len.try_into().unwrap());
+    tty::init();
 
-    unsafe {
-        let virt = syscalls::map_memory(screen_info.frame_buffer(), len);
-
-        core::ptr::write_bytes(virt.as_mut_ptr::<u8>(), 255, len.as_usize());
-    }
+    println!("hello, world");
 
     loop {
         core::hint::spin_loop();
