@@ -53,7 +53,7 @@ fn handle_write(message: &Message) {
     if let Ok(s) = str::from_utf8(&buffer) {
         print!("{}", s);
     } else {
-        println!("Not a UTF-8 string.");
+        println!("Received non-UTF-8 string.");
     }
 
     ipc::send(message.header.sender_pid, Message::default());
