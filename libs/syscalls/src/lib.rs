@@ -80,6 +80,35 @@ pub fn get_screen_info() -> ScreenInfo {
     }
 }
 
+/// # Safety
+///
+/// The caller must ensure that the memory region is the correct one.
+///
+/// # Panics
+///
+/// This function panics if the kernel failed to map the memory.
+#[must_use]
+pub unsafe fn map_memory(start: PhysAddr, len: Bytes) -> VirtAddr {
+    let message = Message {
+        header: Header::default(),
+        body: Body(
+            Ty::MapMemory as _,
+            start.as_u64(),
+            len.as_usize().try_into().unwrap(),
+            0,
+            0,
+        ),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    assert_ne!(reply.body.0, 0, "Failed to map memory.");
+
+    VirtAddr::new(reply.body.0)
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ScreenInfo {
     resolution_x: u32,
@@ -126,4 +155,5 @@ pub enum Ty {
     Noop,
     CopyDataFrom,
     GetScreenInfo,
+    MapMemory,
 }

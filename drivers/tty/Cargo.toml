@@ -15,5 +15,6 @@ test = false
 test_on_qemu = []
 
 [dependencies]
+os_units = "0.4.2"
 rlibc = "1.0.0"
 syscalls = { path = "../../libs/syscalls" }

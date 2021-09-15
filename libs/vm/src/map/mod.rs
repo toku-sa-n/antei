@@ -24,11 +24,16 @@ static PML4: OnceCell<Spinlock<RecursivePageTable<'_>>> = OnceCell::uninit();
 /// Refer to [`Mapper::map_to`].
 #[must_use]
 pub unsafe fn map(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
-    let frame_range = to_frame_range(p, b.as_num_of_pages());
+    map_in_region(p, b, flags, predefined_mmap::kernel_dma())
+}
 
-    let page_range = unsafe { map_frame_range(frame_range, flags) };
-
-    page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
+/// # Safety
+///
+/// Refer to [`Mapper::map_to`].
+#[must_use]
+#[allow(clippy::module_name_repetitions)]
+pub unsafe fn map_user(p: PhysAddr, b: Bytes, flags: PageTableFlags) -> VirtAddr {
+    map_in_region(p, b, flags, predefined_mmap::user())
 }
 
 pub fn unmap(v: VirtAddr, b: Bytes) {
@@ -83,8 +88,9 @@ pub(super) unsafe fn init() {
 pub(super) unsafe fn map_frame_range(
     frame_range: PhysFrameRange,
     flags: PageTableFlags,
+    from_where: PageRange,
 ) -> PageRange {
-    unsafe { map_frame_range_from_page_range(predefined_mmap::kernel_dma(), frame_range, flags) }
+    unsafe { map_frame_range_from_page_range(from_where, frame_range, flags) }
 }
 
 pub(super) fn unmap_range(page_range: PageRange) {
@@ -101,6 +107,14 @@ pub(super) unsafe fn map_page_range_to_unused_frame_range(
     unsafe {
         map_range(page_range, frame_range, flags);
     }
+}
+
+fn map_in_region(p: PhysAddr, b: Bytes, flags: PageTableFlags, region: PageRange) -> VirtAddr {
+    let frame_range = to_frame_range(p, b.as_num_of_pages());
+
+    let page_range = unsafe { map_frame_range(frame_range, flags, region) };
+
+    page_range.start.start_address() + p.as_u64() % Size4KiB::SIZE
 }
 
 unsafe fn update_flags_for_range(page_range: PageRange, flags: PageTableFlags) {

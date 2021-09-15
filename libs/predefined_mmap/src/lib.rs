@@ -11,6 +11,20 @@ use {
 
 #[must_use]
 #[allow(clippy::missing_panics_doc)]
+pub fn user() -> PageRange {
+    let start = VirtAddr::new(0x1000);
+
+    let end = VirtAddr::new(0xffff_ffff_8000_0000);
+
+    let start = Page::from_start_address(start).unwrap();
+
+    let end = Page::from_start_address(end).unwrap();
+
+    PageRange { start, end }
+}
+
+#[must_use]
+#[allow(clippy::missing_panics_doc)]
 pub fn kernel() -> PageRange {
     let start = VirtAddr::new(0xffff_ffff_8000_0000);
 
