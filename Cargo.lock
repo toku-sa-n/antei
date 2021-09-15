@@ -591,6 +591,8 @@ dependencies = [
  "bit_field",
  "conquer-once",
  "font8x8",
+ "ipc",
+ "num-traits",
  "os_units",
  "rgb",
  "rlibc",

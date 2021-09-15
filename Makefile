@@ -52,6 +52,7 @@ QEMU	=	qemu-system-x86_64
 QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
 				-drive format=raw,file=$(ISO_FILE)	\
+				-d int\
 				-m 4G	\
 				-serial stdio
 

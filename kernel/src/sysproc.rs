@@ -32,7 +32,7 @@ fn loop_iteration() {
         Some(syscalls::Ty::CopyDataFrom) => handle_copy_data_from(&message),
         Some(syscalls::Ty::GetScreenInfo) => handle_get_screen_info(message.header.sender_pid),
         Some(syscalls::Ty::MapMemory) => handle_map_memory(&message),
-        None => log::warn!("Unrecognized message: {:?}", message),
+        _ => log::warn!("Unrecognized message: {:?}", message),
     }
 }
 
