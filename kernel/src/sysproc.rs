@@ -73,6 +73,7 @@ fn handle_get_screen_info(to: Pid) {
         _ => todo!(),
     };
     let scan_line = gop_info.pixels_per_scan_line;
+    let frame_buffer = boot_info.frame_buffer();
 
     let message = Message {
         header: Header::default(),
@@ -81,7 +82,7 @@ fn handle_get_screen_info(to: Pid) {
             resolution_y.into(),
             bits_order,
             scan_line.into(),
-            0,
+            frame_buffer.as_u64(),
         ),
     };
 

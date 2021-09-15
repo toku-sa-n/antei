@@ -7,7 +7,7 @@ use {
     num_traits::FromPrimitive,
     os_units::Bytes,
     pid::{predefined, Pid},
-    x86_64::VirtAddr,
+    x86_64::{PhysAddr, VirtAddr},
 };
 
 /// # Panics
@@ -76,15 +76,17 @@ pub fn get_screen_info() -> ScreenInfo {
         resolution_y: reply.body.1.try_into().unwrap(),
         bits_order: FromPrimitive::from_u64(reply.body.2).expect("Invalid bits order."),
         scan_line_width: reply.body.3.try_into().unwrap(),
+        frame_buffer: PhysAddr::new(reply.body.4),
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ScreenInfo {
     resolution_x: u32,
     resolution_y: u32,
     bits_order: BitsOrder,
     scan_line_width: u32,
+    frame_buffer: PhysAddr,
 }
 impl ScreenInfo {
     #[must_use]
@@ -105,6 +107,11 @@ impl ScreenInfo {
     #[must_use]
     pub fn scan_line_width(&self) -> u32 {
         self.scan_line_width
+    }
+
+    #[must_use]
+    pub fn frame_buffer(&self) -> PhysAddr {
+        self.frame_buffer
     }
 }
 
