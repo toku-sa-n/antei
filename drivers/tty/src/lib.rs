@@ -29,11 +29,7 @@ pub fn main_loop() -> ! {
 }
 
 fn loop_iteration() {
-    println!("Hi!");
-
     let message = ipc::receive(ReceiveFrom::Any);
-
-    println!("I received a message!");
 
     if let Some(syscalls::Ty::Write) = FromPrimitive::from_u64(message.body.0) {
         handle_write(&message);
