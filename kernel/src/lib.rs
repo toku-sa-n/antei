@@ -7,6 +7,7 @@ mod gdt;
 mod interrupt;
 #[macro_use]
 mod io;
+mod boot_info;
 mod libc;
 mod log;
 mod process;
@@ -17,11 +18,13 @@ mod tests;
 mod timer;
 mod tss;
 
-use {boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt};
+use {::boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt};
 
 pub fn init(boot_info: BootInfo) {
     // SAFETY: `boot_info` is the pointer passed from the bootloader. w
     boot_info.validate();
+
+    boot_info::save(boot_info);
 
     log::init();
 

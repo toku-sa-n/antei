@@ -1,11 +1,15 @@
-use crate::result;
-use aligned_ptr::ptr;
-use core::fmt;
-use core::mem::MaybeUninit;
-use r_efi::efi;
-use r_efi::efi::protocols::graphics_output;
+use {
+    crate::result,
+    aligned_ptr::ptr,
+    core::{fmt, mem::MaybeUninit},
+    r_efi::efi::{self, protocols::graphics_output},
+    x86_64::PhysAddr,
+};
 
-pub use r_efi::efi::protocols::graphics_output::ModeInformation;
+pub use r_efi::efi::protocols::graphics_output::{
+    ModeInformation, PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR,
+    PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR,
+};
 
 #[repr(transparent)]
 pub struct GraphicsOutput(graphics_output::Protocol);
@@ -42,6 +46,11 @@ impl GraphicsOutput {
         // SAFETY: `locate_protocol` creates only one instance of `GraphicsOutput`. No other
         // pointers point to the `Mode` struct.
         unsafe { ptr::get(self.0.mode).max_mode }
+    }
+
+    #[must_use]
+    pub fn frame_buffer(&self) -> PhysAddr {
+        unsafe { PhysAddr::new(ptr::get(self.0.mode).frame_buffer_base) }
     }
 }
 unsafe impl crate::Protocol for GraphicsOutput {

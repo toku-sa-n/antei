@@ -27,18 +27,25 @@ pub struct BootInfo {
     mmap: Mmap,
     rsdp: PhysAddr,
     gop: graphics_output::ModeInformation,
+    frame_buffer: PhysAddr,
 
     magic_footer: u64,
 }
 impl BootInfo {
     #[must_use]
-    pub fn new(mmap: Mmap, rsdp: PhysAddr, gop: graphics_output::ModeInformation) -> Self {
+    pub fn new(
+        mmap: Mmap,
+        rsdp: PhysAddr,
+        gop: graphics_output::ModeInformation,
+        frame_buffer: PhysAddr,
+    ) -> Self {
         Self {
             magic_header: MAGIC_HEADER,
 
             mmap,
             rsdp,
             gop,
+            frame_buffer,
 
             magic_footer: MAGIC_FOOTER,
         }
@@ -62,6 +69,11 @@ impl BootInfo {
     #[must_use]
     pub fn gop_mode_information(&self) -> graphics_output::ModeInformation {
         self.gop
+    }
+
+    #[must_use]
+    pub fn frame_buffer(&self) -> PhysAddr {
+        self.frame_buffer
     }
 
     fn check_header_and_footer(&self) {

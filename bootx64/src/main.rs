@@ -12,7 +12,7 @@ fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
 
     let rsdp = rsdp::get(&st);
 
-    let gop = gop::set_preferred_resolution(&mut st);
+    let (gop, frame_buffer) = gop::set_preferred_resolution(&mut st);
 
     let mmap = bootx64::exit_boot_services_and_return_mmap(h, st);
 
@@ -35,6 +35,6 @@ fn efi_main(h: uefi::Handle, mut st: bootx64::SystemTable) -> ! {
 
     // SAFETY: Yes, the recursive paging is enabled and there are no references to the PML4.
     unsafe {
-        kernel::load_and_jump(kernel_binary, mmap, rsdp, gop);
+        kernel::load_and_jump(kernel_binary, mmap, rsdp, gop, frame_buffer);
     }
 }

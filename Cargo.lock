@@ -538,6 +538,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "tty"
+version = "0.1.0"
+dependencies = [
+ "rlibc",
+ "syscalls",
+]
+
+[[package]]
 name = "uart_16550"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -565,6 +573,7 @@ dependencies = [
  "num-traits",
  "r-efi",
  "ucs2",
+ "x86_64",
 ]
 
 [[package]]

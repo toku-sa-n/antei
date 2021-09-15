@@ -19,8 +19,9 @@ pub unsafe fn load_and_jump(
     mmap: &mut [MemoryDescriptor],
     rsdp: PhysAddr,
     gop: graphics_output::ModeInformation,
+    frame_buffer: PhysAddr,
 ) -> ! {
-    jump(unsafe { load(binary, mmap) }, mmap, rsdp, gop);
+    jump(unsafe { load(binary, mmap) }, mmap, rsdp, gop, frame_buffer);
 }
 
 /// # Safety
@@ -42,6 +43,7 @@ fn jump(
     mmap: &mut [MemoryDescriptor],
     rsdp: PhysAddr,
     gop: graphics_output::ModeInformation,
+    frame_buffer: PhysAddr,
 ) -> ! {
     extern "sysv64" {
         fn switch_stack_and_call_kernel_code(
@@ -57,7 +59,7 @@ fn jump(
     // SAFETY: The pointer and the length are the correct ones.
     let mmap = unsafe { Mmap::new(mmap_start, mmap_len) };
 
-    let mut boot_info = BootInfo::new(mmap, rsdp, gop);
+    let mut boot_info = BootInfo::new(mmap, rsdp, gop, frame_buffer);
 
     // SAFETY: Correct arguments.
     unsafe {

@@ -1,13 +1,20 @@
 use {
-    crate::process::{
-        self,
-        ipc::{receive, send, ReceiveFrom},
+    crate::{
+        boot_info,
+        process::{
+            self,
+            ipc::{receive, send, ReceiveFrom},
+        },
     },
     core::{convert::TryInto, mem::MaybeUninit, ptr},
-    ipc_api::message::Message,
+    ipc_api::message::{Body, Header, Message},
     num_traits::FromPrimitive,
     os_units::Bytes,
     pid::Pid,
+    uefi::protocols::console::graphics_output::{
+        PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR,
+        PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR,
+    },
     x86_64::VirtAddr,
 };
 
@@ -23,6 +30,7 @@ fn loop_iteration() {
     match FromPrimitive::from_u64(message.body.0) {
         Some(syscalls::Ty::Noop) => reply_ack(message.header.sender_pid),
         Some(syscalls::Ty::CopyDataFrom) => handle_copy_data_from(&message),
+        Some(syscalls::Ty::GetScreenInfo) => handle_get_screen_info(message.header.sender_pid),
         None => log::warn!("Unrecognized message: {:?}", message),
     }
 }
@@ -51,6 +59,35 @@ fn handle_copy_data_from(message: &Message) {
     }
 
     reply_ack(message.header.sender_pid);
+}
+
+fn handle_get_screen_info(to: Pid) {
+    let boot_info = boot_info::get();
+    let gop_info = boot_info.gop_mode_information();
+
+    let resolution_x = gop_info.horizontal_resolution;
+    let resolution_y = gop_info.vertical_resolution;
+    let bits_order = match gop_info.pixel_format {
+        PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR => 0,
+        PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR => 1,
+        _ => todo!(),
+    };
+    let scan_line = gop_info.pixels_per_scan_line;
+    let frame_buffer = boot_info.frame_buffer();
+
+    let message = Message {
+        header: Header::default(),
+        body: Body(
+            resolution_x.into(),
+            resolution_y.into(),
+            bits_order,
+            scan_line.into(),
+            frame_buffer.as_u64(),
+        ),
+    };
+
+    let r = send(to, message);
+    r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
 }
 
 fn reply_ack(to: Pid) {

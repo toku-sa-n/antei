@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "bootx64",
+    "drivers/tty",
     "kernel",
     "libs/acpi",
     "libs/apic",

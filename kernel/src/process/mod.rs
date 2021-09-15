@@ -45,6 +45,8 @@ pub(super) fn init() {
     manager::add(Process::from_function(crate::tests::main_1));
     #[cfg(test_on_qemu)]
     manager::add(Process::from_function(crate::tests::main_2));
+
+    manager::add(Process::from_initrd("tty"));
 }
 
 pub(super) struct Process {
