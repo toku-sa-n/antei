@@ -170,13 +170,9 @@ impl<const N: usize> Manager<N> {
     }
 
     fn exists(&self, pid: Pid) -> bool {
-        let p = self.processes.get(pid.as_usize());
-
-        if let Some(p) = p {
-            p.is_some()
-        } else {
-            false
-        }
+        self.processes
+            .get(pid.as_usize())
+            .map_or(false, |p| p.is_some())
     }
 
     // Do not switch the context inside this method. Otherwise, the lock of `MANAGER` will never be
