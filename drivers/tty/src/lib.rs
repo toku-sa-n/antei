@@ -50,7 +50,7 @@ fn handle_write(message: &Message) {
         syscalls::copy_data_from(message.header.sender_pid, src, dst_addr, len);
     }
 
-    if let Ok(s) = str::from_utf8(&buffer) {
+    if let Ok(s) = str::from_utf8(&buffer[..len.as_usize()]) {
         print!("{}", s);
     } else {
         println!("Received non-UTF-8 string.");
