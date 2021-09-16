@@ -670,6 +670,14 @@ dependencies = [
 [[package]]
 name = "vfs"
 version = "0.1.0"
+dependencies = [
+ "config",
+ "ipc",
+ "pid",
+ "rlibc",
+ "spinning_top",
+ "syscalls",
+]
 
 [[package]]
 name = "vm"

@@ -61,7 +61,7 @@ pub fn for_testing() -> PageRange {
 
 #[must_use]
 pub fn initrd() -> PageRange {
-    next_to(for_testing(), NumOfPages::new(1024))
+    next_to(for_testing(), NumOfPages::new(1500))
 }
 
 fn next_to<S: PageSize>(range: PageRange<S>, n: NumOfPages<S>) -> PageRange<S> {
