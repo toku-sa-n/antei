@@ -15,5 +15,10 @@ test = false
 test_on_qemu = []
 
 [dependencies]
+arrayvec = { version = "0.7.1", default-features = false }
+config = { path = "../../libs/config" }
 ipc = { path = "../../libs/ipc" }
+pid = { path = "../../libs/pid" }
 rlibc = "1.0.0"
+spinning_top = { version = "0.2.4", default-features = false }
+syscalls = { path = "../../libs/syscalls" }

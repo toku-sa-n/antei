@@ -54,12 +54,12 @@ pub(crate) fn enter_address_space_and_do<T>(pid: Pid, f: impl FnOnce() -> T) -> 
     interrupt::disable_interrupts_and_do(|| lock().enter_address_space_and_do(pid, f))
 }
 
-pub(super) fn init() {
-    lock().init();
+pub(crate) fn process_exists(pid: Pid) -> bool {
+    lock().exists(pid)
 }
 
-pub(super) fn process_exists(pid: Pid) -> bool {
-    lock().exists(pid)
+pub(super) fn init() {
+    lock().init();
 }
 
 pub(super) fn add(p: Process) {
@@ -170,7 +170,9 @@ impl<const N: usize> Manager<N> {
     }
 
     fn exists(&self, pid: Pid) -> bool {
-        self.processes[pid.as_usize()].is_some()
+        self.processes
+            .get(pid.as_usize())
+            .map_or(false, Option::is_some)
     }
 
     // Do not switch the context inside this method. Otherwise, the lock of `MANAGER` will never be

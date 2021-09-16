@@ -140,6 +140,22 @@ pub fn write(s: &str) {
     );
 }
 
+#[must_use]
+pub fn pm_syncs_with_kernel() -> Option<Message> {
+    const NOT_END: u64 = 1;
+
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::PmSyncsWithKernel as _, 0, 0, 0, 0),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    (reply.body.0 == NOT_END).then(|| reply)
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ScreenInfo {
     resolution_x: u32,
@@ -188,4 +204,5 @@ pub enum Ty {
     GetScreenInfo,
     MapMemory,
     Write,
+    PmSyncsWithKernel,
 }
