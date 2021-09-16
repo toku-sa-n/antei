@@ -39,7 +39,7 @@ KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
-INITRD_CONTENTS	=	init pm vm_server tty
+INITRD_CONTENTS	=	init pm vfs vm_server tty
 INITRD_DEPENDENCIES	=	$(foreach file,$(INITRD_CONTENTS),$(BUILD_DIR)/$(file))
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
@@ -85,6 +85,7 @@ $(INITRD): $(INITRD_DEPENDENCIES)|$(BUILD_DIR)
 
 $(eval $(call server,init))
 $(eval $(call server,pm))
+$(eval $(call server,vfs))
 $(eval $(call server,vm_server))
 $(eval $(call driver,tty))
 
