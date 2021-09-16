@@ -118,12 +118,12 @@ fn handle_map_memory(message: &Message) {
 }
 
 fn handle_pm_syncs_with_kernel(message: &Message) {
-    assert_eq!(message.header.sender_pid, pid::predefined::PM);
-
     static NEXT_PID: AtomicUsize = AtomicUsize::new(0);
 
     const PM_PROC_INFO: u64 = 1;
     const PM_PROC_END: u64 = 2;
+
+    assert_eq!(message.header.sender_pid, pid::predefined::PM);
 
     let pid = Pid::new(NEXT_PID.fetch_add(1, Ordering::Relaxed));
 
