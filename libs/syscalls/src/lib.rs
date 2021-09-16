@@ -140,6 +140,7 @@ pub fn write(s: &str) {
     );
 }
 
+#[must_use]
 pub fn pm_syncs_with_kernel() -> Option<Message> {
     const NOT_END: u64 = 1;
 
