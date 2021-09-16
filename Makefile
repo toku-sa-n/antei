@@ -51,7 +51,6 @@ ISO_FILE	=	$(BUILD_DIR)/antei.iso
 QEMU	=	qemu-system-x86_64
 QEMU_PARAMS	=	-drive if=pflash,format=raw,file=OVMF_CODE.fd,readonly=on	\
 				-drive if=pflash,format=raw,file=OVMF_VARS.fd,readonly=on	\
-				-d int\
 				-drive format=raw,file=$(ISO_FILE)	\
 				-m 4G	\
 				-serial stdio
