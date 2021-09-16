@@ -220,7 +220,7 @@ impl Process {
     }
 
     fn generate_pid() -> Option<Pid> {
-        (0..MAX_PID).find_map(|i| (!manager::process_exists(i.into())).then(|| Pid::new(i)))
+        (0..MAX_PID).find_map(|i| (!process_exists(i.into())).then(|| Pid::new(i)))
     }
 }
 
