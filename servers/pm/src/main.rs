@@ -3,11 +3,11 @@
 
 extern crate pm as _;
 
-use ipc::ReceiveFrom;
-
 #[no_mangle]
 fn main() -> ! {
+    pm::init();
+
     loop {
-        let _ = ipc::receive(ReceiveFrom::Any);
+        syscalls::write("PM server.\n");
     }
 }

@@ -19,7 +19,7 @@ use {
 };
 
 pub(crate) use {
-    manager::{enter_address_space_and_do, switch},
+    manager::{enter_address_space_and_do, process_exists, switch},
     pid::Pid,
 };
 

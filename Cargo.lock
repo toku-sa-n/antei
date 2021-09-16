@@ -433,8 +433,13 @@ dependencies = [
 name = "pm"
 version = "0.1.0"
 dependencies = [
+ "arrayvec",
+ "config",
  "ipc",
+ "pid",
  "rlibc",
+ "spinning_top",
+ "syscalls",
 ]
 
 [[package]]

@@ -6,7 +6,12 @@ use {
             ipc::{receive, send, ReceiveFrom},
         },
     },
-    core::{convert::TryInto, mem::MaybeUninit, ptr},
+    core::{
+        convert::TryInto,
+        mem::MaybeUninit,
+        ptr,
+        sync::atomic::{AtomicUsize, Ordering},
+    },
     ipc_api::message::{Body, Header, Message},
     num_traits::FromPrimitive,
     os_units::Bytes,
@@ -32,6 +37,7 @@ fn loop_iteration() {
         Some(syscalls::Ty::CopyDataFrom) => handle_copy_data_from(&message),
         Some(syscalls::Ty::GetScreenInfo) => handle_get_screen_info(message.header.sender_pid),
         Some(syscalls::Ty::MapMemory) => handle_map_memory(&message),
+        Some(syscalls::Ty::PmSyncsWithKernel) => handle_pm_syncs_with_kernel(&message),
         _ => log::warn!("Unrecognized message: {:?}", message),
     }
 }
@@ -109,6 +115,29 @@ fn handle_map_memory(message: &Message) {
 
     let r = send(to, reply);
     r.unwrap_or_else(|_| log::warn!("Failed to send a message to {}", to));
+}
+
+fn handle_pm_syncs_with_kernel(message: &Message) {
+    assert_eq!(message.header.sender_pid, pid::predefined::PM);
+
+    static NEXT_PID: AtomicUsize = AtomicUsize::new(0);
+
+    const PM_PROC_INFO: u64 = 1;
+    const PM_PROC_END: u64 = 2;
+
+    let pid = Pid::new(NEXT_PID.fetch_add(1, Ordering::Relaxed));
+
+    let pm_msg = Message {
+        header: Header::default(),
+        body: if process::process_exists(pid) {
+            Body(PM_PROC_INFO, pid.as_usize().try_into().unwrap(), 0, 0, 0)
+        } else {
+            Body(PM_PROC_END, 0, 0, 0, 0)
+        },
+    };
+
+    let r = send(message.header.sender_pid, pm_msg);
+    r.expect("Failed to sync with PM.");
 }
 
 fn reply_ack(to: Pid) {
