@@ -156,6 +156,7 @@ pub fn pm_syncs_with_kernel() -> Option<Message> {
     (reply.body.0 == NOT_END).then(|| reply)
 }
 
+#[must_use]
 pub fn inl(port: u16) -> u32 {
     let message = Message {
         header: Header::default(),
