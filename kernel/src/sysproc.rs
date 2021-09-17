@@ -20,7 +20,11 @@ use {
         PIXEL_BLUE_GREEN_RED_RESERVED_8_BIT_PER_COLOR,
         PIXEL_RED_GREEN_BLUE_RESERVED_8_BIT_PER_COLOR,
     },
-    x86_64::{structures::paging::PageTableFlags, PhysAddr, VirtAddr},
+    x86_64::{
+        instructions::port::{PortReadOnly, PortWriteOnly},
+        structures::paging::PageTableFlags,
+        PhysAddr, VirtAddr,
+    },
 };
 
 pub(crate) fn main() -> ! {
@@ -38,6 +42,8 @@ fn loop_iteration() {
         Some(syscalls::Ty::GetScreenInfo) => handle_get_screen_info(message.header.sender_pid),
         Some(syscalls::Ty::MapMemory) => handle_map_memory(&message),
         Some(syscalls::Ty::PmSyncsWithKernel) => handle_pm_syncs_with_kernel(&message),
+        Some(syscalls::Ty::Inl) => handle_inl(&message),
+        Some(syscalls::Ty::Outl) => handle_outl(&message),
         _ => log::warn!("Unrecognized message: {:?}", message),
     }
 }
@@ -138,6 +144,40 @@ fn handle_pm_syncs_with_kernel(message: &Message) {
 
     let r = send(message.header.sender_pid, pm_msg);
     r.expect("Failed to sync with PM.");
+}
+
+fn handle_inl(message: &Message) {
+    let port = message.body.1;
+
+    let ret = if let Ok(port) = port.try_into() {
+        let mut port = PortReadOnly::<u32>::new(port);
+
+        unsafe { port.read() }
+    } else {
+        u32::MAX
+    };
+
+    let reply = Message {
+        header: Header::default(),
+        body: Body(ret.into(), 0, 0, 0, 0),
+    };
+
+    let r = send(message.header.sender_pid, reply);
+    r.unwrap_or_else(|_| log::warn!("Failed to send a reply."));
+}
+
+fn handle_outl(message: &Message) {
+    let port = message.body.1;
+    let value = message.body.2;
+
+    if let (Ok(port), Ok(value)) = (port.try_into(), value.try_into()) {
+        let mut port = PortWriteOnly::<u32>::new(port);
+
+        unsafe { port.write(value) }
+    }
+
+    let r = send(message.header.sender_pid, Message::default());
+    r.unwrap_or_else(|_| log::warn!("Failed to send a reply."));
 }
 
 fn reply_ack(to: Pid) {

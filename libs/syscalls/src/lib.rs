@@ -156,6 +156,35 @@ pub fn pm_syncs_with_kernel() -> Option<Message> {
     (reply.body.0 == NOT_END).then(|| reply)
 }
 
+pub fn inl(port: u16) -> u32 {
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::Inl as _, port.into(), 0, 0, 0),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    reply.body.0.try_into().unwrap()
+}
+
+/// # Panics
+///
+/// This function panics if the kernel did not reply an empty message.
+pub fn outl(port: u16, value: u32) {
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::Outl as _, port.into(), value.into(), 0, 0),
+    };
+
+    ipc::send(predefined::SYSPROC, message);
+
+    let reply = ipc::receive(predefined::SYSPROC.into());
+
+    assert_eq!(reply, Message::default());
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct ScreenInfo {
     resolution_x: u32,
@@ -205,4 +234,6 @@ pub enum Ty {
     MapMemory,
     Write,
     PmSyncsWithKernel,
+    Inl,
+    Outl,
 }
