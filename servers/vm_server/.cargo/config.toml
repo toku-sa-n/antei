@@ -3,6 +3,6 @@ target = "x86_64-unknown-linux-gnu"
 
 [target.x86_64-unknown-linux-gnu]
 rustflags = [
-    "-C", "link-args=-T servers/vm_server/vm_server.ld",
+    "-C", "link-args=-T user.ld",
     "-C", "relocation-model=static",
 ]
