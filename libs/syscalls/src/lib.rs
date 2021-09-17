@@ -156,6 +156,9 @@ pub fn pm_syncs_with_kernel() -> Option<Message> {
     (reply.body.0 == NOT_END).then(|| reply)
 }
 
+/// # Panics
+///
+/// This function panics if the returned value is out of `u32` range.
 #[must_use]
 pub fn inl(port: u16) -> u32 {
     let message = Message {
