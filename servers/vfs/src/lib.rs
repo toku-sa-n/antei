@@ -2,6 +2,7 @@
 
 extern crate rlibc as _;
 
+mod mount;
 mod process;
 
 pub fn init() {
