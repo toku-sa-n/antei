@@ -2,6 +2,7 @@
 members = [
     "bootx64",
     "drivers/tty",
+    "drivers/xhci",
     "kernel",
     "libs/acpi",
     "libs/apic",

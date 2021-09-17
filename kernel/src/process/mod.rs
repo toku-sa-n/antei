@@ -42,6 +42,7 @@ pub(super) fn init() {
     manager::add(Process::from_initrd("vm_server"));
     manager::add(Process::from_initrd("tty"));
     manager::add(Process::from_initrd("vfs"));
+    manager::add(Process::from_initrd("xhci"));
 
     #[cfg(test_on_qemu)]
     manager::add(Process::from_function(crate::tests::main_1));
