@@ -18,7 +18,7 @@ os_units = "0.4.2"
 predefined_mmap = { path = "../predefined_mmap" }
 spinning_top = "0.2.4"
 uefi = { path = "../uefi" }
-x86_64 = { version = "0.14.5", default-features = false, features = ["instructions", "external_asm"] }
+x86_64 = { version = "0.14.6", default-features = false, features = ["instructions", "external_asm"] }
 
 [build-dependencies]
 cfg_aliases = "0.1.1"
