@@ -10,6 +10,8 @@ use {
     kernel::{idle, init},
 };
 
+compile_error!("Clippy test.");
+
 /// # Safety
 ///
 /// `boot_info` must be dereferenceable.
