@@ -25,5 +25,5 @@ rgb = "0.8.29"
 rlibc = "1.0.0"
 spinning_top = { version = "0.2.4", default-features = false }
 syscalls = { path = "../../libs/syscalls" }
-vek = { version = "0.15.1", features = ["libm"], default-features = false }
+vek = { version = "0.15.3", features = ["libm"], default-features = false }
 x86_64 = { version = "0.14.6", default-features = false }
