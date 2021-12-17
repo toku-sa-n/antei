@@ -246,9 +246,9 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.7.7"
+version = "0.7.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe65ef062f1af5b1b189842b0bc45bd671c38e1d22c6aa22e6ada03d01026d53"
+checksum = "7e476c64197665c3725621f0ac3f9e5209aa5e889e02a08b1daf5f16dc5fd952"
 dependencies = [
  "atomic-polyfill",
  "hash32",
