@@ -21,7 +21,7 @@ font8x8 = { version = "0.3.1", features = ["unicode"], default-features = false 
 ipc = { path = "../../libs/ipc" }
 num-traits = { version = "0.2.14", default-features = false }
 os_units = "0.4.2"
-rgb = "0.8.29"
+rgb = "0.8.31"
 rlibc = "1.0.0"
 spinning_top = { version = "0.2.4", default-features = false }
 syscalls = { path = "../../libs/syscalls" }
