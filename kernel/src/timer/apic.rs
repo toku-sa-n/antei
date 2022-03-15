@@ -108,7 +108,7 @@ impl FrequencyMeasurer {
 
     fn wait_milliseconds(&mut self, msec: u32) {
         assert!(
-            !(self.width == TimerRegisterWidth::Bits24 && msec >= 0x0100_0000),
+            self.width != TimerRegisterWidth::Bits24 || msec < 0x0100_0000,
             "Overflow detected."
         );
 
