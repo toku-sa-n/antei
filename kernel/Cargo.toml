@@ -28,7 +28,7 @@ qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { version = "0.1.0", features = ["stable"], default-features = false }
 spinning_top = "0.2.4"
 uefi = { path = "../libs/uefi" }
-x86_64 = { version = "0.14.5", features = ["instructions", "external_asm"], default-features = false }
+x86_64 = { version = "0.14.6", features = ["instructions", "external_asm"], default-features = false }
 vm = { path = "../libs/vm" }
 log = "0.4.14"
 apic = { path = "../libs/apic" }
@@ -36,10 +36,10 @@ pic = { path = "../libs/pic" }
 cpio_reader = "0.1.0"
 static_assertions = "1.1.0"
 elfloader = "0.14.0"
-heapless = "0.7.5"
+heapless = "0.7.7"
 rlibc = "1.0.0"
 ipc_api = { path = "../libs/ipc", package = "ipc" }
-arrayvec = { version = "0.7.1", default-features = false }
+arrayvec = { version = "0.7.2", default-features = false }
 posix = { path = "../libs/posix" }
 num-derive = { version = "0.3.3", default-features = false }
 num-traits = { version = "0.2.14", default-features = false }
@@ -48,5 +48,5 @@ config = { path = "../libs/config" }
 syscalls = { path = "../libs/syscalls" }
 
 [build-dependencies]
-cc = "1.0.70"
+cc = "1.0.71"
 cfg_aliases = "0.1.1"
