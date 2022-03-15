@@ -164,7 +164,7 @@ impl DescriptorValidater {
         }
 
         assert!(
-            self.0.r#type < MIN_CUSTOM_MEMORY_TYPE,
+            self.0.r#type >= MIN_CUSTOM_MEMORY_TYPE,
             "Invalid memory type: 0x{:X}",
             self.0.r#type
         );
