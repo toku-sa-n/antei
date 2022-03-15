@@ -107,9 +107,10 @@ impl FrequencyMeasurer {
     }
 
     fn wait_milliseconds(&mut self, msec: u32) {
-        if self.width == TimerRegisterWidth::Bits24 && msec >= 0x0100_0000 {
-            panic!("Overflow detected.");
-        }
+        assert!(
+            !(self.width == TimerRegisterWidth::Bits24 && msec >= 0x0100_0000),
+            "Overflow detected."
+        );
 
         // Do not make `start` inline, otherwise an overflow will happen.
         let start: u64 = self.reader.read().into();
