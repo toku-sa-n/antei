@@ -162,9 +162,11 @@ impl Process {
 
         let magic = &stack[GUARD_PAGE_SIZE..GUARD_PAGE_SIZE + Self::KERNEL_STACK_MAGIC.len()];
 
-        if magic != Self::KERNEL_STACK_MAGIC {
-            panic!("The kernel stack is smashed.");
-        }
+        assert_eq!(
+            magic,
+            Self::KERNEL_STACK_MAGIC,
+            "The kernel stack is smashed."
+        );
     }
 
     fn create_new_pml4() -> Option<PhysFrame> {

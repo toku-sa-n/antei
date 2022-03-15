@@ -163,9 +163,11 @@ impl DescriptorValidater {
             }
         }
 
-        if self.0.r#type < MIN_CUSTOM_MEMORY_TYPE {
-            panic!("Invalid memory type: 0x{:X}", self.0.r#type);
-        }
+        assert!(
+            self.0.r#type >= MIN_CUSTOM_MEMORY_TYPE,
+            "Invalid memory type: 0x{:X}",
+            self.0.r#type
+        );
     }
 
     fn validate_attribute(&self) {
@@ -182,8 +184,11 @@ impl DescriptorValidater {
             | MEMORY_RO
             | MEMORY_RUNTIME;
 
-        if self.0.attribute | ALL_ATTRIBUTES != ALL_ATTRIBUTES {
-            panic!("Invalid memory attribute: 0x{:X}", self.0.attribute);
-        }
+        assert_eq!(
+            self.0.attribute | ALL_ATTRIBUTES,
+            ALL_ATTRIBUTES,
+            "Invalid memory attribute: 0x{:X}",
+            self.0.attribute
+        );
     }
 }

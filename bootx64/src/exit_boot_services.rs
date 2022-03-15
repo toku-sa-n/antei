@@ -48,7 +48,7 @@ fn try_get_alloc_size_for_mmap(bs: &mut service::Boot<'_>) -> Result<usize> {
 
 fn try_alloc_for_descriptors_array(bs: &mut service::Boot<'_>) -> Result<*mut MemoryDescriptor> {
     let size = try_get_alloc_size_for_mmap(bs)?;
-    bs.allocate_pool(size).map(|p| p.cast())
+    bs.allocate_pool(size).map(<*mut u8>::cast)
 }
 
 fn try_exit_boot_services(
