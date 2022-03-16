@@ -7,4 +7,4 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 aligned_ptr = "0.1.0"
 uefi = { path = "../uefi" }
-x86_64 = { version = "0.14.6", default-features = false }
+x86_64 = { version = "0.14.8", default-features = false }
