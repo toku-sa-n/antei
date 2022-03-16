@@ -1,3 +1,4 @@
+use core::arch::asm;
 use {
     crate::{elf, fs, SystemTable},
     boot_info::{BootInfo, Mmap},
@@ -38,6 +39,25 @@ unsafe fn load(binary: &[u8], mmap: &mut [MemoryDescriptor]) -> VirtAddr {
     entry
 }
 
+unsafe fn switch_stack_and_call_kernel_code(
+    boot_info: *mut BootInfo,
+    entry: VirtAddr,
+    stack_ptr: VirtAddr,
+) -> ! {
+    unsafe {
+        asm!(
+            "
+        mov rsp, rdx
+        jmp rsi
+        ",
+        in("rdi") boot_info,
+        in("rsi") entry.as_u64(),
+        in("rdx") stack_ptr.as_u64(),
+            options(noreturn)
+        );
+    }
+}
+
 fn jump(
     entry: VirtAddr,
     mmap: &mut [MemoryDescriptor],
@@ -45,14 +65,6 @@ fn jump(
     gop: graphics_output::ModeInformation,
     frame_buffer: PhysAddr,
 ) -> ! {
-    extern "sysv64" {
-        fn switch_stack_and_call_kernel_code(
-            boot_info: *mut BootInfo,
-            entry: VirtAddr,
-            stack_ptr: VirtAddr,
-        ) -> !;
-    }
-
     let mmap_start = VirtAddr::from_ptr(mmap.as_ptr());
     let mmap_len = mmap.len();
 
