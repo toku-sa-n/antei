@@ -8,6 +8,7 @@ use {
 
 fn execute_syscall(index: Ty, a1: u64, a2: u64) -> u64 {
     let r: u64;
+
     unsafe {
         asm!("syscall",
         inout("rdi") index as u64 => _,
