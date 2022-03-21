@@ -2,7 +2,8 @@ use {
     aligned_ptr::ptr,
     core::convert::TryInto,
     elfloader::{
-        ElfBinary, ElfLoader, ElfLoaderErr, Flags, LoadableHeaders, ProgramHeader, Rela, VAddr, P64,
+        ElfBinary, ElfLoader, ElfLoaderErr, Flags, LoadableHeaders, ProgramHeader, RelocationEntry,
+        VAddr,
     },
     x86_64::{
         structures::paging::{page::PageRange, Page, PageSize, PageTableFlags},
@@ -118,7 +119,7 @@ impl ElfLoader for Loader {
         Ok(())
     }
 
-    fn relocate(&mut self, _entry: &Rela<P64>) -> Result<(), ElfLoaderErr> {
+    fn relocate(&mut self, _entry: RelocationEntry) -> Result<(), ElfLoaderErr> {
         todo!()
     }
 
