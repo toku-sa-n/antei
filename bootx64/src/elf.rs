@@ -137,7 +137,7 @@ impl ElfLoader for Loader<'_> {
         Ok(())
     }
 
-    fn relocate(&mut self, _: &elfloader::Rela<elfloader::P64>) -> Result<(), ElfLoaderErr> {
+    fn relocate(&mut self, _: elfloader::RelocationEntry) -> Result<(), ElfLoaderErr> {
         unimplemented!("The kernel must not have a relocation section.")
     }
 
