@@ -30,7 +30,7 @@ spinning_top = "0.2.4"
 uefi = { path = "../libs/uefi" }
 x86_64 = { version = "0.14.8", features = ["instructions", "external_asm"], default-features = false }
 vm = { path = "../libs/vm" }
-log = "0.4.14"
+log = "0.4.16"
 apic = { path = "../libs/apic" }
 pic = { path = "../libs/pic" }
 cpio_reader = "0.1.0"
