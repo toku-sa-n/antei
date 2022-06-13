@@ -42,7 +42,7 @@ ipc_api = { path = "../libs/ipc", package = "ipc" }
 arrayvec = { version = "0.7.2", default-features = false }
 posix = { path = "../libs/posix" }
 num-derive = { version = "0.3.3", default-features = false }
-num-traits = { version = "0.2.14", default-features = false }
+num-traits = { version = "0.2.15", default-features = false }
 pid = { path = "../libs/pid" }
 config = { path = "../libs/config" }
 syscalls = { path = "../libs/syscalls" }
