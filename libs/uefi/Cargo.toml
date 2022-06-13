@@ -2,7 +2,7 @@
 name = "uefi"
 version = "0.1.0"
 authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
@@ -11,4 +11,4 @@ num-derive = "0.3.3"
 num-traits = { version = "0.2.14", default-features = false }
 r-efi = "4.0.0"
 ucs2 = "0.3.2"
-x86_64 = { version = "0.14.8", default-features = false }
+x86_64 = { version = "0.14.9", default-features = false }

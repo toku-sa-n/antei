@@ -2,7 +2,7 @@
 name = "kernel"
 version = "0.1.0"
 authors = ["Hiroki Tokunaga <tokusan441@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [features]
@@ -28,14 +28,14 @@ qemu = { path = "../libs/qemu", optional = true }
 qemu_print = { version = "0.1.0", features = ["stable"], default-features = false }
 spinning_top = "0.2.4"
 uefi = { path = "../libs/uefi" }
-x86_64 = { version = "0.14.8", features = ["instructions", "external_asm"], default-features = false }
+x86_64 = { version = "0.14.9", features = ["instructions", "external_asm"], default-features = false }
 vm = { path = "../libs/vm" }
-log = "0.4.14"
+log = "0.4.16"
 apic = { path = "../libs/apic" }
 pic = { path = "../libs/pic" }
 cpio_reader = "0.1.0"
 static_assertions = "1.1.0"
-elfloader = "0.14.0"
+elfloader = "0.15.0"
 heapless = "0.7.10"
 rlibc = "1.0.0"
 ipc_api = { path = "../libs/ipc", package = "ipc" }

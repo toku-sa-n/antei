@@ -1,7 +1,7 @@
 [package]
 name = "tty"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 license = "MIT OR Apache-2.0"
 
 [[bin]]
@@ -26,4 +26,4 @@ rlibc = "1.0.0"
 spinning_top = { version = "0.2.4", default-features = false }
 syscalls = { path = "../../libs/syscalls" }
 vek = { version = "0.15.7", features = ["libm"], default-features = false }
-x86_64 = { version = "0.14.8", default-features = false }
+x86_64 = { version = "0.14.9", default-features = false }

@@ -227,9 +227,9 @@ dependencies = [
 
 [[package]]
 name = "elfloader"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a249d6a9d50f3bf5a3cb7bfd75e84989cad89c6c77b5996c8b084e844146ff04"
+checksum = "23e01bd5dc6be11bc08285398ec8161e4ed2154007e6ac552d112b28e4219c81"
 dependencies = [
  "bitflags",
  "log",
@@ -372,9 +372,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.14"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
+checksum = "6389c490849ff5bc16be905ae24bc913a9c8892e19b2341dbc175e14c341c2b8"
 dependencies = [
  "cfg-if",
 ]
@@ -442,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0744126afe1a6dd7f394cb50a716dbe086cb06e255e53d8d0185d82828358fb5"
+checksum = "0c520e05135d6e763148b6426a837e239041653ba7becd2e538c076c738025fc"
 
 [[package]]
 name = "pic"
@@ -615,6 +615,12 @@ checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
  "semver 1.0.6",
 ]
+
+[[package]]
+name = "rustversion"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2cc38e8fa666e2de3c4aba7edeb5ffc5246c1c2ed0e3d17e560aeeba736b23f"
 
 [[package]]
 name = "scopeguard"
@@ -831,13 +837,13 @@ dependencies = [
 
 [[package]]
 name = "x86_64"
-version = "0.14.8"
+version = "0.14.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "958ab3202b01bc43ba2eb832102c4a487ed93151667a2289062e5f2b00058be2"
+checksum = "958cd5cb28e720db2f59ee9dc4235b5f82a183d079fb0e6caf43ad074cfdc66a"
 dependencies = [
  "bit_field",
  "bitflags",
- "cc",
+ "rustversion",
  "volatile",
 ]
 
