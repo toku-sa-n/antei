@@ -23,3 +23,6 @@ pub(crate) type NumOfPages<T = Size4KiB> = os_units::NumOfPages<T>;
 use x86_64::structures::paging::Size4KiB;
 pub(crate) use {allocator::Allocator, mapper::Mapper};
 pub use {exit_boot_services::exit_boot_services_and_return_mmap, system_table::SystemTable};
+
+#[no_mangle]
+fn rust_eh_personality() {}
