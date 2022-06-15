@@ -1,0 +1,18 @@
+[package]
+name = "shell"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "shell"
+test = false
+
+[lib]
+test = false
+
+[features]
+test_on_qemu = []
+
+[dependencies]
+rlibc = "1.0.0"
