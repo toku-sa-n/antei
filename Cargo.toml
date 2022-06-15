@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "apps/shell",
     "bootx64",
     "drivers/tty",
     "drivers/xhci",
