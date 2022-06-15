@@ -189,6 +189,17 @@ pub fn outl(port: u16, value: u32) {
     assert_eq!(reply, Message::default());
 }
 
+pub fn test_user_app_succeed() -> ! {
+    let message = Message {
+        header: Header::default(),
+        body: Body(Ty::TestUserAppSucceed as _, 0, 0, 0, 0),
+    };
+
+    ipc::send(predefined::TEST_1, message);
+
+    unreachable!("The test process should exit QEMU.");
+}
+
 pub fn test_user_app_failed() -> ! {
     let message = Message {
         header: Header::default(),
@@ -249,6 +260,7 @@ pub enum Ty {
     MapMemory,
     Write,
     PmSyncsWithKernel,
+    TestUserAppSucceed,
     TestUserAppFailed,
     Inl,
     Outl,

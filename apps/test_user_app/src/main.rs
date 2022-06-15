@@ -5,5 +5,5 @@ extern crate test_user_app as _;
 
 #[no_mangle]
 fn main() -> ! {
-    panic!();
+    syscalls::test_user_app_succeed();
 }
