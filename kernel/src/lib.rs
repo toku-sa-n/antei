@@ -21,7 +21,6 @@ mod tss;
 use {::boot_info::BootInfo, core::panic::PanicInfo, interrupt::idt};
 
 pub fn init(boot_info: BootInfo) {
-    // SAFETY: `boot_info` is the pointer passed from the bootloader. w
     boot_info.validate();
 
     boot_info::save(boot_info);
