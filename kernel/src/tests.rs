@@ -42,6 +42,11 @@ pub(crate) fn main_1() -> ! {
 
     assert_eq!(&buffer[..count], DATA.as_bytes());
 
+    let mut m = MaybeUninit::uninit();
+    receive(predefined::TEST_USER_APP.into(), m.as_mut_ptr()).unwrap();
+
+    assert_eq!(unsafe { m.assume_init().body }, Body::default());
+
     qemu::exit_success();
 }
 

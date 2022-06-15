@@ -10,3 +10,4 @@ pub const VFS: Pid = Pid::new(6);
 pub const XHCI: Pid = Pid::new(7);
 pub const TEST_1: Pid = Pid::new(8);
 pub const TEST_2: Pid = Pid::new(9);
+pub const TEST_USER_APP: Pid = Pid::new(10);

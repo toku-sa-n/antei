@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "apps/test_user_app",
     "bootx64",
     "drivers/tty",
     "drivers/xhci",

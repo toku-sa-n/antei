@@ -48,6 +48,8 @@ pub(super) fn init() {
     manager::add(Process::from_function(crate::tests::main_1));
     #[cfg(test_on_qemu)]
     manager::add(Process::from_function(crate::tests::main_2));
+    #[cfg(test_on_qemu)]
+    manager::add(Process::from_initrd("test_user_app"));
 }
 
 pub(super) struct Process {
