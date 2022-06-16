@@ -51,7 +51,7 @@ pub(crate) fn main_1() -> ! {
     match ty {
         Some(syscalls::Ty::TestUserAppSucceed) => qemu::exit_success(),
         Some(syscalls::Ty::TestUserAppFailed) => panic!("The user test app indicated a fail."),
-        e => unreachable!("Unexpected message: {:?}", e),
+        e => unreachable!("The user test app sent an unexpected message: {:?}", e),
     }
 }
 
