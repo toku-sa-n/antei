@@ -704,6 +704,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "test_user_app"
+version = "0.1.0"
+dependencies = [
+ "rlibc",
+ "syscalls",
+]
+
+[[package]]
 name = "tty"
 version = "0.1.0"
 dependencies = [

@@ -4,6 +4,12 @@ define cargo_project_src
 	$(shell find $1|grep -v $1/target)
 endef
 
+define app =
+$(BUILD_DIR)/$1: $(call cargo_project_src,apps/$1) $(LIBS_SRCS)|$(BUILD_DIR)
+	(cd apps/$1 && cargo build $(RUSTFLAGS))
+	cp target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/$1 $(BUILD_DIR)/$1
+endef
+
 define server =
 $(BUILD_DIR)/$1: $(call cargo_project_src,servers/$1) $(LIBS_SRCS)|$(BUILD_DIR)
 	(cd servers/$1 && cargo build $(RUSTFLAGS))
@@ -39,7 +45,7 @@ KERNEL_SRCS	=	$(call cargo_project_src, $(KERNEL_DIR))
 KERNEL_IN_TARGET	=	target/$(ARCH)-unknown-linux-gnu/$(RELEASE_OR_DEBUG)/kernel
 KERNEL	=	$(BUILD_DIR)/kernel
 
-INITRD_CONTENTS	=	init pm vfs vm_server tty xhci
+INITRD_CONTENTS	=	init pm vfs vm_server tty xhci test_user_app
 INITRD_DEPENDENCIES	=	$(foreach file,$(INITRD_CONTENTS),$(BUILD_DIR)/$(file))
 INITRD	=	$(BUILD_DIR)/initrd.cpio
 
@@ -83,6 +89,7 @@ $(BOOTX64): $(BOOTX64_SRCS) $(LIBS_SRCS)|$(BUILD_DIR)
 $(INITRD): $(INITRD_DEPENDENCIES)|$(BUILD_DIR)
 	cd $(BUILD_DIR) && echo $(INITRD_CONTENTS)|tr " " "\n"|cpio -o > $(notdir $@)
 
+$(eval $(call app,test_user_app))
 $(eval $(call server,init))
 $(eval $(call server,pm))
 $(eval $(call server,vfs))

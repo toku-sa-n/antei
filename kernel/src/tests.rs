@@ -2,6 +2,7 @@ use {
     crate::process::ipc::{receive, send, ReceiveFrom},
     core::{convert::TryInto, mem::MaybeUninit},
     ipc_api::message::{Body, Header, Message},
+    num_traits::FromPrimitive,
     pid::predefined,
     x86_64::{instructions::hlt, VirtAddr},
 };
@@ -42,7 +43,16 @@ pub(crate) fn main_1() -> ! {
 
     assert_eq!(&buffer[..count], DATA.as_bytes());
 
-    qemu::exit_success();
+    let mut m = MaybeUninit::uninit();
+    receive(predefined::TEST_USER_APP.into(), m.as_mut_ptr()).unwrap();
+
+    let ty = FromPrimitive::from_u64(unsafe { m.assume_init().body.0 });
+
+    match ty {
+        Some(syscalls::Ty::TestUserAppSucceed) => qemu::exit_success(),
+        Some(syscalls::Ty::TestUserAppFailed) => panic!("The user test app indicated a fail."),
+        e => unreachable!("The user test app sent an unexpected message: {:?}", e),
+    }
 }
 
 pub(crate) fn main_2() -> ! {
