@@ -36,7 +36,7 @@ pic = { path = "../libs/pic" }
 cpio_reader = "0.1.0"
 static_assertions = "1.1.0"
 elfloader = "0.15.0"
-heapless = "0.7.13"
+heapless = "0.7.15"
 rlibc = "1.0.0"
 ipc_api = { path = "../libs/ipc", package = "ipc" }
 arrayvec = { version = "0.7.2", default-features = false }
