@@ -199,9 +199,9 @@ dependencies = [
 
 [[package]]
 name = "cpio_reader"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd420c52d86c5b08c494e7e3d16bce23f08f3f6544cccce2d6cc986d3144dca1"
+checksum = "625db7965478dc700951b2e15e9144863a0dacb31f60b0eb799c7a7b975afb5c"
 dependencies = [
  "bitflags",
 ]
