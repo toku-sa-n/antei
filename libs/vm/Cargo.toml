@@ -13,7 +13,7 @@ aligned_ptr = "0.1.0"
 conquer-once = { version = "0.3.2", default-features = false }
 elfloader = "0.15.0"
 frame_allocator = { path = "../frame_allocator" }
-linked_list_allocator = { version = "0.9.1", default-features = false }
+linked_list_allocator = { version = "0.10.4", default-features = false }
 os_units = "0.4.2"
 predefined_mmap = { path = "../predefined_mmap" }
 spinning_top = "0.2.4"
